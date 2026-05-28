@@ -131,7 +131,7 @@ function DragHandle({ editing }) {
 
 function KpiSaldo() {
   return (
-    <div className="kpi-card">
+    <div className="kpi-card clickable-card" onClick={() => window.navTo?.('contas')}>
       <div className="kpi-head"><div className="kpi-icon">▣</div><div><div className="kpi-label">Saldo Total</div><div className="kpi-value" id="kpi-saldo">R$ 0,00</div><div className="kpi-sub">Todas as contas</div></div></div>
       <div className="trend up" id="kpi-saldo-trend">▲ 0,0%</div>
       <canvas className="spark" id="spark-saldo"></canvas>
@@ -141,7 +141,7 @@ function KpiSaldo() {
 
 function KpiReceitas() {
   return (
-    <div className="kpi-card">
+    <div className="kpi-card clickable-card" onClick={() => window.goToTransactionsFilter?.('receita')}>
       <div className="kpi-head"><div className="kpi-icon">↑</div><div><div className="kpi-label">Receitas do Mês</div><div className="kpi-value" id="kpi-receita">R$ 0,00</div><div className="kpi-sub">vs mês anterior</div></div></div>
       <div className="trend up" id="kpi-receita-trend">▲ 0,0%</div>
       <canvas className="spark" id="spark-receita"></canvas>
@@ -151,7 +151,7 @@ function KpiReceitas() {
 
 function KpiDespesas() {
   return (
-    <div className="kpi-card">
+    <div className="kpi-card clickable-card" onClick={() => window.goToTransactionsFilter?.('despesa')}>
       <div className="kpi-head"><div className="kpi-icon red">↓</div><div><div className="kpi-label">Despesas do Mês</div><div className="kpi-value" id="kpi-despesa">R$ 0,00</div><div className="kpi-sub">vs mês anterior</div></div></div>
       <div className="trend down" id="kpi-despesa-trend">▼ 0,0%</div>
       <canvas className="spark" id="spark-despesa"></canvas>
@@ -330,18 +330,8 @@ function DashboardLayoutApp({ userId }) {
     saveLayouts(userId, nextLayouts);
   }
 
-  function resetLayout() {
-    const nextLayouts = defaultLayouts();
-    window.localStorage.removeItem(storageKey(userId));
-    setLayouts(nextLayouts);
-    scheduleDashboardRender();
-  }
-
   return (
     <>
-      <div className="dashboard-layout-actions">
-        <button className="btn btn-ghost" type="button" onClick={resetLayout}>Restaurar padrão</button>
-      </div>
       <div ref={containerRef}>
         {mounted && (
           <Responsive

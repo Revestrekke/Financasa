@@ -69,13 +69,13 @@
     .user-title{font-size:13px;font-weight:700}
     .user-sub{font-size:12px;color:var(--muted)}
     .section-title{
-      color:#92a4c3;font-size:11px;text-transform:uppercase;letter-spacing:1.8px;
+      color:#92a4c3;font-size:13px;text-transform:uppercase;letter-spacing:1.8px;
       margin:8px 10px 4px;
     }
     .nav-item{
       width:100%;border:0;background:transparent;color:#c6d0e2;border-radius:7px;
       padding:11px 12px;display:flex;align-items:center;gap:12px;text-align:left;
-      transition:.18s ease;font-size:14px;
+      transition:.18s ease;font-size:16px;
     }
     .nav-item:hover{background:rgba(35,55,84,.62);color:white}
     .nav-item.active{color:white;background:linear-gradient(90deg,#2563eb,#1d4ed8);box-shadow:0 10px 26px rgba(37,99,235,.16)}
@@ -118,6 +118,7 @@
     .dashboard-layout-root{margin-bottom:18px;overflow:visible}
     .dashboard-layout-card{height:100%;min-width:0;min-height:0;position:relative;container-type:size}
     .dashboard-layout-card>.card,.dashboard-layout-card>.kpi-card{height:100%;min-width:0;min-height:0;overflow:hidden}
+    .clickable-card{cursor:pointer}
     .dashboard-layout-card>.card{display:flex;flex-direction:column}
     .dashboard-layout-card .card-head{flex:0 0 auto}
     .dashboard-layout-card .chart-box{height:auto;flex:1 1 auto;min-height:0}
@@ -411,11 +412,11 @@
     .kpi-card:after{background:linear-gradient(0deg,rgba(37,99,235,.08),transparent)}
     .kpi-icon{background:#eff6ff;color:#2563eb}
     .kpi-icon.red{background:#fff1f2;color:#dc3545}
-    .kpi-label{color:#65758a}
+    .kpi-label{color:#000000}
     .kpi-value{color:#000000}
     .trend.up{background:#eff6ff;color:#2563eb}
     .trend.down{background:#fff1f2;color:#dc3545}
-    .break-row,.cash-line,td{color:#334155}
+    .legend,.break-row,.cash-line,td,.quick-action{color:#000000}
     .progress{background:#edf2f7}
     .tx-card,.goal-card,.account-card,.list-card,.cash-line{border-bottom-color:#e6edf4}
     .tx-ico,.account-ico,.goal-ico{background:#eef4ff;color:#2563eb}
@@ -433,13 +434,30 @@
     .segmented button,.auth-tabs button{color:#65758a}
     .segmented button.active.in,.auth-tabs button.active{background:#ffffff;color:#2563eb;box-shadow:0 1px 6px rgba(15,23,42,.08)}
     .segmented button.active.out{background:#ffffff;color:#dc3545;box-shadow:0 1px 6px rgba(15,23,42,.08)}
-    th{color:#65758a;border-bottom-color:#dce5ee}
+    th{color:#000000;border-bottom-color:#dce5ee}
     tr:hover td{background:#f8fafc}
     .filter-btn{background:#ffffff;color:#526174;border-color:#cfd9e5}
     .filter-btn.active{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
     .badge.in{background:#eff6ff;color:#2563eb}
     .badge.out{background:#fff1f2;color:#dc3545}
-    .empty{color:#65758a}
+    .empty{color:#000000}
+    .chart-tooltip{
+      position:fixed;
+      z-index:50;
+      display:none;
+      pointer-events:none;
+      background:#ffffff;
+      border:1px solid #cfd9e5;
+      border-radius:8px;
+      box-shadow:0 12px 28px rgba(15,23,42,.14);
+      color:#000000;
+      font-size:12px;
+      font-weight:700;
+      line-height:1.35;
+      padding:8px 10px;
+      max-width:220px;
+      white-space:nowrap;
+    }
     .toast{
       background:#ffffff;
       color:#000000;
@@ -584,17 +602,17 @@
       <section class="page active" id="page-dashboard">
         <div id="dashboard-layout-root" class="dashboard-layout-root">
           <div class="dashboard-fallback-grid">
-            <div class="kpi-card span-4">
+            <div class="kpi-card span-4 clickable-card" onclick="navTo('contas')">
               <div class="kpi-head"><div class="kpi-icon">▣</div><div><div class="kpi-label">Saldo Total</div><div class="kpi-value" id="kpi-saldo">R$ 0,00</div><div class="kpi-sub">Todas as contas</div></div></div>
               <div class="trend up" id="kpi-saldo-trend">▲ 0,0%</div>
               <canvas class="spark" id="spark-saldo"></canvas>
             </div>
-            <div class="kpi-card span-4">
+            <div class="kpi-card span-4 clickable-card" onclick="goToTransactionsFilter('receita')">
               <div class="kpi-head"><div class="kpi-icon">↑</div><div><div class="kpi-label">Receitas do Mês</div><div class="kpi-value" id="kpi-receita">R$ 0,00</div><div class="kpi-sub">vs mês anterior</div></div></div>
               <div class="trend up" id="kpi-receita-trend">▲ 0,0%</div>
               <canvas class="spark" id="spark-receita"></canvas>
             </div>
-            <div class="kpi-card span-4">
+            <div class="kpi-card span-4 clickable-card" onclick="goToTransactionsFilter('despesa')">
               <div class="kpi-head"><div class="kpi-icon red">↓</div><div><div class="kpi-label">Despesas do Mês</div><div class="kpi-value" id="kpi-despesa">R$ 0,00</div><div class="kpi-sub">vs mês anterior</div></div></div>
               <div class="trend down" id="kpi-despesa-trend">▼ 0,0%</div>
               <canvas class="spark" id="spark-despesa"></canvas>
@@ -693,9 +711,9 @@
       <section class="page" id="page-transacoes">
         <div class="page-header"><div><h2>Transações</h2><p class="caption" id="tx-count-label">0 registros</p></div></div>
         <div class="filter-bar">
-          <button class="filter-btn active" onclick="setFiltro('todas',this)">Todas</button>
-          <button class="filter-btn" onclick="setFiltro('receita',this)">Receitas</button>
-          <button class="filter-btn" onclick="setFiltro('despesa',this)">Despesas</button>
+          <button class="filter-btn active" data-filter="todas" onclick="setFiltro('todas',this)">Todas</button>
+          <button class="filter-btn" data-filter="receita" onclick="setFiltro('receita',this)">Receitas</button>
+          <button class="filter-btn" data-filter="despesa" onclick="setFiltro('despesa',this)">Despesas</button>
           <select id="filter-mes" onchange="renderTransacoes()"><option value="">Todos os meses</option></select>
           <select id="filter-cat" onchange="renderTransacoes()"><option value="">Todas as categorias</option></select>
         </div>
@@ -782,19 +800,12 @@
     function createInitialState(){
       return{
         transacoes:[],
-        contas:[
-          {id:1,nome:'Conta Corrente',tipo:'Conta Corrente',saldo:1250,icone:'🏦'},
-          {id:2,nome:'Conta Poupança',tipo:'Conta Poupança',saldo:4500,icone:'💳'},
-          {id:3,nome:'Carteira Digital',tipo:'Carteira Digital',saldo:890,icone:'🟣'},
-          {id:4,nome:'Investimentos',tipo:'Investimentos',saldo:12430,icone:'📈'}
-        ],
-        metas:[
-          {id:1,nome:'Viagem em Família',alvo:5000,atual:3200,prazo:'2026-12-01',icone:'✈'},
-          {id:2,nome:'Reserva de Emergência',alvo:15000,atual:8500,prazo:'2026-10-01',icone:'🛡'},
-          {id:3,nome:'Trocar de Carro',alvo:30000,atual:12000,prazo:'2027-04-01',icone:'🚗'}
-        ],
+        contas:[],
+        metas:[],
         categorias:{despesa:[...DEFAULT_CATS_DESPESA],receita:[...DEFAULT_CATS_RECEITA]},
-        orcamento:{Aluguel:1500,Alimentação:900,Transporte:650,Saúde:400,Lazer:500},
+        orcamento:{},
+        recorrentes:[],
+        investimentos:[],
         filtroTx:'todas',
         tipoLanc:'despesa'
       };
@@ -908,9 +919,7 @@
         const sharedWorkspace=(workspaces||[]).find(workspace=>workspace.owner_id!==currentUser.id);
         let data=ownedWorkspace||(isSystemAdmin()?null:sharedWorkspace);
         if(!data){
-          let initial=createInitialState();
-          const legacy=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
-          if(!legacy.error&&legacy.data?.state)initial=legacy.data.state;
+          const initial=createInitialState();
           const workspaceName=`Finanças de ${getUserName(currentUser)}`;
           const created=await client
             .from('financasa_workspaces')
@@ -929,12 +938,7 @@
         await loadWorkspaceMembers(client);
         return data.state||null;
       }catch(error){
-        if(!isMissingWorkspaceSchema(error))throw error;
-        const {data,error:fallbackError}=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
-        if(fallbackError)throw fallbackError;
-        currentWorkspace=null;
-        workspaceMembers=[];
-        return data?data.state:null;
+        throw error;
       }
     }
     async function saveRemoteState(snapshot){
@@ -949,12 +953,7 @@
         if(error)throw error;
         return{ok:true,source:'supabase-workspace'};
       }
-      const {error}=await client.from('financasa_state').upsert(
-        {user_id:currentUser.id,state:snapshot,updated_at:new Date().toISOString()},
-        {onConflict:'user_id'}
-      );
-      if(error)throw error;
-      return{ok:true,source:'supabase'};
+      throw new Error('Área financeira online não encontrada. Execute database/supabase-schema.sql no Supabase.');
     }
     function isMissingWorkspaceSchema(error){
       const msg=String(error?.message||'').toLowerCase();
@@ -1017,7 +1016,6 @@
       const loaded=await load();
       if(!loaded)return;
       normalizeState();
-      seedDemoData();
       save();
       mountCurrentDashboardLayout();
       renderDashboard();
@@ -1025,7 +1023,7 @@
 
     function normalizeState(){
       state.transacoes=Array.isArray(state.transacoes)?state.transacoes:[];
-      state.contas=Array.isArray(state.contas)&&state.contas.length?state.contas:[{id:1,nome:'Conta Corrente',tipo:'Conta Corrente',saldo:0,icone:'🏦'}];
+      state.contas=Array.isArray(state.contas)?state.contas:[];
       state.metas=Array.isArray(state.metas)?state.metas:[];
       state.orcamento=state.orcamento||{};
       state.recorrentes=Array.isArray(state.recorrentes)?state.recorrentes:[];
@@ -1035,25 +1033,6 @@
       state.categorias.receita=[...new Set([...(state.categorias.receita||[]),...DEFAULT_CATS_RECEITA])];
       state.filtroTx=state.filtroTx||'todas';
       state.tipoLanc=state.tipoLanc||'despesa';
-    }
-    function seedDemoData(){
-      if(state.transacoes.length)return;
-      const today=new Date();
-      const iso=(d)=>d.toISOString().slice(0,10);
-      const mk=(monthOffset,day)=>new Date(today.getFullYear(),today.getMonth()+monthOffset,day);
-      state.transacoes=[
-        {id:101,tipo:'despesa',valor:95,categoria:'Contas',conta:'Conta Corrente',desc:'Internet',tags:'casa',data:iso(mk(0,18))},
-        {id:102,tipo:'despesa',valor:180,categoria:'Saúde',conta:'Conta Corrente',desc:'Consulta médica',tags:'saúde',data:iso(mk(0,15))},
-        {id:103,tipo:'despesa',valor:240,categoria:'Lazer',conta:'Carteira Digital',desc:'Cinema e jantar',tags:'fim de semana',data:iso(mk(0,12))},
-        {id:104,tipo:'receita',valor:800,categoria:'Freelance',conta:'Conta Corrente',desc:'Projeto web',tags:'extra',data:iso(mk(0,10))},
-        {id:105,tipo:'despesa',valor:89,categoria:'Transporte',conta:'Conta Corrente',desc:'Gasolina',tags:'carro',data:iso(mk(0,7))},
-        {id:106,tipo:'despesa',valor:320,categoria:'Alimentação',conta:'Conta Corrente',desc:'Supermercado',tags:'mercado',data:iso(mk(0,5))},
-        {id:107,tipo:'receita',valor:5500,categoria:'Salário',conta:'Conta Corrente',desc:'Salário mensal',tags:'fixo',data:iso(mk(0,1))}
-      ];
-      for(let i=1;i<=5;i++){
-        state.transacoes.push({id:200+i,tipo:'receita',valor:3200+i*620,categoria:'Salário',conta:'Conta Corrente',desc:'Salário mensal',tags:'fixo',data:iso(mk(-i,1))});
-        state.transacoes.push({id:300+i,tipo:'despesa',valor:1700+i*190,categoria:i%2?'Alimentação':'Transporte',conta:'Conta Corrente',desc:'Gastos do mês',tags:'demo',data:iso(mk(-i,12))});
-      }
     }
 
     const fmtBRL=v=>'R$ '+Math.abs(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1076,6 +1055,10 @@
       document.getElementById('page-'+page)?.classList.add('active');
       (el||document.querySelector(`.nav-item[data-page="${page}"]`))?.classList.add('active');
       renderPage(page);
+    }
+    function goToTransactionsFilter(tipo){
+      state.filtroTx=tipo;
+      navTo('transacoes');
     }
     function renderPage(page){
       if(page==='dashboard')renderDashboard();
@@ -1108,12 +1091,13 @@
       const recPct=prev.rec?((rec-prev.rec)/prev.rec)*100:0;
       const depPct=prev.dep?((dep-prev.dep)/prev.dep)*100:0;
       const saving=rec?Math.max(0,Math.round((saldo/rec)*100)):0;
+      const sparkData=getMonthlySparkData();
       setText('kpi-saldo',fmtBRL(total));setText('kpi-receita',fmtBRL(rec));setText('kpi-despesa',fmtBRL(dep));
-      setTrend('kpi-saldo-trend',5.2,true);setTrend('kpi-receita-trend',recPct,recPct>=0);setTrend('kpi-despesa-trend',depPct,depPct<0);
+      setTrend('kpi-saldo-trend',0,true);setTrend('kpi-receita-trend',recPct,recPct>=0);setTrend('kpi-despesa-trend',depPct,depPct<0);
       setDonutLabel('month-rate',saving+'%','Poupança');setDonutLabel('saving-rate',saving+'%','Poupança');setText('planning-copy',saving>=20?'Você está no caminho certo!':'Ajuste as despesas para melhorar a poupança.');
-      drawSpark('spark-saldo',[12,16,14,18,15,17,21,18,23,20,26,22,30],COLORS[0]);
-      drawSpark('spark-receita',[10,14,24,28,19,21,20,25,18,20,28,30,37,42,36,32],COLORS[0]);
-      drawSpark('spark-despesa',[18,17,15,16,20,25,26,26,22,19,18,20,19,20,25,27,24],COLORS[2]);
+      drawSpark('spark-saldo',sparkData.saldo,COLORS[0]);
+      drawSpark('spark-receita',sparkData.receitas,COLORS[0]);
+      drawSpark('spark-despesa',sparkData.despesas,COLORS[2]);
       renderBarChart();
       renderCategoryExpenseChart();
       renderRecentList();
@@ -1138,6 +1122,20 @@
         recs.push(s.rec);deps.push(s.dep);
       }
       drawBars('bar-chart',labels,[{name:'Receitas',data:recs,color:COLORS[0]},{name:'Despesas',data:deps,color:COLORS[2]}]);
+    }
+    function getMonthlySparkData(count=12){
+      const receitas=[],despesas=[],saldo=[];
+      const now=new Date();
+      let acc=0;
+      for(let i=count-1;i>=0;i--){
+        const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+        const s=getMesSummary(d.toISOString().slice(0,7));
+        acc+=s.rec-s.dep;
+        receitas.push(s.rec);
+        despesas.push(s.dep);
+        saldo.push(acc);
+      }
+      return{receitas,despesas,saldo};
     }
     function renderCategoryExpenseChart(){
       const {txs}=getMesSummary();
@@ -1181,7 +1179,7 @@
         <div class="cash-line"><span>Entradas</span><strong class="positive">+ ${fmtBRL(rec)}</strong></div>
         <div class="cash-line"><span>Saídas</span><strong class="negative">- ${fmtBRL(dep)}</strong></div>
         <div class="cash-line" style="border-bottom:0"><span>Saldo Atual</span><strong style="color:#38a7ff">${fmtBRL(saldo)}</strong></div>`;
-      drawLine('cash-chart',[8,11,18,14,10,12,20,28,26,21,18,23,30,29,35,44,47,42],COLORS[3]);
+      drawLine('cash-chart',getMonthlySparkData(12).saldo,COLORS[3]);
     }
     function renderMonthOverview(rec,dep,saving){
       const invest=state.contas.filter(c=>String(c.tipo).toLowerCase().includes('invest')).reduce((s,c)=>s+Math.max(c.saldo,0),0);
@@ -1217,7 +1215,9 @@
     function renderLancamentos(){
       document.getElementById('f-data').value=new Date().toISOString().slice(0,10);
       document.getElementById('f-categoria').innerHTML=getCategorias(state.tipoLanc).map(c=>`<option>${escapeHtml(c)}</option>`).join('');
-      document.getElementById('f-conta').innerHTML=state.contas.map(c=>`<option>${escapeHtml(c.nome)}</option>`).join('');
+      document.getElementById('f-conta').innerHTML=state.contas.length
+        ? state.contas.map(c=>`<option>${escapeHtml(c.nome)}</option>`).join('')
+        : '<option value="">Cadastre uma conta primeiro</option>';
       document.getElementById('quick-btns').innerHTML=QUICK.map(q=>`<button class="btn" onclick="quickAdd('${q}')">${q}</button>`).join('');
     }
     function setTipo(t){
@@ -1234,6 +1234,7 @@
       const valor=parseFloat(document.getElementById('f-valor').value);
       if(!valor||valor<=0){toast('Valor inválido','error');return}
       const conta=document.getElementById('f-conta').value;
+      if(!conta){toast('Cadastre uma conta antes de lançar transações.','error');return}
       const tipo=state.tipoLanc;
       const tx={id:editingTxId||Date.now(),tipo,valor,categoria:document.getElementById('f-categoria').value,conta,desc:document.getElementById('f-desc').value||'',tags:document.getElementById('f-tags').value||'',data:document.getElementById('f-data').value||new Date().toISOString().slice(0,10)};
       if(editingTxId){
@@ -1256,6 +1257,7 @@
     }
 
     function renderTransacoes(){
+      document.querySelectorAll('.filter-btn[data-filter]').forEach(btn=>btn.classList.toggle('active',btn.dataset.filter===state.filtroTx));
       const search=(document.getElementById('global-search')?.value||'').toLowerCase();
       const mes=document.getElementById('filter-mes').value;
       const cat=document.getElementById('filter-cat').value;
@@ -1448,7 +1450,7 @@
       document.getElementById('cat-tbody').innerHTML=sorted.map(([c,d])=>`<tr><td>${escapeHtml(c)}</td><td><span class="badge ${d.tipo==='receita'?'in':'out'}">${d.tipo}</span></td><td>${d.count}</td><td>${fmtBRL(d.total)}</td><td>${Math.round(d.total/total*100)}%</td></tr>`).join('');
       drawEvolution();
     }
-    function renderFluxo(){const {rec,dep,saldo}=getMesSummary();renderSimplePage('fluxo','Fluxo de Caixa','Acompanhe entradas, saídas e saldo projetado.');document.getElementById('page-fluxo').querySelector('.card').innerHTML=`<div class="card-title">Fluxo de Caixa</div><div style="margin-top:14px"><div class="cash-line"><span>Saldo Anterior</span><strong>${fmtBRL(Math.max(getSaldoTotal()-saldo,0))}</strong></div><div class="cash-line"><span>Entradas</span><strong class="positive">+ ${fmtBRL(rec)}</strong></div><div class="cash-line"><span>Saídas</span><strong class="negative">- ${fmtBRL(dep)}</strong></div><div class="cash-line" style="border-bottom:0"><span>Saldo Atual</span><strong style="color:#38a7ff">${fmtBRL(saldo)}</strong></div></div><div class="chart-box"><canvas id="cash-flow-chart"></canvas></div>`;drawLine('cash-flow-chart',[8,11,18,14,10,12,20,28,26,21,18,23,30,29,35,44,47,42],COLORS[3])}
+    function renderFluxo(){const {rec,dep,saldo}=getMesSummary();renderSimplePage('fluxo','Fluxo de Caixa','Acompanhe entradas, saídas e saldo projetado.');document.getElementById('page-fluxo').querySelector('.card').innerHTML=`<div class="card-title">Fluxo de Caixa</div><div style="margin-top:14px"><div class="cash-line"><span>Saldo Anterior</span><strong>${fmtBRL(Math.max(getSaldoTotal()-saldo,0))}</strong></div><div class="cash-line"><span>Entradas</span><strong class="positive">+ ${fmtBRL(rec)}</strong></div><div class="cash-line"><span>Saídas</span><strong class="negative">- ${fmtBRL(dep)}</strong></div><div class="cash-line" style="border-bottom:0"><span>Saldo Atual</span><strong style="color:#38a7ff">${fmtBRL(saldo)}</strong></div></div><div class="chart-box"><canvas id="cash-flow-chart"></canvas></div>`;drawLine('cash-flow-chart',getMonthlySparkData(12).saldo,COLORS[3])}
     function renderIndicadores(){const {rec,dep,saldo}=getMesSummary();renderSimplePage('indicadores','Indicadores','Métricas principais do mês.');document.getElementById('page-indicadores').querySelector('.card').innerHTML=`<div class="kpi-grid"><div class="kpi-card"><div class="kpi-label">Taxa de poupança</div><div class="kpi-value">${rec?Math.round(saldo/rec*100):0}%</div></div><div class="kpi-card"><div class="kpi-label">Comprometimento</div><div class="kpi-value">${rec?Math.round(dep/rec*100):0}%</div></div><div class="kpi-card"><div class="kpi-label">Saldo do mês</div><div class="kpi-value">${fmtBRL(saldo)}</div></div></div>`}
     let editingRecorrenteId=null;
     let editingInvestimentoId=null;
@@ -1663,40 +1665,52 @@
     function drawLine(id,data,color,clean=false){
       const c=document.getElementById(id);if(!c)return;const ctx=prepCanvas(c),w=c.clientWidth,h=c.clientHeight,p=clean?3:16;
       ctx.clearRect(0,0,w,h);const max=Math.max(...data),min=Math.min(...data),span=max-min||1;
-      ctx.beginPath();data.forEach((v,i)=>{const x=p+i*(w-p*2)/(data.length-1),y=h-p-((v-min)/span)*(h-p*2);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
+      const points=[];
+      ctx.beginPath();data.forEach((v,i)=>{const x=p+i*(w-p*2)/(Math.max(data.length-1,1)),y=h-p-((v-min)/span)*(h-p*2);points.push({x,y,value:v});i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
       ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();
       const grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,color+'66');grad.addColorStop(1,color+'00');
       ctx.lineTo(w-p,h-p);ctx.lineTo(p,h-p);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+      if(!clean)registerChartTooltip(c,points.map((point,i)=>({
+        x:point.x-12,y:point.y-12,w:24,h:24,
+        label:`Ponto ${i+1}: ${fmtBRL(point.value)}`
+      })));
     }
     function drawBars(id,labels,datasets){
       const c=document.getElementById(id);if(!c)return;const ctx=prepCanvas(c),w=c.clientWidth,h=c.clientHeight,pad={l:56,r:12,t:16,b:34};
-      ctx.clearRect(0,0,w,h);const max=Math.max(1,...datasets.flatMap(d=>d.data))*1.15;ctx.strokeStyle='rgba(120,145,184,.16)';ctx.fillStyle='#91a2bd';ctx.font='12px Segoe UI';
+      ctx.clearRect(0,0,w,h);const max=Math.max(1,...datasets.flatMap(d=>d.data))*1.15;ctx.strokeStyle='rgba(120,145,184,.16)';ctx.fillStyle='#000000';ctx.font='12px Segoe UI';
       for(let i=0;i<5;i++){const y=pad.t+i*(h-pad.t-pad.b)/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText('R$ '+Math.round(max-(max*i/4)).toLocaleString('pt-BR'),8,y+4)}
       const groupW=(w-pad.l-pad.r)/labels.length,barW=Math.min(24,(groupW-18)/datasets.length);
-      labels.forEach((lab,i)=>{ctx.fillStyle='#91a2bd';ctx.fillText(lab,pad.l+i*groupW+groupW/2-12,h-10);datasets.forEach((ds,j)=>{const bh=(ds.data[i]/max)*(h-pad.t-pad.b);const x=pad.l+i*groupW+groupW/2-(barW*datasets.length)/2+j*barW+j*5;const y=h-pad.b-bh;roundRect(ctx,x,y,barW,bh,4,ds.color)})});
+      const tooltipItems=[];
+      labels.forEach((lab,i)=>{ctx.fillStyle='#000000';ctx.fillText(lab,pad.l+i*groupW+groupW/2-12,h-10);datasets.forEach((ds,j)=>{const bh=(ds.data[i]/max)*(h-pad.t-pad.b);const x=pad.l+i*groupW+groupW/2-(barW*datasets.length)/2+j*barW+j*5;const y=h-pad.b-bh;roundRect(ctx,x,y,barW,bh,4,ds.color);tooltipItems.push({x,y,w:barW,h:Math.max(bh,4),label:`${ds.name} em ${lab}: ${fmtBRL(ds.data[i])}`})})});
+      registerChartTooltip(c,tooltipItems);
     }
     function drawHorizontalBars(id,labels,values,colors){
       const c=document.getElementById(id);if(!c)return;const ctx=prepCanvas(c),w=c.clientWidth,h=c.clientHeight;
       ctx.clearRect(0,0,w,h);ctx.font='12px Segoe UI';
-      if(!values.length){ctx.fillStyle='#91a2bd';ctx.fillText('Sem despesas neste mês',18,34);return}
+      if(!values.length){ctx.fillStyle='#000000';ctx.fillText('Sem despesas neste mês',18,34);registerChartTooltip(c,[]);return}
       const pad={l:126,r:86,t:20,b:18},rowH=(h-pad.t-pad.b)/values.length,max=Math.max(...values,1);
+      const tooltipItems=[];
       values.forEach((val,i)=>{
         const y=pad.t+i*rowH+rowH*.22;
         const barH=Math.min(22,rowH*.45);
         const barW=(w-pad.l-pad.r)*(val/max);
-        ctx.fillStyle='#cbd5e8';
+        ctx.fillStyle='#000000';
         ctx.fillText(labels[i],18,y+barH-2);
         ctx.fillStyle='rgba(120,145,184,.14)';
         roundRect(ctx,pad.l,y,w-pad.l-pad.r,barH,8,'rgba(120,145,184,.14)');
         roundRect(ctx,pad.l,y,barW,barH,8,colors[i%colors.length]);
-        ctx.fillStyle='#91a2bd';
+        ctx.fillStyle='#000000';
         ctx.fillText(fmtBRL(val),w-pad.r+14,y+barH-2);
+        tooltipItems.push({x:pad.l,y,w:Math.max(barW,4),h:barH,label:`${labels[i]}: ${fmtBRL(val)}`});
       });
+      registerChartTooltip(c,tooltipItems);
     }
     function drawDonut(id,values,colors){
       const c=document.getElementById(id);if(!c)return;const ctx=prepCanvas(c),w=c.clientWidth,h=c.clientHeight,r=Math.min(w,h)/2-9,cx=w/2,cy=h/2,total=values.reduce((a,b)=>a+(Number(b)||0),0)||1;let start=-Math.PI/2;ctx.clearRect(0,0,w,h);ctx.lineWidth=18;ctx.lineCap='butt';
-      values.forEach((v,i)=>{const end=start+(v/total)*Math.PI*2;ctx.beginPath();ctx.arc(cx,cy,r,start,end);ctx.strokeStyle=colors[i%colors.length];ctx.stroke();start=end});
+      const tooltipItems=[];
+      values.forEach((v,i)=>{const end=start+(v/total)*Math.PI*2;ctx.beginPath();ctx.arc(cx,cy,r,start,end);ctx.strokeStyle=colors[i%colors.length];ctx.stroke();tooltipItems.push({type:'arc',cx,cy,r,inner:r-12,start,end,label:`${Math.round((Number(v)||0)/total*100)}% · ${fmtBRL(v)}`});start=end});
       ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(15,23,42,.08)';ctx.stroke();
+      registerChartTooltip(c,tooltipItems);
     }
     function drawEvolution(){
       const vals=[];let acc=0;const labels=[];const now=new Date();
@@ -1705,6 +1719,46 @@
     }
     function prepCanvas(c){const dpr=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*dpr;c.height=h*dpr;const ctx=c.getContext('2d');ctx.scale(dpr,dpr);return ctx}
     function roundRect(ctx,x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.fill()}
+    function getChartTooltip(){
+      let tooltip=document.getElementById('chart-tooltip');
+      if(!tooltip){
+        tooltip=document.createElement('div');
+        tooltip.id='chart-tooltip';
+        tooltip.className='chart-tooltip';
+        document.body.appendChild(tooltip);
+      }
+      return tooltip;
+    }
+    function registerChartTooltip(canvas,items){
+      canvas.__tooltipItems=items||[];
+      if(canvas.__tooltipReady)return;
+      canvas.__tooltipReady=true;
+      canvas.addEventListener('mousemove',(event)=>{
+        const rect=canvas.getBoundingClientRect();
+        const x=event.clientX-rect.left;
+        const y=event.clientY-rect.top;
+        const item=(canvas.__tooltipItems||[]).find(entry=>{
+          if(entry.type==='arc'){
+            const dx=x-entry.cx,dy=y-entry.cy,dist=Math.sqrt(dx*dx+dy*dy);
+            const normalize=angle=>(angle+Math.PI*2)%(Math.PI*2);
+            let angle=normalize(Math.atan2(dy,dx));
+            const start=normalize(entry.start);
+            let end=normalize(entry.end);
+            if(end<start)end+=Math.PI*2;
+            if(angle<start)angle+=Math.PI*2;
+            return dist>=entry.inner&&dist<=entry.r+12&&angle>=start&&angle<=end;
+          }
+          return x>=entry.x&&x<=entry.x+entry.w&&y>=entry.y&&y<=entry.y+entry.h;
+        });
+        const tooltip=getChartTooltip();
+        if(!item){tooltip.style.display='none';return}
+        tooltip.textContent=item.label;
+        tooltip.style.left=Math.min(event.clientX+14,window.innerWidth-tooltip.offsetWidth-12)+'px';
+        tooltip.style.top=Math.max(12,event.clientY-34)+'px';
+        tooltip.style.display='block';
+      });
+      canvas.addEventListener('mouseleave',()=>{getChartTooltip().style.display='none'});
+    }
 
     function handleGlobalSearch(){const active=document.querySelector('.page.active')?.id.replace('page-','');if(active==='transacoes')renderTransacoes()}
     function exportCSV(){const rows=[['Data','Tipo','Descrição','Categoria','Conta','Tags','Valor'],...state.transacoes.map(t=>[t.data,t.tipo,t.desc,t.categoria,t.conta,t.tags,t.valor])];const csv=rows.map(r=>r.map(v=>`"${String(v||'').replaceAll('"','""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='financasa_export.csv';a.click();toast('Relatório exportado','success')}

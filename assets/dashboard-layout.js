@@ -27141,7 +27141,10 @@
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dashboard-drag-handle", "aria-hidden": "true", children: editing ? "::" : "" });
       }
       function KpiSaldo() {
-        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "kpi-card", children: [
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "kpi-card clickable-card", onClick: () => {
+          var _a;
+          return (_a = window.navTo) == null ? void 0 : _a.call(window, "contas");
+        }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "kpi-head", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "kpi-icon", children: "\u25A3" }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
@@ -27155,7 +27158,10 @@
         ] });
       }
       function KpiReceitas() {
-        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "kpi-card", children: [
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "kpi-card clickable-card", onClick: () => {
+          var _a;
+          return (_a = window.goToTransactionsFilter) == null ? void 0 : _a.call(window, "receita");
+        }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "kpi-head", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "kpi-icon", children: "\u2191" }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
@@ -27169,7 +27175,10 @@
         ] });
       }
       function KpiDespesas() {
-        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "kpi-card", children: [
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "kpi-card clickable-card", onClick: () => {
+          var _a;
+          return (_a = window.goToTransactionsFilter) == null ? void 0 : _a.call(window, "despesa");
+        }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "kpi-head", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "kpi-icon red", children: "\u2193" }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
@@ -27430,44 +27439,35 @@
           setLayouts(nextLayouts);
           saveLayouts(userId, nextLayouts);
         }
-        function resetLayout() {
-          const nextLayouts = defaultLayouts();
-          window.localStorage.removeItem(storageKey(userId));
-          setLayouts(nextLayouts);
-          scheduleDashboardRender();
-        }
-        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dashboard-layout-actions", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "btn btn-ghost", type: "button", onClick: resetLayout, children: "Restaurar padr\xE3o" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { ref: containerRef, children: mounted && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-            ResponsiveGridLayout,
-            {
-              className: "dashboard-editable-grid",
-              layouts,
-              breakpoints: BREAKPOINTS,
-              cols: COLS,
-              width,
-              rowHeight: 38,
-              margin: [16, 16],
-              containerPadding: [0, 0],
-              compactType: "vertical",
-              preventCollision: false,
-              isBounded: true,
-              useCSSTransforms: true,
-              draggableHandle: ".dashboard-drag-handle",
-              draggableCancel: ".dashboard-card-action, input, select, button, textarea, canvas, a",
-              isDraggable: editing && desktop,
-              isResizable: editing && desktop,
-              resizeHandles: ["s", "e", "se"],
-              onLayoutChange: handleLayoutChange,
-              onDragStop: scheduleDashboardRender,
-              onResize: scheduleDashboardRender,
-              onResizeStop: scheduleDashboardRender,
-              onBreakpointChange: scheduleDashboardRender,
-              onWidthChange: scheduleDashboardRender,
-              children: cards
-            }
-          ) })
-        ] });
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_jsx_runtime2.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { ref: containerRef, children: mounted && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+          ResponsiveGridLayout,
+          {
+            className: "dashboard-editable-grid",
+            layouts,
+            breakpoints: BREAKPOINTS,
+            cols: COLS,
+            width,
+            rowHeight: 38,
+            margin: [16, 16],
+            containerPadding: [0, 0],
+            compactType: "vertical",
+            preventCollision: false,
+            isBounded: true,
+            useCSSTransforms: true,
+            draggableHandle: ".dashboard-drag-handle",
+            draggableCancel: ".dashboard-card-action, input, select, button, textarea, canvas, a",
+            isDraggable: editing && desktop,
+            isResizable: editing && desktop,
+            resizeHandles: ["s", "e", "se"],
+            onLayoutChange: handleLayoutChange,
+            onDragStop: scheduleDashboardRender,
+            onResize: scheduleDashboardRender,
+            onResizeStop: scheduleDashboardRender,
+            onBreakpointChange: scheduleDashboardRender,
+            onWidthChange: scheduleDashboardRender,
+            children: cards
+          }
+        ) }) });
       }
       var root = null;
       window.mountDashboardLayout = function mountDashboardLayout(userId = "anonimo") {
