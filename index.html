@@ -132,6 +132,12 @@
     .dashboard-layout-card.is-editing .dashboard-drag-handle{display:grid}
     .dashboard-layout-card.is-editing>.card,.dashboard-layout-card.is-editing>.kpi-card{outline:1px dashed rgba(7,150,109,.35);outline-offset:-4px}
     .dashboard-static-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);gap:16px;margin-top:16px}
+    .dashboard-fallback-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+    .dashboard-fallback-grid .kpi-card,.dashboard-fallback-grid .card{min-height:220px}
+    .dashboard-fallback-grid .span-3{grid-column:span 3}
+    .dashboard-fallback-grid .span-4{grid-column:span 4}
+    .dashboard-fallback-grid .span-6{grid-column:span 6}
+    .dashboard-fallback-grid .span-8{grid-column:span 8}
     .btn{
       border:1px solid rgba(83,106,146,.38);border-radius:8px;background:#101d31;color:white;
       padding:9px 14px;display:inline-flex;align-items:center;gap:8px;font-size:13px;
@@ -457,6 +463,8 @@
       .topbar{grid-template-columns:1fr;gap:14px}
       .top-actions,.export-row{justify-content:flex-start}
       .kpi-grid,.row-grid,.mini-grid,.content-grid,.right-col,.member-grid,.dashboard-static-grid{grid-template-columns:1fr}
+      .dashboard-fallback-grid{grid-template-columns:1fr}
+      .dashboard-fallback-grid .span-3,.dashboard-fallback-grid .span-4,.dashboard-fallback-grid .span-6,.dashboard-fallback-grid .span-8{grid-column:1}
       .dashboard-layout-actions{justify-content:flex-start}
       .quick-grid{grid-template-columns:repeat(4,1fr)}
     }
@@ -573,7 +581,61 @@
       </div>
 
       <section class="page active" id="page-dashboard">
-        <div id="dashboard-layout-root" class="dashboard-layout-root"></div>
+        <div id="dashboard-layout-root" class="dashboard-layout-root">
+          <div class="dashboard-fallback-grid">
+            <div class="kpi-card span-4">
+              <div class="kpi-head"><div class="kpi-icon">▣</div><div><div class="kpi-label">Saldo Total</div><div class="kpi-value" id="kpi-saldo">R$ 0,00</div><div class="kpi-sub">Todas as contas</div></div></div>
+              <div class="trend up" id="kpi-saldo-trend">▲ 0,0%</div>
+              <canvas class="spark" id="spark-saldo"></canvas>
+            </div>
+            <div class="kpi-card span-4">
+              <div class="kpi-head"><div class="kpi-icon">↑</div><div><div class="kpi-label">Receitas do Mês</div><div class="kpi-value" id="kpi-receita">R$ 0,00</div><div class="kpi-sub">vs mês anterior</div></div></div>
+              <div class="trend up" id="kpi-receita-trend">▲ 0,0%</div>
+              <canvas class="spark" id="spark-receita"></canvas>
+            </div>
+            <div class="kpi-card span-4">
+              <div class="kpi-head"><div class="kpi-icon red">↓</div><div><div class="kpi-label">Despesas do Mês</div><div class="kpi-value" id="kpi-despesa">R$ 0,00</div><div class="kpi-sub">vs mês anterior</div></div></div>
+              <div class="trend down" id="kpi-despesa-trend">▼ 0,0%</div>
+              <canvas class="spark" id="spark-despesa"></canvas>
+            </div>
+            <div class="card span-4">
+              <div class="card-title" style="margin-bottom:16px">Visão Geral do Mês</div>
+              <div class="donut-layout">
+                <div class="donut-center"><canvas id="month-donut"></canvas><div class="donut-text"><div id="month-rate">0%<span>Poupança</span></div></div></div>
+                <div class="breakdown" id="month-breakdown"></div>
+              </div>
+            </div>
+            <div class="card span-8">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Receitas vs Despesas</div>
+                  <div class="legend"><span><span class="dot" style="background:var(--green)"></span>Receitas</span><span><span class="dot" style="background:var(--red)"></span>Despesas</span></div>
+                </div>
+                <select id="range-chart" onchange="renderDashboard()"><option value="6">Últimos 6 meses</option><option value="12">Últimos 12 meses</option></select>
+              </div>
+              <div class="chart-box"><canvas id="bar-chart"></canvas></div>
+            </div>
+            <div class="card span-6">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Despesas por Categoria</div>
+                  <div class="caption">Ranking do mês atual</div>
+                </div>
+                <select onchange="renderDashboard()"><option>Este mês</option></select>
+              </div>
+              <div class="chart-box"><canvas id="cat-expense-chart"></canvas></div>
+            </div>
+            <div class="card span-3">
+              <div class="card-head"><div class="card-title">Metas</div><button class="btn btn-ghost" onclick="navTo('metas')">Ver todas</button></div>
+              <div class="goal-list" id="dash-goals"></div>
+            </div>
+            <div class="card span-3">
+              <div class="card-head"><div class="card-title">Contas e Carteiras</div><button class="btn btn-ghost" onclick="navTo('contas')">Ver todas</button></div>
+              <div class="account-list" id="dash-accounts"></div>
+              <div class="cash-line" style="border-bottom:0;font-weight:800"><span>Total</span><span id="dash-total">R$ 0,00</span></div>
+            </div>
+          </div>
+        </div>
         <div class="dashboard-static-grid">
           <div class="card">
             <div class="card-head"><div class="card-title">Gastos por Categoria</div><select onchange="renderDashboard()"><option>Este mês</option></select></div>

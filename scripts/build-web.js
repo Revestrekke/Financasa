@@ -4,16 +4,14 @@ const esbuild = require('esbuild')
 
 const root = path.join(__dirname, '..')
 const outDir = path.join(root, 'web-dist')
+const assetsDir = path.join(root, 'assets')
 
 async function build() {
-  await fs.rm(outDir, { recursive: true, force: true })
-  await fs.mkdir(outDir, { recursive: true })
-  await fs.copyFile(path.join(root, 'index.html'), path.join(outDir, 'index.html'))
-  await fs.cp(path.join(root, 'assets'), path.join(outDir, 'assets'), { recursive: true })
+  await fs.mkdir(assetsDir, { recursive: true })
   await esbuild.build({
     entryPoints: [path.join(root, 'src', 'dashboard-layout.jsx')],
     bundle: true,
-    outfile: path.join(outDir, 'assets', 'dashboard-layout.js'),
+    outfile: path.join(assetsDir, 'dashboard-layout.js'),
     format: 'iife',
     target: ['es2019'],
     jsx: 'automatic'
@@ -23,7 +21,11 @@ async function build() {
     fs.readFile(path.join(root, 'node_modules', 'react-resizable', 'css', 'styles.css'), 'utf8'),
     fs.readFile(path.join(root, 'src', 'dashboard-layout-extra.css'), 'utf8')
   ])
-  await fs.writeFile(path.join(outDir, 'assets', 'dashboard-layout.css'), dashboardCss.join('\n'), 'utf8')
+  await fs.writeFile(path.join(assetsDir, 'dashboard-layout.css'), dashboardCss.join('\n'), 'utf8')
+  await fs.rm(outDir, { recursive: true, force: true })
+  await fs.mkdir(outDir, { recursive: true })
+  await fs.copyFile(path.join(root, 'index.html'), path.join(outDir, 'index.html'))
+  await fs.cp(assetsDir, path.join(outDir, 'assets'), { recursive: true })
   await fs.writeFile(
     path.join(outDir, 'config.js'),
     `window.FINANCASA_CONFIG = ${JSON.stringify({
