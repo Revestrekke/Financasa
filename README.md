@@ -41,7 +41,7 @@ Use o serviço **Static Site** do Render. O arquivo `render.yaml` já define:
 Se você já criou um **Web Service** no Render, também funciona com:
 
 - Build Command: `npm ci && npm run build:web`
-- Start Command: `npm start`
+- Start Command: `npm start` ou `node main.js`
 
 Para evitar a tela de erro antiga, faça deploy do commit mais recente da branch `main`.
 
