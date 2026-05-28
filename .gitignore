@@ -1,0 +1,35 @@
+# Dependências
+node_modules/
+
+# Builds
+dist/
+build/
+out/
+.codex-asar-work*/
+
+# Electron
+release/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Ambiente
+.env
+
+# Cache
+.cache/
+.temp/
+
+# Arquivos gerados
+*.exe
