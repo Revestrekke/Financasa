@@ -27030,8 +27030,10 @@
         "receitas-mes",
         "despesas-mes",
         "receitas-despesas",
+        "indicadores-executivos",
         "visao-mes",
         "orcamento",
+        "alertas",
         "metas",
         "contas-carteiras",
         "gastos-categoria",
@@ -27045,13 +27047,15 @@
         { i: "receitas-mes", x: 4, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
         { i: "despesas-mes", x: 8, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
         { i: "receitas-despesas", x: 0, y: 3, w: 5, h: 7, minW: 3, minH: 4 },
-        { i: "visao-mes", x: 5, y: 3, w: 3, h: 7, minW: 3, minH: 4 },
-        { i: "orcamento", x: 8, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
-        { i: "gastos-categoria", x: 0, y: 10, w: 8, h: 7, minW: 3, minH: 4 },
-        { i: "acoes-rapidas", x: 8, y: 10, w: 4, h: 7, minW: 3, minH: 3 },
-        { i: "ultimas-transacoes", x: 0, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
-        { i: "metas", x: 4, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
-        { i: "contas-carteiras", x: 8, y: 17, w: 4, h: 5, minW: 2, minH: 3 }
+        { i: "indicadores-executivos", x: 5, y: 3, w: 3, h: 7, minW: 3, minH: 4 },
+        { i: "visao-mes", x: 8, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
+        { i: "orcamento", x: 0, y: 10, w: 4, h: 7, minW: 3, minH: 4 },
+        { i: "gastos-categoria", x: 4, y: 10, w: 5, h: 7, minW: 3, minH: 4 },
+        { i: "alertas", x: 9, y: 10, w: 3, h: 7, minW: 2, minH: 4 },
+        { i: "acoes-rapidas", x: 0, y: 17, w: 4, h: 6, minW: 3, minH: 3 },
+        { i: "ultimas-transacoes", x: 4, y: 17, w: 4, h: 6, minW: 2, minH: 3 },
+        { i: "metas", x: 8, y: 17, w: 4, h: 6, minW: 2, minH: 3 },
+        { i: "contas-carteiras", x: 0, y: 23, w: 12, h: 5, minW: 2, minH: 3 }
       ];
       function cloneLayout2(layout) {
         return layout.map((item) => ({ ...item }));
@@ -27265,6 +27269,24 @@
           ] })
         ] });
       }
+      function ExecutiveMetricsCard() {
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-head", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Indicadores Estrat\xE9gicos" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "caption", children: "Sa\xFAde financeira" })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "metric-stack", id: "executive-metrics" })
+        ] });
+      }
+      function AlertsCard() {
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-head", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Alertas" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "caption", children: "Pr\xF3ximos riscos" })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "alert-list", id: "dash-alerts" })
+        ] });
+      }
       function GoalsCard() {
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card-head", children: [
@@ -27343,7 +27365,7 @@
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("button", { className: "quick-action dashboard-card-action", onClick: () => {
               var _a;
-              return (_a = window.toast) == null ? void 0 : _a.call(window, "Transfer\xEAncias em breve", "success");
+              return (_a = window.openTransferModal) == null ? void 0 : _a.call(window);
             }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "quick-icon", children: "\u21C4" }),
               "Transfer\xEAncia"
@@ -27397,7 +27419,9 @@
         "despesas-mes": KpiDespesas,
         "visao-mes": MonthOverview,
         "receitas-despesas": RevenueExpenseChart,
+        "indicadores-executivos": ExecutiveMetricsCard,
         orcamento: BudgetCard,
+        alertas: AlertsCard,
         metas: GoalsCard,
         "contas-carteiras": AccountsCard,
         "gastos-categoria": CategoryTotalCard,

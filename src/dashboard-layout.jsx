@@ -7,8 +7,10 @@ const CARD_IDS = [
   'receitas-mes',
   'despesas-mes',
   'receitas-despesas',
+  'indicadores-executivos',
   'visao-mes',
   'orcamento',
+  'alertas',
   'metas',
   'contas-carteiras',
   'gastos-categoria',
@@ -24,13 +26,15 @@ const DEFAULT_LG_LAYOUT = [
   { i: 'receitas-mes', x: 4, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
   { i: 'despesas-mes', x: 8, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
   { i: 'receitas-despesas', x: 0, y: 3, w: 5, h: 7, minW: 3, minH: 4 },
-  { i: 'visao-mes', x: 5, y: 3, w: 3, h: 7, minW: 3, minH: 4 },
-  { i: 'orcamento', x: 8, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
-  { i: 'gastos-categoria', x: 0, y: 10, w: 8, h: 7, minW: 3, minH: 4 },
-  { i: 'acoes-rapidas', x: 8, y: 10, w: 4, h: 7, minW: 3, minH: 3 },
-  { i: 'ultimas-transacoes', x: 0, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
-  { i: 'metas', x: 4, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
-  { i: 'contas-carteiras', x: 8, y: 17, w: 4, h: 5, minW: 2, minH: 3 }
+  { i: 'indicadores-executivos', x: 5, y: 3, w: 3, h: 7, minW: 3, minH: 4 },
+  { i: 'visao-mes', x: 8, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
+  { i: 'orcamento', x: 0, y: 10, w: 4, h: 7, minW: 3, minH: 4 },
+  { i: 'gastos-categoria', x: 4, y: 10, w: 5, h: 7, minW: 3, minH: 4 },
+  { i: 'alertas', x: 9, y: 10, w: 3, h: 7, minW: 2, minH: 4 },
+  { i: 'acoes-rapidas', x: 0, y: 17, w: 4, h: 6, minW: 3, minH: 3 },
+  { i: 'ultimas-transacoes', x: 4, y: 17, w: 4, h: 6, minW: 2, minH: 3 },
+  { i: 'metas', x: 8, y: 17, w: 4, h: 6, minW: 2, minH: 3 },
+  { i: 'contas-carteiras', x: 0, y: 23, w: 12, h: 5, minW: 2, minH: 3 }
 ];
 
 function cloneLayout(layout) {
@@ -224,6 +228,24 @@ function BudgetCard() {
   );
 }
 
+function ExecutiveMetricsCard() {
+  return (
+    <div className="card">
+      <div className="card-head"><div><div className="card-title">Indicadores Estratégicos</div><div className="caption">Saúde financeira</div></div></div>
+      <div className="metric-stack" id="executive-metrics"></div>
+    </div>
+  );
+}
+
+function AlertsCard() {
+  return (
+    <div className="card">
+      <div className="card-head"><div><div className="card-title">Alertas</div><div className="caption">Próximos riscos</div></div></div>
+      <div className="alert-list" id="dash-alerts"></div>
+    </div>
+  );
+}
+
 function GoalsCard() {
   return (
     <div className="card">
@@ -263,7 +285,7 @@ function QuickActionsCard() {
         <button className="quick-action dashboard-card-action" onClick={() => window.navTo?.('lancamentos')}><span className="quick-icon">+</span>Novo Lançamento</button>
         <button className="quick-action dashboard-card-action" onClick={() => { window.navTo?.('metas'); window.showAddMeta?.(); }}><span className="quick-icon">◎</span>Nova Meta</button>
         <button className="quick-action dashboard-card-action" onClick={() => { window.navTo?.('contas'); window.showAddConta?.(); }}><span className="quick-icon">▣</span>Nova Conta</button>
-        <button className="quick-action dashboard-card-action" onClick={() => window.toast?.('Transferências em breve', 'success')}><span className="quick-icon">⇄</span>Transferência</button>
+        <button className="quick-action dashboard-card-action" onClick={() => window.openTransferModal?.()}><span className="quick-icon">⇄</span>Transferência</button>
         <button className="quick-action dashboard-card-action" onClick={() => window.navTo?.('relatorios')}><span className="quick-icon">▤</span>Relatório</button>
         <button className="quick-action dashboard-card-action" onClick={() => window.navTo?.('orcamento')}><span className="quick-icon">◔</span>Orçamento</button>
         <button className="quick-action dashboard-card-action" onClick={() => window.navTo?.('investimentos')}><span className="quick-icon">↗</span>Investir</button>
@@ -288,7 +310,9 @@ const CARD_RENDERERS = {
   'despesas-mes': KpiDespesas,
   'visao-mes': MonthOverview,
   'receitas-despesas': RevenueExpenseChart,
+  'indicadores-executivos': ExecutiveMetricsCard,
   orcamento: BudgetCard,
+  alertas: AlertsCard,
   metas: GoalsCard,
   'contas-carteiras': AccountsCard,
   'gastos-categoria': CategoryTotalCard,
