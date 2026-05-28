@@ -1,19 +1,8 @@
 const path = require('path')
 const fs = require('fs/promises')
 const { app, BrowserWindow, shell, ipcMain, Menu } = require('electron')
-const { createClient } = require('@supabase/supabase-js')
 
 const getStatePath = () => path.join(app.getPath('userData'), 'financasa-state.json')
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://fzozyfzzihfltgebmufsp.supabase.co'
-const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2'
-const STATE_ID = process.env.FINANCASA_STATE_ID || 'default'
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-})
 
 async function loadLocalState() {
   try {
@@ -31,49 +20,8 @@ async function saveLocalState(state) {
   await fs.writeFile(getStatePath(), JSON.stringify(state, null, 2), 'utf8')
 }
 
-async function loadSupabaseState() {
-  const { data, error } = await supabase
-    .from('financasa_state')
-    .select('state')
-    .eq('id', STATE_ID)
-    .maybeSingle()
-
-  if (error) throw error
-  return data ? data.state : null
-}
-
-async function saveSupabaseState(state) {
-  const { error } = await supabase
-    .from('financasa_state')
-    .upsert({
-      id: STATE_ID,
-      state,
-      updated_at: new Date().toISOString()
-    })
-
-  if (error) throw error
-}
-
 ipcMain.handle('state:load', async () => {
-  const localState = await loadLocalState()
-
-  try {
-    const remoteState = await loadSupabaseState()
-    if (remoteState) {
-      await saveLocalState(remoteState)
-      return remoteState
-    }
-
-    if (localState) {
-      await saveSupabaseState(localState)
-      return localState
-    }
-
-    return null
-  } catch (error) {
-    console.error('Falha ao carregar estado do Supabase, usando cache local:', error)
-    return localState
-  }
+  return loadLocalState()
 })
 
 ipcMain.handle('state:save', async (_event, state) => {
@@ -84,13 +32,7 @@ ipcMain.handle('state:save', async (_event, state) => {
     return { ok: false, source: 'local', error: error.message }
   }
 
-  try {
-    await saveSupabaseState(state)
-    return { ok: true, source: 'supabase' }
-  } catch (error) {
-    console.error('Falha ao salvar estado no Supabase:', error)
-    return { ok: false, source: 'local', error: error.message }
-  }
+  return { ok: true, source: 'local' }
 })
 
 function createWindow() {

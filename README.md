@@ -45,11 +45,12 @@ O app Electron não deve ser usado como Web Service no Render, porque `npm start
 
 ## Banco de dados Supabase
 
-O app sincroniza o estado financeiro na tabela `financasa_state` do Supabase e mantém um cache local quando estiver offline.
+O app usa Supabase Auth e sincroniza o estado financeiro na tabela `financasa_state`. Cada usuário autenticado tem uma linha própria protegida por RLS.
 
 1. Abra o SQL Editor do Supabase.
 2. Execute o script `database/supabase-schema.sql`.
-3. Rode o app normalmente:
+3. Em Authentication > URL Configuration, configure o Site URL com a URL do Render quando o deploy estiver criado.
+4. Rode o app normalmente:
 
 ```bash
 npm start
@@ -60,7 +61,6 @@ Variáveis opcionais para trocar projeto/registro sem alterar código:
 ```bash
 SUPABASE_URL=https://seu-projeto.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sua-chave-publica
-FINANCASA_STATE_ID=default
 ```
 
 Nunca coloque `service_role` ou secret keys no app desktop. Se essas chaves forem expostas, rotacione no painel do Supabase.
@@ -83,5 +83,5 @@ A janela Electron foi configurada com:
 
 ## Observações
 
-- Os dados são sincronizados com Supabase e também mantidos em cache local no diretório de dados do app.
+- Os dados são sincronizados com Supabase por usuário autenticado e também mantidos em cache local por usuário.
 - Recomenda-se evolução para modularização do front-end e sanitização centralizada de conteúdo renderizado.

@@ -253,6 +253,30 @@
     .toast.success{border-color:rgba(9,217,143,.5);color:var(--green)}
     .toast.error{border-color:rgba(255,63,87,.5);color:#ff7b8d}
     .mobile-menu{display:none}
+    .auth-screen{
+      min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(360px,.9fr);
+      background:
+        radial-gradient(circle at 18% 18%,rgba(9,217,143,.16),transparent 34%),
+        radial-gradient(circle at 76% 16%,rgba(59,130,246,.2),transparent 30%),
+        linear-gradient(135deg,#030914 0%,#06101f 52%,#030914 100%);
+    }
+    .auth-copy{padding:56px;display:flex;flex-direction:column;justify-content:space-between;min-height:100vh}
+    .auth-copy .brand{width:max-content}
+    .auth-copy .brand-pro{margin-left:0}
+    .auth-copy h1{font-size:48px;line-height:1.02;letter-spacing:0;margin:36px 0 18px;max-width:660px}
+    .auth-copy p{color:#b8c7dd;font-size:17px;line-height:1.55;max-width:590px}
+    .auth-card-wrap{display:grid;place-items:center;padding:36px}
+    .auth-card{width:100%;max-width:430px;background:rgba(8,18,35,.94);border:1px solid rgba(84,106,146,.32);border-radius:8px;padding:26px;box-shadow:var(--shadow)}
+    .auth-card h2{font-size:24px;margin-bottom:8px}
+    .auth-card .caption{margin-bottom:22px}
+    .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#081323;border:1px solid rgba(81,104,144,.28);border-radius:8px;padding:5px;margin-bottom:18px}
+    .auth-tabs button{border:0;border-radius:6px;background:transparent;color:var(--muted);padding:10px;font-weight:750}
+    .auth-tabs button.active{background:rgba(9,217,143,.16);color:var(--green)}
+    .auth-card .btn{width:100%;justify-content:center;margin-top:14px}
+    .auth-mini-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:40px;max-width:760px}
+    .auth-mini{background:rgba(13,27,47,.72);border:1px solid rgba(84,106,146,.22);border-radius:8px;padding:16px}
+    .auth-mini strong{display:block;margin-bottom:6px}
+    .auth-mini span{color:var(--muted);font-size:13px;line-height:1.4}
 
     @media(max-width:1320px){
       .dashboard-grid{grid-template-columns:1fr}
@@ -262,6 +286,10 @@
     @media(max-width:1040px){
       body{overflow:auto}
       .app{grid-template-columns:1fr;height:auto;min-height:100vh}
+      .auth-screen{grid-template-columns:1fr}
+      .auth-copy{min-height:auto;padding:30px}
+      .auth-copy h1{font-size:34px}
+      .auth-mini-grid{grid-template-columns:1fr}
       .sidebar{position:fixed;z-index:20;inset:0 auto 0 0;width:268px;transform:translateX(-100%);transition:.2s}
       .sidebar.active{transform:translateX(0)}
       .shell{height:auto;min-height:100vh;padding:18px}
@@ -279,7 +307,46 @@
   </style>
 </head>
 <body>
-  <div class="app">
+  <section class="auth-screen" id="auth-screen">
+    <div class="auth-copy">
+      <div>
+        <div class="brand">
+          <div class="brand-mark">$</div>
+          <div class="brand-name">FinanCasa</div>
+          <div class="brand-pro">SaaS</div>
+        </div>
+        <h1>Controle financeiro familiar com dados seguros na nuvem.</h1>
+        <p>Organize contas, metas, orçamentos e relatórios em um painel online acessível de qualquer lugar.</p>
+        <div class="auth-mini-grid">
+          <div class="auth-mini"><strong>Multiusuário</strong><span>Cada conta acessa somente seus próprios dados.</span></div>
+          <div class="auth-mini"><strong>Supabase</strong><span>Autenticação, banco Postgres e políticas RLS.</span></div>
+          <div class="auth-mini"><strong>Web</strong><span>Pronto para deploy como Static Site no Render.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-card-wrap">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button id="auth-login-tab" class="active" onclick="setAuthMode('login')">Entrar</button>
+          <button id="auth-signup-tab" onclick="setAuthMode('signup')">Criar conta</button>
+        </div>
+        <h2 id="auth-title">Entrar no FinanCasa</h2>
+        <p class="caption" id="auth-copy">Acesse sua área financeira privada.</p>
+        <div class="form-group" style="margin-bottom:12px">
+          <label>E-mail</label>
+          <input type="email" id="auth-email" autocomplete="email" placeholder="voce@email.com">
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="auth-password" autocomplete="current-password" placeholder="Mínimo 6 caracteres">
+        </div>
+        <button class="btn btn-green" id="auth-submit" onclick="submitAuth()">Entrar</button>
+        <p class="caption" id="auth-message" style="margin-top:14px"></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="app" id="app-shell" style="display:none">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark">$</div>
@@ -289,8 +356,8 @@
       <div class="user-card">
         <div class="avatar">JS</div>
         <div>
-          <div class="user-title">João Silva</div>
-          <div class="user-sub">Conta Premium</div>
+          <div class="user-title" id="sidebar-user-name">Sua conta</div>
+          <div class="user-sub" id="sidebar-user-email">Conectado</div>
         </div>
         <div style="margin-left:auto;color:#b95cff">♛</div>
       </div>
@@ -333,7 +400,7 @@
       <div class="topbar">
         <div class="hello">
           <button class="btn btn-ghost mobile-menu" onclick="toggleMenu()">☰ Menu</button>
-          <h1>Olá, João!</h1>
+          <h1 id="hello-title">Olá!</h1>
           <p>Aqui está o resumo das suas finanças hoje.</p>
         </div>
         <div class="search">
@@ -345,7 +412,7 @@
           <button class="round-btn" onclick="navTo('lancamentos')">+</button>
           <button class="icon-btn" onclick="navTo('relatorios')">▣</button>
           <button class="icon-btn" onclick="toast('Sem novas notificações','success')">♢</button>
-          <button class="icon-btn">JS</button>
+          <button class="icon-btn" id="top-user-avatar" onclick="signOut()">--</button>
         </div>
       </div>
       <div class="export-row">
@@ -556,7 +623,8 @@
     const COLORS=['#09d98f','#3b82f6','#ff3f57','#a78bfa','#f59e0b','#e946a4','#14b8a6','#64748b'];
     const SUPABASE_URL='https://fzozyfzzihfltgebmufsp.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY='sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2';
-    const STATE_ID='default';
+    let authMode='login';
+    let currentUser=null;
 
     let state={
       transacoes:[],
@@ -579,29 +647,103 @@
 
     let browserSupabaseClient=null;
     function getStorageAdapter(){
-      if(window.financasaStorage)return window.financasaStorage;
       return browserSupabaseStorage;
     }
     function getBrowserSupabaseClient(){
       if(browserSupabaseClient)return browserSupabaseClient;
       if(!window.supabase?.createClient)return null;
       browserSupabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
-        auth:{autoRefreshToken:false,persistSession:false}
+        auth:{autoRefreshToken:true,persistSession:true}
       });
       return browserSupabaseClient;
+    }
+    function getUserInitials(user=currentUser){
+      const email=user?.email||'';
+      const name=email.split('@')[0]||'FC';
+      return name.slice(0,2).toUpperCase();
+    }
+    function localStateKey(){
+      return currentUser?.id?`fc_state_${currentUser.id}`:'fc_state';
+    }
+    function setAuthMode(mode){
+      authMode=mode;
+      document.getElementById('auth-login-tab').classList.toggle('active',mode==='login');
+      document.getElementById('auth-signup-tab').classList.toggle('active',mode==='signup');
+      setText('auth-title',mode==='login'?'Entrar no FinanCasa':'Criar sua conta');
+      setText('auth-copy',mode==='login'?'Acesse sua área financeira privada.':'Crie seu acesso para começar a controlar suas finanças.');
+      setText('auth-submit',mode==='login'?'Entrar':'Criar conta');
+      setText('auth-message','');
+    }
+    async function submitAuth(){
+      const client=getBrowserSupabaseClient();
+      if(!client){setText('auth-message','Não foi possível carregar o Supabase.');return}
+      const email=document.getElementById('auth-email').value.trim();
+      const password=document.getElementById('auth-password').value;
+      if(!email||!password){setText('auth-message','Informe e-mail e senha.');return}
+      setText('auth-message','Conectando...');
+      const response=authMode==='login'
+        ? await client.auth.signInWithPassword({email,password})
+        : await client.auth.signUp({email,password});
+      if(response.error){setText('auth-message',response.error.message);return}
+      if(authMode==='signup'&&!response.data.session){
+        setText('auth-message','Conta criada. Confira seu e-mail para confirmar o cadastro.');
+        return;
+      }
+      currentUser=response.data.session?.user;
+      if(!currentUser){setText('auth-message','Não foi possível iniciar a sessão.');return}
+      await startAuthenticatedApp(currentUser);
+    }
+    async function signOut(){
+      const client=getBrowserSupabaseClient();
+      await client?.auth.signOut();
+      currentUser=null;
+      document.getElementById('app-shell').style.display='none';
+      document.getElementById('auth-screen').style.display='grid';
+      setText('auth-message','');
+    }
+    function updateUserUi(user){
+      const email=user.email||'usuario@financasa';
+      const name=email.split('@')[0]||'usuário';
+      const initials=getUserInitials(user);
+      setText('sidebar-user-name',name);
+      setText('sidebar-user-email',email);
+      setText('hello-title',`Olá, ${name}!`);
+      setText('top-user-avatar',initials);
+      document.querySelector('.avatar').textContent=initials;
+    }
+    async function startAuthenticatedApp(user){
+      currentUser=user;
+      updateUserUi(user);
+      document.getElementById('auth-screen').style.display='none';
+      document.getElementById('app-shell').style.display='grid';
+      await init();
+    }
+    async function bootAuth(){
+      const client=getBrowserSupabaseClient();
+      if(!client){setText('auth-message','Não foi possível carregar o Supabase.');return}
+      const {data}=await client.auth.getSession();
+      const user=data.session?.user;
+      if(user){await startAuthenticatedApp(user);return}
+      document.getElementById('auth-screen').style.display='grid';
+      document.getElementById('app-shell').style.display='none';
     }
     const browserSupabaseStorage={
       async load(){
         const client=getBrowserSupabaseClient();
         if(!client)return null;
-        const {data,error}=await client.from('financasa_state').select('state').eq('id',STATE_ID).maybeSingle();
+        if(!currentUser)throw new Error('Usuário não autenticado');
+        const {data,error}=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
         if(error)throw error;
         return data?data.state:null;
       },
       async save(snapshot){
         const client=getBrowserSupabaseClient();
         if(!client)return{ok:false,source:'localStorage',error:'Supabase SDK não carregado'};
-        const {error}=await client.from('financasa_state').upsert({id:STATE_ID,state:snapshot,updated_at:new Date().toISOString()});
+        if(!currentUser)return{ok:false,source:'localStorage',error:'Usuário não autenticado'};
+        const {error}=await client.from('financasa_state').upsert(
+          {user_id:currentUser.id,state:snapshot,updated_at:new Date().toISOString()},
+          {onConflict:'user_id'}
+        );
         if(error)return{ok:false,source:'localStorage',error:error.message};
         return{ok:true,source:'supabase'};
       }
@@ -615,11 +757,11 @@
         try{
           const result=await getStorageAdapter().save(snapshot);
           if(!result?.ok){
-            localStorage.setItem('fc_state',JSON.stringify(snapshot));
+            localStorage.setItem(localStateKey(),JSON.stringify(snapshot));
             console.warn('Estado salvo apenas localmente:',result?.error||'Supabase indisponível');
           }
         }catch(error){
-          localStorage.setItem('fc_state',JSON.stringify(snapshot));
+          localStorage.setItem(localStateKey(),JSON.stringify(snapshot));
           console.warn('Falha ao salvar estado:',error);
         }
       },250);
@@ -633,7 +775,7 @@
       }
 
       try{
-        const legacy=JSON.parse(localStorage.getItem('fc_state')||'null');
+        const legacy=JSON.parse(localStorage.getItem(localStateKey())||localStorage.getItem('fc_state')||'null');
         if(legacy)state=Object.assign(state,legacy);
       }catch(error){
         console.warn('Falha ao migrar estado antigo:',error);
@@ -1084,7 +1226,7 @@
     function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2800)}
     window.addEventListener('resize',()=>renderDashboard());
     document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('global-search').focus()}});
-    init();
+    bootAuth();
   </script>
 </body>
 </html>
