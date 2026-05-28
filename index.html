@@ -548,11 +548,15 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const DEFAULT_CATS_DESPESA=['Aluguel','Alimentação','Transporte','Saúde','Lazer','Educação','Roupas','Contas','Outros'];
     const DEFAULT_CATS_RECEITA=['Salário','Freelance','Investimentos','Outras Receitas'];
     const QUICK=['Café R$8','Almoço R$35','Gasolina R$120','Mercado R$200','Farmácia R$50'];
     const COLORS=['#09d98f','#3b82f6','#ff3f57','#a78bfa','#f59e0b','#e946a4','#14b8a6','#64748b'];
+    const SUPABASE_URL='https://fzozyfzzihfltgebmufsp.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY='sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2';
+    const STATE_ID='default';
 
     let state={
       transacoes:[],
@@ -573,22 +577,56 @@
       tipoLanc:'despesa'
     };
 
+    let browserSupabaseClient=null;
+    function getStorageAdapter(){
+      if(window.financasaStorage)return window.financasaStorage;
+      return browserSupabaseStorage;
+    }
+    function getBrowserSupabaseClient(){
+      if(browserSupabaseClient)return browserSupabaseClient;
+      if(!window.supabase?.createClient)return null;
+      browserSupabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+        auth:{autoRefreshToken:false,persistSession:false}
+      });
+      return browserSupabaseClient;
+    }
+    const browserSupabaseStorage={
+      async load(){
+        const client=getBrowserSupabaseClient();
+        if(!client)return null;
+        const {data,error}=await client.from('financasa_state').select('state').eq('id',STATE_ID).maybeSingle();
+        if(error)throw error;
+        return data?data.state:null;
+      },
+      async save(snapshot){
+        const client=getBrowserSupabaseClient();
+        if(!client)return{ok:false,source:'localStorage',error:'Supabase SDK não carregado'};
+        const {error}=await client.from('financasa_state').upsert({id:STATE_ID,state:snapshot,updated_at:new Date().toISOString()});
+        if(error)return{ok:false,source:'localStorage',error:error.message};
+        return{ok:true,source:'supabase'};
+      }
+    };
+
     let saveTimer=null;
     function save(){
       clearTimeout(saveTimer);
       const snapshot=JSON.parse(JSON.stringify(state));
       saveTimer=setTimeout(async()=>{
         try{
-          const result=await window.financasaStorage?.save(snapshot);
-          if(!result?.ok)console.warn('Estado salvo apenas localmente:',result?.error||'Supabase indisponível');
+          const result=await getStorageAdapter().save(snapshot);
+          if(!result?.ok){
+            localStorage.setItem('fc_state',JSON.stringify(snapshot));
+            console.warn('Estado salvo apenas localmente:',result?.error||'Supabase indisponível');
+          }
         }catch(error){
+          localStorage.setItem('fc_state',JSON.stringify(snapshot));
           console.warn('Falha ao salvar estado:',error);
         }
       },250);
     }
     async function load(){
       try{
-        const saved=await window.financasaStorage?.load();
+        const saved=await getStorageAdapter().load();
         if(saved){state=Object.assign(state,saved);return}
       }catch(error){
         console.warn('Falha ao carregar estado externo:',error);

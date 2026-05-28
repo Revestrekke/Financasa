@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: financasa
+    runtime: static
+    buildCommand: npm ci && npm run build:web
+    staticPublishPath: ./web-dist
+    autoDeployTrigger: commit

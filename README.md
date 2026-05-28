@@ -25,6 +25,24 @@ npm start
 npm run build
 ```
 
+## Build web
+
+```bash
+npm run build:web
+```
+
+O build web gera os arquivos estáticos em `web-dist/`.
+
+## Deploy no Render
+
+Use o serviço **Static Site** do Render. O arquivo `render.yaml` já define:
+
+- Build command: `npm ci && npm run build:web`
+- Publish directory: `web-dist`
+- Branch: `main`
+
+O app Electron não deve ser usado como Web Service no Render, porque `npm start` abre uma janela desktop. Para hospedagem web, publique a versão estática.
+
 ## Banco de dados Supabase
 
 O app sincroniza o estado financeiro na tabela `financasa_state` do Supabase e mantém um cache local quando estiver offline.
