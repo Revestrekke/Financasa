@@ -302,42 +302,57 @@
       --radius:8px;
       --shadow:0 12px 28px rgba(15,23,42,.08);
     }
-    .app{background:#f6f8fb}
+    .app{background:#edf9f3}
     .sidebar{
-      background:#ffffff;
-      border-right:1px solid #dce5ee;
-      box-shadow:4px 0 20px rgba(15,23,42,.04);
+      background:#07966d;
+      border-right:0;
+      box-shadow:6px 0 24px rgba(7,150,109,.16);
     }
     .brand-mark{
-      border-color:#07966d;
-      color:#07966d;
+      border-color:rgba(255,255,255,.86);
+      color:#ffffff;
       box-shadow:none;
-      background:#ecfdf5;
+      background:rgba(255,255,255,.14);
     }
-    .brand-name,.pro-title,.card-title,.page-header h2,.auth-card h2,.tx-name,.goal-name,.account-name,.category-name{color:#172033}
-    .brand-pro{color:#07966d}
-    .user-card,.theme-pill,.search,.auth-mini{
+    .brand-name{color:#ffffff}
+    .pro-title,.card-title,.page-header h2,.auth-card h2,.tx-name,.goal-name,.account-name,.category-name{color:#172033}
+    .brand-pro{color:#d7fff0}
+    .profile-card{
+      width:100%;display:flex;align-items:center;gap:12px;text-align:left;
+      background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.26);
+      border-radius:8px;padding:12px;color:#ffffff;
+    }
+    .profile-card:hover{background:rgba(255,255,255,.2)}
+    .profile-label{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:#cfffea;font-weight:800}
+    .profile-title{font-size:13px;font-weight:800;color:#ffffff;margin-top:2px}
+    .profile-sub{font-size:12px;color:#ddfff1;margin-top:2px}
+    .profile-card .avatar{background:#ffffff;color:#07966d}
+    .theme-pill,.search,.auth-mini{
       background:#f8fafc;
       border-color:#dce5ee;
     }
     .user-title,.user-sub,.section-title,.hello p,.caption,.tx-meta,.goal-meta,.account-sub,label{color:#65758a}
-    .nav-item{color:#526174}
-    .nav-ico{color:#7b8798}
-    .nav-item:hover{background:#eef4f8;color:#172033}
+    .sidebar .section-title{color:#c8ffea}
+    .nav-item{color:#ecfff7}
+    .nav-ico{color:#d4ffed}
+    .nav-item:hover{background:rgba(255,255,255,.14);color:#ffffff}
     .nav-item.active{
-      background:#e8f7f1;
+      background:#ffffff;
       color:#076b50;
       box-shadow:none;
       font-weight:800;
     }
+    .nav-item.active .nav-ico{color:#076b50}
     .pro-card{
-      background:#f1f5f9;
-      border-color:#dce5ee;
+      background:rgba(255,255,255,.13);
+      border-color:rgba(255,255,255,.22);
     }
-    .pro-copy{color:#65758a}
-    .switch{background:#d8e1eb}
+    .pro-title{color:#ffffff}
+    .pro-copy{color:#e0fff2}
+    .theme-pill{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.22);color:#ffffff}
+    .switch{background:rgba(255,255,255,.24)}
     .switch:after{background:#ffffff;box-shadow:0 1px 4px rgba(15,23,42,.18)}
-    .shell{background:#f6f8fb}
+    .shell{background:#edf9f3}
     .search input{color:#172033}
     .icon-btn,.round-btn{
       background:#ffffff;
@@ -411,6 +426,12 @@
     .auth-card-wrap{background:rgba(255,255,255,.36)}
     .auth-copy h1{color:#172033}
     .auth-card{background:#ffffff}
+    .page-actions,.inline-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+    .member-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px}
+    .profile-summary{display:grid;grid-template-columns:58px minmax(0,1fr);gap:14px;align-items:center}
+    .profile-summary .avatar{width:58px;height:58px}
+    .member-row{display:grid;grid-template-columns:minmax(0,1fr) 130px auto;gap:12px;align-items:center}
+    .status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 10px;background:#e8f7f1;color:#076b50;font-size:11px;font-weight:800}
 
     @media(max-width:1320px){
       .dashboard-grid{grid-template-columns:1fr}
@@ -430,7 +451,7 @@
       .mobile-menu{display:inline-flex}
       .topbar{grid-template-columns:1fr;gap:14px}
       .top-actions,.export-row{justify-content:flex-start}
-      .kpi-grid,.row-grid,.mini-grid,.content-grid,.right-col{grid-template-columns:1fr}
+      .kpi-grid,.row-grid,.mini-grid,.content-grid,.right-col,.member-grid{grid-template-columns:1fr}
       .quick-grid{grid-template-columns:repeat(4,1fr)}
     }
     @media(max-width:640px){
@@ -452,7 +473,7 @@
         <h1>Controle financeiro familiar com dados seguros na nuvem.</h1>
         <p>Organize contas, metas, orçamentos e relatórios em um painel online acessível de qualquer lugar.</p>
         <div class="auth-mini-grid">
-          <div class="auth-mini"><strong>Multiusuário</strong><span>Cada conta acessa somente seus próprios dados.</span></div>
+          <div class="auth-mini"><strong>Multiusuário</strong><span>Compartilhe sua área financeira com usuários convidados.</span></div>
           <div class="auth-mini"><strong>Supabase</strong><span>Autenticação, banco Postgres e políticas RLS.</span></div>
           <div class="auth-mini"><strong>Web</strong><span>Pronto para deploy como Static Site no Render.</span></div>
         </div>
@@ -466,6 +487,10 @@
         </div>
         <h2 id="auth-title">Entrar no FinanCasa</h2>
         <p class="caption" id="auth-copy">Acesse sua área financeira privada.</p>
+        <div class="form-group" id="auth-name-wrap" style="display:none;margin-bottom:12px">
+          <label>Nome</label>
+          <input id="auth-name" autocomplete="name" placeholder="David">
+        </div>
         <div class="form-group" style="margin-bottom:12px">
           <label>E-mail</label>
           <input type="email" id="auth-email" autocomplete="email" placeholder="voce@email.com">
@@ -487,14 +512,14 @@
         <div class="brand-name">FinanCasa</div>
         <div class="brand-pro">PRO</div>
       </div>
-      <div class="user-card">
-        <div class="avatar">JS</div>
+      <button class="profile-card" type="button" onclick="navTo('usuarios')">
+        <div class="avatar" id="sidebar-avatar">FC</div>
         <div>
-          <div class="user-title" id="sidebar-user-name">Sua conta</div>
-          <div class="user-sub" id="sidebar-user-email">Conectado</div>
+          <div class="profile-label">Minha área</div>
+          <div class="profile-title">Perfil e usuários</div>
+          <div class="profile-sub" id="workspace-label">Área principal</div>
         </div>
-        <div style="margin-left:auto;color:#b95cff">♛</div>
-      </div>
+      </button>
 
       <div>
         <button class="nav-item active" data-page="dashboard"><span class="nav-ico">▣</span>Dashboard</button>
@@ -670,7 +695,7 @@
               <div class="form-group full"><label>Descrição</label><input id="f-desc" placeholder="Ex: Supermercado"></div>
               <div class="form-group full"><label>Tags</label><input id="f-tags" placeholder="pessoal, fixo"></div>
             </div>
-            <div style="display:flex;gap:10px;margin-top:18px"><button class="btn btn-green" style="flex:1" onclick="salvar()">Salvar Lançamento</button><button class="btn" onclick="limparForm()">Limpar</button></div>
+            <div style="display:flex;gap:10px;margin-top:18px"><button class="btn btn-green" id="lanc-save-btn" style="flex:1" onclick="salvar()">Salvar Lançamento</button><button class="btn" onclick="limparForm()">Limpar</button></div>
           </div>
           <div class="card"><div class="card-title">Lançamento Rápido</div><div id="quick-btns" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px"></div></div>
         </div>
@@ -720,14 +745,14 @@
       <section class="page" id="page-contas">
         <div class="page-header"><div><h2>Contas e Carteiras</h2><p class="caption">Gerencie contas bancárias, cartões e carteiras.</p></div><button class="btn btn-green" onclick="showAddConta()">Nova Conta</button></div>
         <div id="conta-form-wrap" class="card" style="display:none;margin-bottom:18px;max-width:760px">
-          <div class="card-title">Nova Conta</div>
+          <div class="card-title" id="conta-form-title">Nova Conta</div>
           <div class="form-grid" style="margin-top:14px">
             <div class="form-group full"><label>Nome</label><input id="c-nome" placeholder="Ex: Nubank"></div>
             <div class="form-group"><label>Tipo</label><select id="c-tipo"><option>Conta Corrente</option><option>Conta Poupança</option><option>Carteira Digital</option><option>Cartão de Crédito</option><option>Investimentos</option><option>Dinheiro</option></select></div>
             <div class="form-group"><label>Saldo Inicial</label><input type="number" id="c-saldo"></div>
             <div class="form-group"><label>Ícone</label><select id="c-icone"><option>🏦</option><option>💳</option><option>💵</option><option>📈</option><option>🟣</option></select></div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-green" onclick="salvarConta()">Adicionar Conta</button><button class="btn" onclick="hide('conta-form-wrap')">Cancelar</button></div>
+          <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-green" id="conta-save-btn" onclick="salvarConta()">Adicionar Conta</button><button class="btn" onclick="cancelContaForm()">Cancelar</button></div>
         </div>
         <div class="card"><div id="contas-list"></div></div>
       </section>
@@ -760,6 +785,8 @@
     const SUPABASE_PUBLISHABLE_KEY=window.FINANCASA_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2';
     let authMode='login';
     let currentUser=null;
+    let currentWorkspace=null;
+    let workspaceMembers=[];
 
     function createInitialState(){
       return{
@@ -795,8 +822,12 @@
     }
     function getUserInitials(user=currentUser){
       const email=user?.email||'';
-      const name=email.split('@')[0]||'FC';
+      const name=user?.user_metadata?.name||user?.user_metadata?.full_name||email.split('@')[0]||'FC';
       return name.slice(0,2).toUpperCase();
+    }
+    function getUserName(user=currentUser){
+      const email=user?.email||'usuario@financasa';
+      return user?.user_metadata?.name||user?.user_metadata?.full_name||email.split('@')[0]||'usuário';
     }
     function setAuthMode(mode){
       authMode=mode;
@@ -805,6 +836,7 @@
       setText('auth-title',mode==='login'?'Entrar no FinanCasa':'Criar sua conta');
       setText('auth-copy',mode==='login'?'Acesse sua área financeira privada.':'Crie seu acesso para começar a controlar suas finanças.');
       setText('auth-submit',mode==='login'?'Entrar':'Criar conta');
+      document.getElementById('auth-name-wrap').style.display=mode==='signup'?'block':'none';
       setText('auth-message','');
     }
     async function submitAuth(){
@@ -812,11 +844,13 @@
       if(!client){setText('auth-message','Não foi possível carregar o Supabase.');return}
       const email=document.getElementById('auth-email').value.trim();
       const password=document.getElementById('auth-password').value;
+      const name=(document.getElementById('auth-name').value||'').trim();
       if(!email||!password){setText('auth-message','Informe e-mail e senha.');return}
+      if(authMode==='signup'&&!name){setText('auth-message','Informe seu nome.');return}
       setText('auth-message','Conectando...');
       const response=authMode==='login'
         ? await client.auth.signInWithPassword({email,password})
-        : await client.auth.signUp({email,password});
+        : await client.auth.signUp({email,password,options:{data:{name,role:'admin'}}});
       if(response.error){setText('auth-message',response.error.message);return}
       if(authMode==='signup'&&!response.data.session){
         setText('auth-message','Conta criada. Confira seu e-mail para confirmar o cadastro.');
@@ -830,20 +864,19 @@
       const client=getBrowserSupabaseClient();
       await client?.auth.signOut();
       currentUser=null;
+      currentWorkspace=null;
+      workspaceMembers=[];
       state=createInitialState();
       document.getElementById('app-shell').style.display='none';
       document.getElementById('auth-screen').style.display='grid';
       setText('auth-message','');
     }
     function updateUserUi(user){
-      const email=user.email||'usuario@financasa';
-      const name=email.split('@')[0]||'usuário';
+      const name=getUserName(user);
       const initials=getUserInitials(user);
-      setText('sidebar-user-name',name);
-      setText('sidebar-user-email',email);
       setText('hello-title',`Olá, ${name}!`);
       setText('top-user-avatar',initials);
-      document.querySelector('.avatar').textContent=initials;
+      setText('sidebar-avatar',initials);
     }
     async function startAuthenticatedApp(user){
       currentUser=user;
@@ -866,20 +899,88 @@
       const client=getBrowserSupabaseClient();
       if(!client)throw new Error('Supabase SDK não carregado');
       if(!currentUser)throw new Error('Usuário não autenticado');
-      const {data,error}=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
-      if(error)throw error;
-      return data?data.state:null;
+      try{
+        await ensureProfile(client);
+        let {data,error}=await client
+          .from('financasa_workspaces')
+          .select('id,owner_id,name,state,created_at,updated_at')
+          .order('created_at',{ascending:true})
+          .limit(1)
+          .maybeSingle();
+        if(error)throw error;
+        if(!data){
+          let initial=createInitialState();
+          const legacy=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
+          if(!legacy.error&&legacy.data?.state)initial=legacy.data.state;
+          const workspaceName=`Finanças de ${getUserName(currentUser)}`;
+          const created=await client
+            .from('financasa_workspaces')
+            .insert({owner_id:currentUser.id,name:workspaceName,state:initial})
+            .select('id,owner_id,name,state,created_at,updated_at')
+            .single();
+          if(created.error)throw created.error;
+          data=created.data;
+          await client.from('financasa_workspace_members').upsert(
+            {workspace_id:data.id,user_id:currentUser.id,role:'admin'},
+            {onConflict:'workspace_id,user_id'}
+          );
+        }
+        currentWorkspace=data;
+        setText('workspace-label',data.name||'Minha área');
+        await loadWorkspaceMembers(client);
+        return data.state||null;
+      }catch(error){
+        if(!isMissingWorkspaceSchema(error))throw error;
+        const {data,error:fallbackError}=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
+        if(fallbackError)throw fallbackError;
+        currentWorkspace=null;
+        workspaceMembers=[];
+        setText('workspace-label','Área individual');
+        return data?data.state:null;
+      }
     }
     async function saveRemoteState(snapshot){
       const client=getBrowserSupabaseClient();
       if(!client)throw new Error('Supabase SDK não carregado');
       if(!currentUser)throw new Error('Usuário não autenticado');
+      if(currentWorkspace?.id){
+        const {error}=await client
+          .from('financasa_workspaces')
+          .update({state:snapshot,updated_at:new Date().toISOString()})
+          .eq('id',currentWorkspace.id);
+        if(error)throw error;
+        return{ok:true,source:'supabase-workspace'};
+      }
       const {error}=await client.from('financasa_state').upsert(
         {user_id:currentUser.id,state:snapshot,updated_at:new Date().toISOString()},
         {onConflict:'user_id'}
       );
       if(error)throw error;
       return{ok:true,source:'supabase'};
+    }
+    function isMissingWorkspaceSchema(error){
+      const msg=String(error?.message||'').toLowerCase();
+      return error?.code==='42P01'||msg.includes('financasa_workspaces')||msg.includes('financasa_profiles')||msg.includes('financasa_workspace_members');
+    }
+    async function ensureProfile(client=getBrowserSupabaseClient()){
+      if(!currentUser)return;
+      const email=(currentUser.email||'').toLowerCase();
+      const name=getUserName(currentUser);
+      const {error}=await client.from('financasa_profiles').upsert(
+        {id:currentUser.id,email,name,updated_at:new Date().toISOString()},
+        {onConflict:'id'}
+      );
+      if(error)throw error;
+    }
+    async function loadWorkspaceMembers(client=getBrowserSupabaseClient()){
+      if(!currentWorkspace?.id){workspaceMembers=[];return}
+      const {data,error}=await client
+        .from('financasa_workspace_members')
+        .select('user_id,role,created_at,financasa_profiles(id,email,name)')
+        .eq('workspace_id',currentWorkspace.id)
+        .order('created_at',{ascending:true});
+      if(error)throw error;
+      workspaceMembers=data||[];
     }
 
     let saveTimer=null;
@@ -980,6 +1081,7 @@
       else if(page==='relatorios')renderRelatorios();
       else if(page==='recorrentes')renderRecorrentes();
       else if(page==='investimentos')renderInvestimentos();
+      else if(page==='usuarios')renderUsuarios();
       else if(page==='fluxo')renderFluxo();
       else if(page==='indicadores')renderIndicadores();
       else renderSimplePage(page);
@@ -1084,9 +1186,16 @@
         return `<div class="goal-card ${editable?'editable':''}"><div class="goal-ico">${escapeHtml(m.icone||'◎')}</div><div><div class="goal-name">${escapeHtml(m.nome)}</div><div class="goal-meta">${fmtBRL(m.atual)} / ${fmtBRL(m.alvo)}${prazo}</div><div class="progress"><span style="width:${pct}%"></span></div></div><strong>${pct}%</strong>${actions}</div>`;
       }).join('')||'<div class="empty">Nenhuma meta criada.</div>';
     }
+    let editingTxId=null;
+    let editingContaId=null;
+
     function renderAccounts(elId='contas-list',limit=999){
       const items=state.contas.slice(0,limit);
-      document.getElementById(elId).innerHTML=items.map(c=>`<div class="account-card"><div class="account-ico">${c.icone||'▣'}</div><div><div class="account-name">${escapeHtml(c.nome)}</div><div class="account-sub">${escapeHtml(c.tipo)}</div></div><div class="money ${c.saldo>=0?'':'negative'}">${c.saldo<0?'-':''}${fmtBRL(c.saldo)}</div></div>`).join('');
+      const editable=elId==='contas-list';
+      document.getElementById(elId).innerHTML=items.map(c=>{
+        const actions=editable?`<div class="inline-actions"><button class="btn btn-ghost" onclick="editConta(${c.id})">Editar</button><button class="btn btn-danger" onclick="deleteConta(${c.id})">Remover</button></div>`:'';
+        return `<div class="account-card"><div class="account-ico">${escapeHtml(c.icone||'▣')}</div><div><div class="account-name">${escapeHtml(c.nome)}</div><div class="account-sub">${escapeHtml(c.tipo)}</div></div><div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap"><div class="money ${c.saldo>=0?'':'negative'}">${c.saldo<0?'-':''}${fmtBRL(c.saldo)}</div>${actions}</div></div>`;
+      }).join('');
     }
 
     function renderLancamentos(){
@@ -1110,13 +1219,25 @@
       if(!valor||valor<=0){toast('Valor inválido','error');return}
       const conta=document.getElementById('f-conta').value;
       const tipo=state.tipoLanc;
-      const tx={id:Date.now(),tipo,valor,categoria:document.getElementById('f-categoria').value,conta,desc:document.getElementById('f-desc').value||'',tags:document.getElementById('f-tags').value||'',data:document.getElementById('f-data').value||new Date().toISOString().slice(0,10)};
-      state.transacoes.push(tx);
+      const tx={id:editingTxId||Date.now(),tipo,valor,categoria:document.getElementById('f-categoria').value,conta,desc:document.getElementById('f-desc').value||'',tags:document.getElementById('f-tags').value||'',data:document.getElementById('f-data').value||new Date().toISOString().slice(0,10)};
+      if(editingTxId){
+        const old=state.transacoes.find(t=>t.id===editingTxId);
+        const oldAccount=state.contas.find(x=>x.nome===old?.conta);
+        if(oldAccount)oldAccount.saldo+=old.tipo==='receita'?-old.valor:old.valor;
+        state.transacoes=state.transacoes.map(t=>t.id===editingTxId?tx:t);
+      }else{
+        state.transacoes.push(tx);
+      }
       const c=state.contas.find(x=>x.nome===conta);
       if(c)c.saldo+=tipo==='receita'?valor:-valor;
-      save();limparForm();toast('Lançamento salvo','success');renderDashboard();
+      const msg=editingTxId?'Lançamento atualizado':'Lançamento salvo';
+      save();limparForm();toast(msg,'success');renderDashboard();
     }
-    function limparForm(){['f-valor','f-desc','f-tags'].forEach(id=>document.getElementById(id).value='')}
+    function limparForm(){
+      editingTxId=null;
+      ['f-valor','f-desc','f-tags'].forEach(id=>document.getElementById(id).value='');
+      setText('lanc-save-btn','Salvar Lançamento');
+    }
 
     function renderTransacoes(){
       const search=(document.getElementById('global-search').value||'').toLowerCase();
@@ -1128,7 +1249,7 @@
       if(cat)txs=txs.filter(t=>t.categoria===cat);
       if(search)txs=txs.filter(t=>[t.desc,t.categoria,t.conta,t.tags].some(v=>String(v||'').toLowerCase().includes(search)));
       setText('tx-count-label',txs.length+' registros');
-      document.getElementById('tx-tbody').innerHTML=txs.map(t=>`<tr><td>${fmtDate(t.data)}</td><td><span class="badge ${t.tipo==='receita'?'in':'out'}">${t.tipo}</span></td><td>${escapeHtml(t.desc||'-')}</td><td>${escapeHtml(t.categoria)}</td><td>${escapeHtml(t.conta)}</td><td>${escapeHtml(t.tags||'-')}</td><td class="${t.tipo==='receita'?'positive':'negative'}">${t.tipo==='receita'?'+':'-'}${fmtBRL(t.valor)}</td><td><button class="btn btn-danger" onclick="deleteTx(${t.id})">Remover</button></td></tr>`).join('');
+      document.getElementById('tx-tbody').innerHTML=txs.map(t=>`<tr><td>${fmtDate(t.data)}</td><td><span class="badge ${t.tipo==='receita'?'in':'out'}">${t.tipo}</span></td><td>${escapeHtml(t.desc||'-')}</td><td>${escapeHtml(t.categoria)}</td><td>${escapeHtml(t.conta)}</td><td>${escapeHtml(t.tags||'-')}</td><td class="${t.tipo==='receita'?'positive':'negative'}">${t.tipo==='receita'?'+':'-'}${fmtBRL(t.valor)}</td><td><div class="inline-actions"><button class="btn btn-ghost" onclick="editTx(${t.id})">Editar</button><button class="btn btn-danger" onclick="deleteTx(${t.id})">Remover</button></div></td></tr>`).join('');
       document.getElementById('tx-empty').style.display=txs.length?'none':'block';
       const meses=[...new Set(state.transacoes.map(t=>t.data?t.data.slice(0,7):'').filter(Boolean))].sort().reverse();
       const selMes=document.getElementById('filter-mes'),curMes=selMes.value;
@@ -1138,8 +1259,23 @@
       selCat.innerHTML='<option value="">Todas as categorias</option>'+cats.map(c=>`<option${c===curCat?' selected':''}>${escapeHtml(c)}</option>`).join('');
     }
     function setFiltro(f,el){state.filtroTx=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el?.classList.add('active');renderTransacoes()}
+    function editTx(id){
+      const tx=state.transacoes.find(t=>t.id===id);if(!tx)return;
+      navTo('lancamentos');
+      setTipo(tx.tipo);
+      editingTxId=id;
+      document.getElementById('f-valor').value=Number(tx.valor)||0;
+      document.getElementById('f-data').value=tx.data||new Date().toISOString().slice(0,10);
+      document.getElementById('f-categoria').value=tx.categoria||'';
+      document.getElementById('f-conta').value=tx.conta||'';
+      document.getElementById('f-desc').value=tx.desc||'';
+      document.getElementById('f-tags').value=tx.tags||'';
+      setText('lanc-save-btn','Salvar Alterações');
+      document.getElementById('f-valor').focus();
+    }
     function deleteTx(id){
       const tx=state.transacoes.find(t=>t.id===id);if(!tx)return;
+      if(!confirm(`Remover a transação "${tx.desc||tx.categoria}"?`))return;
       const c=state.contas.find(x=>x.nome===tx.conta);if(c)c.saldo+=tx.tipo==='receita'?-tx.valor:tx.valor;
       state.transacoes=state.transacoes.filter(t=>t.id!==id);save();renderTransacoes();renderDashboard();toast('Transação removida','success');
     }
@@ -1149,7 +1285,7 @@
     function renderCategoriaGrupo(tipo,elId){
       document.getElementById(elId).innerHTML=getCategorias(tipo).map((cat,i)=>{
         const used=state.transacoes.some(t=>t.tipo===tipo&&t.categoria===cat);
-        return `<div class="list-card"><div><div class="account-name">${escapeHtml(cat)}</div><div class="account-sub">${used?'Em uso em lançamentos':'Disponível'}</div></div><button class="btn btn-danger" onclick="deleteCategoria('${tipo}',${i})">Remover</button></div>`;
+        return `<div class="list-card"><div><div class="account-name">${escapeHtml(cat)}</div><div class="account-sub">${used?'Em uso em lançamentos':'Disponível'}</div></div><div class="inline-actions"><button class="btn btn-ghost" onclick="editCategoria('${tipo}',${i})">Editar</button><button class="btn btn-danger" onclick="deleteCategoria('${tipo}',${i})">Remover</button></div></div>`;
       }).join('');
     }
     function salvarCategoria(tipo){
@@ -1162,8 +1298,22 @@
     function deleteCategoria(tipo,index){
       const cat=getCategorias(tipo)[index];if(!cat)return;
       if(state.transacoes.some(t=>t.tipo===tipo&&t.categoria===cat)){toast('Categoria em uso não pode ser removida','error');return}
+      if(!confirm(`Remover a categoria "${cat}"?`))return;
       state.categorias[tipo]=getCategorias(tipo).filter((_,i)=>i!==index);if(tipo==='despesa')delete state.orcamento[cat];
       save();renderCategorias();renderOrcamento();toast('Categoria removida','success');
+    }
+    function editCategoria(tipo,index){
+      const cat=getCategorias(tipo)[index];if(!cat)return;
+      const nome=(prompt('Novo nome da categoria:',cat)||'').trim();
+      if(!nome||nome===cat)return;
+      if(getCategorias(tipo).some((c,i)=>i!==index&&c.toLowerCase()===nome.toLowerCase())){toast('Categoria já cadastrada','error');return}
+      state.categorias[tipo]=getCategorias(tipo).map((c,i)=>i===index?nome:c);
+      state.transacoes.forEach(t=>{if(t.tipo===tipo&&t.categoria===cat)t.categoria=nome});
+      if(tipo==='despesa'&&Object.prototype.hasOwnProperty.call(state.orcamento,cat)){
+        state.orcamento[nome]=state.orcamento[cat];
+        delete state.orcamento[cat];
+      }
+      save();renderCategorias();renderLancamentos();renderTransacoes();renderOrcamento();renderDashboard();toast('Categoria atualizada','success');
     }
 
     function renderOrcamento(){
@@ -1222,11 +1372,49 @@
     }
 
     function renderContas(){renderAccounts('contas-list')}
-    function showAddConta(){show('conta-form-wrap')}
+    function resetContaForm(){
+      editingContaId=null;
+      ['c-nome','c-saldo'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('c-tipo').value='Conta Corrente';
+      document.getElementById('c-icone').value='🏦';
+      setText('conta-form-title','Nova Conta');
+      setText('conta-save-btn','Adicionar Conta');
+    }
+    function showAddConta(){resetContaForm();show('conta-form-wrap')}
+    function cancelContaForm(){resetContaForm();hide('conta-form-wrap')}
+    function editConta(id){
+      const conta=state.contas.find(c=>c.id===id);if(!conta)return;
+      editingContaId=id;
+      document.getElementById('c-nome').value=conta.nome||'';
+      document.getElementById('c-tipo').value=conta.tipo||'Conta Corrente';
+      document.getElementById('c-saldo').value=Number(conta.saldo)||0;
+      document.getElementById('c-icone').value=conta.icone||'🏦';
+      setText('conta-form-title','Editar Conta');
+      setText('conta-save-btn','Salvar Alterações');
+      show('conta-form-wrap');
+      document.getElementById('c-nome').focus();
+    }
     function salvarConta(){
       const nome=document.getElementById('c-nome').value.trim();if(!nome){toast('Nome obrigatório','error');return}
-      state.contas.push({id:Date.now(),nome,tipo:document.getElementById('c-tipo').value,saldo:parseFloat(document.getElementById('c-saldo').value)||0,icone:document.getElementById('c-icone').value});
-      ['c-nome','c-saldo'].forEach(id=>document.getElementById(id).value='');hide('conta-form-wrap');save();renderContas();renderDashboard();renderLancamentos();toast('Conta adicionada','success');
+      const payload={nome,tipo:document.getElementById('c-tipo').value,saldo:parseFloat(document.getElementById('c-saldo').value)||0,icone:document.getElementById('c-icone').value};
+      if(editingContaId!==null){
+        const conta=state.contas.find(c=>c.id===editingContaId);if(!conta)return;
+        const oldName=conta.nome;
+        Object.assign(conta,payload);
+        state.transacoes.forEach(t=>{if(t.conta===oldName)t.conta=nome});
+      }else{
+        state.contas.push({id:Date.now(),...payload});
+      }
+      const msg=editingContaId!==null?'Conta atualizada':'Conta adicionada';
+      resetContaForm();hide('conta-form-wrap');save();renderContas();renderDashboard();renderLancamentos();renderTransacoes();toast(msg,'success');
+    }
+    function deleteConta(id){
+      const conta=state.contas.find(c=>c.id===id);if(!conta)return;
+      if(state.transacoes.some(t=>t.conta===conta.nome)){toast('Conta em uso não pode ser removida','error');return}
+      if(!confirm(`Remover a conta "${conta.nome}"?`))return;
+      state.contas=state.contas.filter(c=>c.id!==id);
+      if(editingContaId===id)cancelContaForm();
+      save();renderContas();renderDashboard();renderLancamentos();toast('Conta removida','success');
     }
 
     function renderRelatorios(){
@@ -1246,45 +1434,201 @@
     }
     function renderFluxo(){const {rec,dep,saldo}=getMesSummary();renderSimplePage('fluxo','Fluxo de Caixa','Acompanhe entradas, saídas e saldo projetado.');document.getElementById('page-fluxo').querySelector('.card').innerHTML=`<div class="card-title">Fluxo de Caixa</div><div style="margin-top:14px"><div class="cash-line"><span>Saldo Anterior</span><strong>${fmtBRL(Math.max(getSaldoTotal()-saldo,0))}</strong></div><div class="cash-line"><span>Entradas</span><strong class="positive">+ ${fmtBRL(rec)}</strong></div><div class="cash-line"><span>Saídas</span><strong class="negative">- ${fmtBRL(dep)}</strong></div><div class="cash-line" style="border-bottom:0"><span>Saldo Atual</span><strong style="color:#38a7ff">${fmtBRL(saldo)}</strong></div></div><div class="chart-box"><canvas id="cash-flow-chart"></canvas></div>`;drawLine('cash-flow-chart',[8,11,18,14,10,12,20,28,26,21,18,23,30,29,35,44,47,42],COLORS[3])}
     function renderIndicadores(){const {rec,dep,saldo}=getMesSummary();renderSimplePage('indicadores','Indicadores','Métricas principais do mês.');document.getElementById('page-indicadores').querySelector('.card').innerHTML=`<div class="kpi-grid"><div class="kpi-card"><div class="kpi-label">Taxa de poupança</div><div class="kpi-value">${rec?Math.round(saldo/rec*100):0}%</div></div><div class="kpi-card"><div class="kpi-label">Comprometimento</div><div class="kpi-value">${rec?Math.round(dep/rec*100):0}%</div></div><div class="kpi-card"><div class="kpi-label">Saldo do mês</div><div class="kpi-value">${fmtBRL(saldo)}</div></div></div>`}
+    let editingRecorrenteId=null;
+    let editingInvestimentoId=null;
+
     function renderRecorrentes(){
       const cats=[...getCategorias('despesa'),...getCategorias('receita')];
       document.getElementById('page-recorrentes').innerHTML=`<div class="page-header"><div><h2>Recorrentes</h2><p class="caption">Lançamentos fixos para aluguel, assinaturas, salários e contas mensais.</p></div></div>
-      <div class="content-grid"><div class="card"><div class="card-title">Novo Recorrente</div><div class="form-grid" style="margin-top:14px">
+      <div class="content-grid"><div class="card"><div class="card-title" id="rec-form-title">Novo Recorrente</div><div class="form-grid" style="margin-top:14px">
       <div class="form-group full"><label>Descrição</label><input id="r-desc" placeholder="Ex: Internet"></div>
       <div class="form-group"><label>Tipo</label><select id="r-tipo"><option value="despesa">Despesa</option><option value="receita">Receita</option></select></div>
       <div class="form-group"><label>Categoria</label><select id="r-cat">${cats.map(c=>`<option>${escapeHtml(c)}</option>`).join('')}</select></div>
       <div class="form-group"><label>Valor</label><input type="number" id="r-valor" min="0" step="0.01"></div>
       <div class="form-group"><label>Dia do mês</label><input type="number" id="r-dia" min="1" max="31" value="1"></div></div>
-      <button class="btn btn-green" style="margin-top:16px" onclick="salvarRecorrente()">Adicionar Recorrente</button></div>
+      <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-green" id="rec-save-btn" onclick="salvarRecorrente()">Adicionar Recorrente</button><button class="btn" onclick="cancelRecorrenteForm()">Cancelar</button></div></div>
       <div class="card"><div class="card-title">Agenda Mensal</div><div id="rec-list" style="margin-top:14px"></div></div></div>`;
-      document.getElementById('rec-list').innerHTML=state.recorrentes.map(r=>`<div class="list-card"><div><div class="account-name">${escapeHtml(r.desc)}</div><div class="account-sub">Dia ${r.dia} · ${escapeHtml(r.categoria)}</div></div><div style="display:flex;gap:8px;align-items:center"><strong class="${r.tipo==='receita'?'positive':'negative'}">${r.tipo==='receita'?'+':'-'}${fmtBRL(r.valor)}</strong><button class="btn btn-danger" onclick="deleteRecorrente(${r.id})">Remover</button></div></div>`).join('')||'<div class="empty">Nenhum recorrente cadastrado.</div>';
+      document.getElementById('rec-list').innerHTML=state.recorrentes.map(r=>`<div class="list-card"><div><div class="account-name">${escapeHtml(r.desc)}</div><div class="account-sub">Dia ${r.dia} · ${escapeHtml(r.categoria)}</div></div><div class="inline-actions"><strong class="${r.tipo==='receita'?'positive':'negative'}">${r.tipo==='receita'?'+':'-'}${fmtBRL(r.valor)}</strong><button class="btn btn-ghost" onclick="editRecorrente(${r.id})">Editar</button><button class="btn btn-danger" onclick="deleteRecorrente(${r.id})">Remover</button></div></div>`).join('')||'<div class="empty">Nenhum recorrente cadastrado.</div>';
+    }
+    function cancelRecorrenteForm(){editingRecorrenteId=null;renderRecorrentes()}
+    function editRecorrente(id){
+      const rec=state.recorrentes.find(r=>r.id===id);if(!rec)return;
+      renderRecorrentes();
+      editingRecorrenteId=id;
+      document.getElementById('r-desc').value=rec.desc||'';
+      document.getElementById('r-tipo').value=rec.tipo||'despesa';
+      document.getElementById('r-cat').value=rec.categoria||'';
+      document.getElementById('r-valor').value=Number(rec.valor)||0;
+      document.getElementById('r-dia').value=Number(rec.dia)||1;
+      setText('rec-form-title','Editar Recorrente');
+      setText('rec-save-btn','Salvar Alterações');
+      document.getElementById('r-desc').focus();
     }
     function salvarRecorrente(){
       const desc=document.getElementById('r-desc').value.trim(),valor=parseFloat(document.getElementById('r-valor').value);
       if(!desc||!valor){toast('Preencha descrição e valor','error');return}
-      state.recorrentes.push({id:Date.now(),desc,valor,tipo:document.getElementById('r-tipo').value,categoria:document.getElementById('r-cat').value,dia:parseInt(document.getElementById('r-dia').value,10)||1});
-      save();renderRecorrentes();toast('Recorrente adicionado','success');
+      const payload={desc,valor,tipo:document.getElementById('r-tipo').value,categoria:document.getElementById('r-cat').value,dia:parseInt(document.getElementById('r-dia').value,10)||1};
+      if(editingRecorrenteId!==null){
+        const rec=state.recorrentes.find(r=>r.id===editingRecorrenteId);if(!rec)return;
+        Object.assign(rec,payload);
+      }else{
+        state.recorrentes.push({id:Date.now(),...payload});
+      }
+      const msg=editingRecorrenteId!==null?'Recorrente atualizado':'Recorrente adicionado';
+      editingRecorrenteId=null;save();renderRecorrentes();toast(msg,'success');
     }
-    function deleteRecorrente(id){state.recorrentes=state.recorrentes.filter(r=>r.id!==id);save();renderRecorrentes();toast('Recorrente removido','success')}
+    function deleteRecorrente(id){
+      const rec=state.recorrentes.find(r=>r.id===id);if(!rec)return;
+      if(!confirm(`Remover o recorrente "${rec.desc}"?`))return;
+      state.recorrentes=state.recorrentes.filter(r=>r.id!==id);save();renderRecorrentes();toast('Recorrente removido','success')
+    }
     function renderInvestimentos(){
       const total=state.investimentos.reduce((s,i)=>s+(Number(i.valor)||0),0);
       document.getElementById('page-investimentos').innerHTML=`<div class="page-header"><div><h2>Investimentos</h2><p class="caption">Controle carteira, corretora e rentabilidade estimada.</p></div></div>
-      <div class="content-grid"><div class="card"><div class="card-title">Novo Investimento</div><div class="form-grid" style="margin-top:14px">
+      <div class="content-grid"><div class="card"><div class="card-title" id="inv-form-title">Novo Investimento</div><div class="form-grid" style="margin-top:14px">
       <div class="form-group full"><label>Nome</label><input id="i-nome" placeholder="Ex: Tesouro Selic"></div>
       <div class="form-group"><label>Tipo</label><select id="i-tipo"><option>Renda Fixa</option><option>Ações</option><option>Fundos</option><option>Cripto</option><option>Previdência</option></select></div>
       <div class="form-group"><label>Valor Atual</label><input type="number" id="i-valor" min="0" step="0.01"></div>
       <div class="form-group"><label>Rentabilidade %</label><input type="number" id="i-rent" step="0.01" value="0"></div></div>
-      <button class="btn btn-green" style="margin-top:16px" onclick="salvarInvestimento()">Adicionar Investimento</button></div>
+      <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-green" id="inv-save-btn" onclick="salvarInvestimento()">Adicionar Investimento</button><button class="btn" onclick="cancelInvestimentoForm()">Cancelar</button></div></div>
       <div class="card"><div class="card-title">Carteira</div><div class="kpi-card" style="box-shadow:none;margin:14px 0"><div class="kpi-label">Total Investido</div><div class="kpi-value positive">${fmtBRL(total)}</div></div><div id="inv-list"></div></div></div>`;
-      document.getElementById('inv-list').innerHTML=state.investimentos.map(i=>`<div class="list-card"><div><div class="account-name">${escapeHtml(i.nome)}</div><div class="account-sub">${escapeHtml(i.tipo)} · ${Number(i.rent||0).toFixed(2).replace('.',',')}%</div></div><div style="display:flex;gap:8px;align-items:center"><strong>${fmtBRL(i.valor)}</strong><button class="btn btn-danger" onclick="deleteInvestimento(${i.id})">Remover</button></div></div>`).join('')||'<div class="empty">Nenhum investimento cadastrado.</div>';
+      document.getElementById('inv-list').innerHTML=state.investimentos.map(i=>`<div class="list-card"><div><div class="account-name">${escapeHtml(i.nome)}</div><div class="account-sub">${escapeHtml(i.tipo)} · ${Number(i.rent||0).toFixed(2).replace('.',',')}%</div></div><div class="inline-actions"><strong>${fmtBRL(i.valor)}</strong><button class="btn btn-ghost" onclick="editInvestimento(${i.id})">Editar</button><button class="btn btn-danger" onclick="deleteInvestimento(${i.id})">Remover</button></div></div>`).join('')||'<div class="empty">Nenhum investimento cadastrado.</div>';
+    }
+    function cancelInvestimentoForm(){editingInvestimentoId=null;renderInvestimentos()}
+    function editInvestimento(id){
+      const inv=state.investimentos.find(i=>i.id===id);if(!inv)return;
+      renderInvestimentos();
+      editingInvestimentoId=id;
+      document.getElementById('i-nome').value=inv.nome||'';
+      document.getElementById('i-tipo').value=inv.tipo||'Renda Fixa';
+      document.getElementById('i-valor').value=Number(inv.valor)||0;
+      document.getElementById('i-rent').value=Number(inv.rent)||0;
+      setText('inv-form-title','Editar Investimento');
+      setText('inv-save-btn','Salvar Alterações');
+      document.getElementById('i-nome').focus();
     }
     function salvarInvestimento(){
       const nome=document.getElementById('i-nome').value.trim(),valor=parseFloat(document.getElementById('i-valor').value);
       if(!nome||!valor){toast('Preencha nome e valor','error');return}
-      state.investimentos.push({id:Date.now(),nome,tipo:document.getElementById('i-tipo').value,valor,rent:parseFloat(document.getElementById('i-rent').value)||0});
-      save();renderInvestimentos();toast('Investimento adicionado','success');
+      const payload={nome,tipo:document.getElementById('i-tipo').value,valor,rent:parseFloat(document.getElementById('i-rent').value)||0};
+      if(editingInvestimentoId!==null){
+        const inv=state.investimentos.find(i=>i.id===editingInvestimentoId);if(!inv)return;
+        Object.assign(inv,payload);
+      }else{
+        state.investimentos.push({id:Date.now(),...payload});
+      }
+      const msg=editingInvestimentoId!==null?'Investimento atualizado':'Investimento adicionado';
+      editingInvestimentoId=null;save();renderInvestimentos();toast(msg,'success');
     }
-    function deleteInvestimento(id){state.investimentos=state.investimentos.filter(i=>i.id!==id);save();renderInvestimentos();toast('Investimento removido','success')}
+    function deleteInvestimento(id){
+      const inv=state.investimentos.find(i=>i.id===id);if(!inv)return;
+      if(!confirm(`Remover o investimento "${inv.nome}"?`))return;
+      state.investimentos=state.investimentos.filter(i=>i.id!==id);save();renderInvestimentos();toast('Investimento removido','success')
+    }
+    function renderUsuarios(){
+      const email=currentUser?.email||'';
+      const name=getUserName(currentUser);
+      const owner=isWorkspaceOwner();
+      const members=normalizeMembers();
+      document.getElementById('page-usuarios').innerHTML=`<div class="page-header"><div><h2>Minha área</h2><p class="caption">Perfil, área financeira compartilhada e usuários com acesso.</p></div><span class="status-pill">${owner?'Administrador':'Convidado'}</span></div>
+      <div class="member-grid">
+        <div class="card">
+          <div class="card-title">Informações do Perfil</div>
+          <div class="profile-summary" style="margin:16px 0 18px">
+            <div class="avatar">${escapeHtml(getUserInitials(currentUser))}</div>
+            <div><div class="account-name">${escapeHtml(name)}</div><div class="account-sub">${escapeHtml(email)}</div><div class="account-sub">${escapeHtml(currentWorkspace?.name||'Área individual')}</div></div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group full"><label>Nome exibido</label><input id="profile-name" value="${escapeHtml(name)}"></div>
+            <div class="form-group full"><label>E-mail de acesso</label><input value="${escapeHtml(email)}" disabled></div>
+          </div>
+          <button class="btn btn-green" style="margin-top:16px" onclick="updateProfileInfo()">Salvar Perfil</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Adicionar Usuário</div>
+          <p class="caption" style="margin-top:8px">A pessoa precisa criar login no FinanCasa primeiro. Depois adicione o e-mail dela aqui.</p>
+          <div class="form-grid" style="margin-top:14px">
+            <div class="form-group full"><label>E-mail do usuário</label><input id="member-email" type="email" placeholder="pessoa@email.com" ${owner?'':'disabled'}></div>
+            <div class="form-group full"><label>Permissão</label><select id="member-role" ${owner?'':'disabled'}><option value="editor">Editor</option><option value="viewer">Visualizador</option><option value="admin">Administrador</option></select></div>
+          </div>
+          <button class="btn btn-green" style="margin-top:16px;width:100%;justify-content:center" onclick="addWorkspaceUser()" ${owner?'':'disabled'}>Adicionar na Minha Área</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <div class="card-head"><div><div class="card-title">Usuários com Acesso</div><div class="caption">${currentWorkspace?'Dados compartilhados na mesma área financeira.':'Execute o novo SQL do Supabase para ativar compartilhamento.'}</div></div></div>
+        <div id="members-list">${members.map(m=>memberRow(m,owner)).join('')||'<div class="empty">Nenhum usuário adicional cadastrado.</div>'}</div>
+      </div>`;
+    }
+    function normalizeMembers(){
+      const members=workspaceMembers.map(m=>{
+        const profile=Array.isArray(m.financasa_profiles)?m.financasa_profiles[0]:m.financasa_profiles;
+        return{user_id:m.user_id,role:m.role||'editor',email:profile?.email||'',name:profile?.name||profile?.email||'Usuário'};
+      });
+      if(currentUser&&!members.some(m=>m.user_id===currentUser.id)){
+        members.unshift({user_id:currentUser.id,role:isWorkspaceOwner()?'admin':'editor',email:currentUser.email||'',name:getUserName(currentUser)});
+      }
+      return members;
+    }
+    function memberRow(member,owner){
+      const isMe=member.user_id===currentUser?.id;
+      const lock=!owner||isMe;
+      const roleSelect=`<select onchange="changeMemberRole('${member.user_id}',this.value)" ${lock?'disabled':''}><option value="admin"${member.role==='admin'?' selected':''}>Administrador</option><option value="editor"${member.role==='editor'?' selected':''}>Editor</option><option value="viewer"${member.role==='viewer'?' selected':''}>Visualizador</option></select>`;
+      const remove=lock?'<span class="caption">Perfil atual</span>':`<button class="btn btn-danger" onclick="removeWorkspaceUser('${member.user_id}')">Remover</button>`;
+      return `<div class="list-card member-row"><div><div class="account-name">${escapeHtml(member.name)}</div><div class="account-sub">${escapeHtml(member.email)}${isMe?' · você':''}</div></div>${roleSelect}<div class="inline-actions">${remove}</div></div>`;
+    }
+    function isWorkspaceOwner(){return !!currentWorkspace&&currentWorkspace.owner_id===currentUser?.id}
+    async function updateProfileInfo(){
+      const client=getBrowserSupabaseClient();
+      const name=(document.getElementById('profile-name').value||'').trim();
+      if(!name){toast('Informe o nome do perfil','error');return}
+      const {error:authError}=await client.auth.updateUser({data:{name}});
+      if(authError){toast(authError.message,'error');return}
+      currentUser={...currentUser,user_metadata:{...(currentUser.user_metadata||{}),name}};
+      try{await ensureProfile(client)}catch(error){console.error(error)}
+      updateUserUi(currentUser);
+      renderUsuarios();
+      toast('Perfil atualizado','success');
+    }
+    async function addWorkspaceUser(){
+      if(!currentWorkspace?.id){toast('Execute o novo SQL do Supabase para ativar usuários.','error');return}
+      if(!isWorkspaceOwner()){toast('Somente o administrador pode adicionar usuários.','error');return}
+      const client=getBrowserSupabaseClient();
+      const email=(document.getElementById('member-email').value||'').trim().toLowerCase();
+      const role=document.getElementById('member-role').value||'editor';
+      if(!email){toast('Informe o e-mail do usuário','error');return}
+      if(email===(currentUser.email||'').toLowerCase()){toast('Você já está nesta área','error');return}
+      const {data:profile,error:profileError}=await client.from('financasa_profiles').select('id,email,name').eq('email',email).maybeSingle();
+      if(profileError){toast(profileError.message,'error');return}
+      if(!profile){toast('Usuário não encontrado. Peça para ele criar conta primeiro.','error');return}
+      const {error}=await client.from('financasa_workspace_members').upsert(
+        {workspace_id:currentWorkspace.id,user_id:profile.id,role},
+        {onConflict:'workspace_id,user_id'}
+      );
+      if(error){toast(error.message,'error');return}
+      await loadWorkspaceMembers(client);
+      renderUsuarios();
+      toast('Usuário adicionado à sua área','success');
+    }
+    async function changeMemberRole(userId,role){
+      if(!isWorkspaceOwner())return;
+      const client=getBrowserSupabaseClient();
+      const {error}=await client.from('financasa_workspace_members').update({role}).eq('workspace_id',currentWorkspace.id).eq('user_id',userId);
+      if(error){toast(error.message,'error');return}
+      await loadWorkspaceMembers(client);
+      renderUsuarios();
+      toast('Permissão atualizada','success');
+    }
+    async function removeWorkspaceUser(userId){
+      if(!isWorkspaceOwner())return;
+      const member=normalizeMembers().find(m=>m.user_id===userId);
+      if(!confirm(`Remover o acesso de "${member?.name||'usuário'}"?`))return;
+      const client=getBrowserSupabaseClient();
+      const {error}=await client.from('financasa_workspace_members').delete().eq('workspace_id',currentWorkspace.id).eq('user_id',userId);
+      if(error){toast(error.message,'error');return}
+      await loadWorkspaceMembers(client);
+      renderUsuarios();
+      toast('Usuário removido','success');
+    }
     function renderSimplePage(page,title,copy){
       const titles={recorrentes:['Recorrentes','Cadastre lançamentos fixos mensais.'],investimentos:['Investimentos','Acompanhe sua carteira e evolução.'],configuracoes:['Configurações','Ajustes gerais do aplicativo.'],usuarios:['Usuários e Acesso','Gerencie permissões e perfis.'],integracoes:['Integrações','Conecte bancos, planilhas e serviços.']};
       const [t,c]=title?[title,copy]:titles[page]||['Em breve','Funcionalidade em preparação.'];
