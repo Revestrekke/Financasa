@@ -88,8 +88,26 @@ function storageKey(userId) {
   return `financasa-dashboard-layout-${userId || 'anonimo'}`;
 }
 
+function removeLegacyCardsFromStorage(userId) {
+  try {
+    const key = storageKey(userId);
+    const raw = window.localStorage.getItem(key);
+    if (!raw || !raw.includes('planejamento')) return;
+    const layouts = JSON.parse(raw);
+    Object.keys(layouts || {}).forEach((breakpoint) => {
+      if (Array.isArray(layouts[breakpoint])) {
+        layouts[breakpoint] = layouts[breakpoint].filter((item) => CARD_IDS.includes(item.i));
+      }
+    });
+    window.localStorage.setItem(key, JSON.stringify(layouts));
+  } catch (error) {
+    console.warn('Não foi possível limpar cards antigos do dashboard:', error);
+  }
+}
+
 function loadLayouts(userId) {
   try {
+    removeLegacyCardsFromStorage(userId);
     const raw = window.localStorage.getItem(storageKey(userId));
     return raw ? normalizeLayouts(JSON.parse(raw)) : defaultLayouts();
   } catch (error) {
