@@ -40,7 +40,7 @@ Data da análise: 2026-04-30
 - Isso ocorre em múltiplos pontos de renderização da UI.
 - Arquivo: `index.html` (script inline).
 
-**Impacto:** risco de XSS persistente local (armazenado em `localStorage`) e quebra de layout/comportamento com caracteres especiais.
+**Impacto:** risco de XSS persistente (armazenado no estado sincronizado/cache local) e quebra de layout/comportamento com caracteres especiais.
 
 **Recomendação:** preferir `textContent` e criação de nós DOM com `createElement`; quando necessário, sanitizar dados antes de interpolar HTML.
 

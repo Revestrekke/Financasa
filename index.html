@@ -573,12 +573,41 @@
       tipoLanc:'despesa'
     };
 
-    function save(){localStorage.setItem('fc_state',JSON.stringify(state))}
-    function load(){try{const saved=JSON.parse(localStorage.getItem('fc_state')||'null');if(saved)state=Object.assign(state,saved)}catch(e){}}
-    load();
-    normalizeState();
-    seedDemoData();
-    save();
+    let saveTimer=null;
+    function save(){
+      clearTimeout(saveTimer);
+      const snapshot=JSON.parse(JSON.stringify(state));
+      saveTimer=setTimeout(async()=>{
+        try{
+          const result=await window.financasaStorage?.save(snapshot);
+          if(!result?.ok)console.warn('Estado salvo apenas localmente:',result?.error||'Supabase indisponível');
+        }catch(error){
+          console.warn('Falha ao salvar estado:',error);
+        }
+      },250);
+    }
+    async function load(){
+      try{
+        const saved=await window.financasaStorage?.load();
+        if(saved){state=Object.assign(state,saved);return}
+      }catch(error){
+        console.warn('Falha ao carregar estado externo:',error);
+      }
+
+      try{
+        const legacy=JSON.parse(localStorage.getItem('fc_state')||'null');
+        if(legacy)state=Object.assign(state,legacy);
+      }catch(error){
+        console.warn('Falha ao migrar estado antigo:',error);
+      }
+    }
+    async function init(){
+      await load();
+      normalizeState();
+      seedDemoData();
+      save();
+      renderDashboard();
+    }
 
     function normalizeState(){
       state.transacoes=Array.isArray(state.transacoes)?state.transacoes:[];
@@ -1017,7 +1046,7 @@
     function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2800)}
     window.addEventListener('resize',()=>renderDashboard());
     document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('global-search').focus()}});
-    renderDashboard();
+    init();
   </script>
 </body>
 </html>
