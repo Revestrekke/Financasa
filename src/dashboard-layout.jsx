@@ -238,8 +238,6 @@ function PlanningCard() {
       <div className="card-title">Planejamento Financeiro</div>
       <p className="caption" id="planning-copy" style={{ margin: '10px 0 14px' }}>Você está no caminho certo.</p>
       <div className="donut-center saving-donut"><canvas id="saving-donut"></canvas><div className="donut-text"><div id="saving-rate">0%<span>Poupança</span></div></div></div>
-      <div className="caption" style={{ marginTop: 12 }}>Dicas personalizadas</div>
-      <div className="list-card"><div><div className="tx-name">Reduza gastos com lazer</div><div className="tx-meta">Compare com o mês passado.</div></div><span>›</span></div>
     </div>
   );
 }
@@ -305,6 +303,17 @@ function DashboardLayoutApp({ userId }) {
     scheduleDashboardRender();
   }, [layouts, editing, desktop]);
 
+  useEffect(() => {
+    window.toggleDashboardLayoutEdit = () => setEditing((value) => !value);
+    return () => {
+      if (window.toggleDashboardLayoutEdit) delete window.toggleDashboardLayoutEdit;
+    };
+  }, []);
+
+  useEffect(() => {
+    document.getElementById('top-layout-edit')?.classList.toggle('active', editing && desktop);
+  }, [editing, desktop]);
+
   const cards = useMemo(() => CARD_IDS.map((id) => {
     const Card = CARD_RENDERERS[id];
     return (
@@ -331,7 +340,6 @@ function DashboardLayoutApp({ userId }) {
   return (
     <>
       <div className="dashboard-layout-actions">
-        <button className={`btn ${editing ? 'active' : ''}`} type="button" onClick={() => setEditing((value) => !value)}>Editar layout</button>
         <button className="btn btn-ghost" type="button" onClick={resetLayout}>Restaurar padrão</button>
       </div>
       <div ref={containerRef}>

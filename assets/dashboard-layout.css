@@ -200,8 +200,8 @@
 }
 
 .react-grid-item.react-grid-placeholder {
-  background: rgba(7, 150, 109, .14);
-  border: 1px dashed rgba(7, 150, 109, .45);
+  background: rgba(37, 99, 235, .14);
+  border: 1px dashed rgba(37, 99, 235, .45);
   border-radius: 8px;
   opacity: 1;
 }
@@ -235,8 +235,8 @@
   bottom: 3px;
   width: 8px;
   height: 8px;
-  border-right: 2px solid rgba(7, 107, 80, .75);
-  border-bottom: 2px solid rgba(7, 107, 80, .75);
+  border-right: 2px solid rgba(29, 78, 216, .75);
+  border-bottom: 2px solid rgba(29, 78, 216, .75);
 }
 
 .react-grid-item > .react-resizable-handle.react-resizable-handle-e,

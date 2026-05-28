@@ -27298,14 +27298,6 @@
               "0%",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Poupan\xE7a" })
             ] }) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "caption", style: { marginTop: 12 }, children: "Dicas personalizadas" }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "list-card", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "tx-name", children: "Reduza gastos com lazer" }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "tx-meta", children: "Compare com o m\xEAs passado." })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "\u203A" })
           ] })
         ] });
       }
@@ -27416,6 +27408,16 @@
         (0, import_react3.useEffect)(() => {
           scheduleDashboardRender();
         }, [layouts, editing, desktop]);
+        (0, import_react3.useEffect)(() => {
+          window.toggleDashboardLayoutEdit = () => setEditing((value) => !value);
+          return () => {
+            if (window.toggleDashboardLayoutEdit) delete window.toggleDashboardLayoutEdit;
+          };
+        }, []);
+        (0, import_react3.useEffect)(() => {
+          var _a;
+          (_a = document.getElementById("top-layout-edit")) == null ? void 0 : _a.classList.toggle("active", editing && desktop);
+        }, [editing, desktop]);
         const cards = (0, import_react3.useMemo)(() => CARD_IDS.map((id) => {
           const Card = CARD_RENDERERS[id];
           return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: `dashboard-layout-card ${editing && desktop ? "is-editing" : ""}`, children: [
@@ -27435,10 +27437,7 @@
           scheduleDashboardRender();
         }
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "dashboard-layout-actions", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: `btn ${editing ? "active" : ""}`, type: "button", onClick: () => setEditing((value) => !value), children: "Editar layout" }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "btn btn-ghost", type: "button", onClick: resetLayout, children: "Restaurar padr\xE3o" })
-          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dashboard-layout-actions", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "btn btn-ghost", type: "button", onClick: resetLayout, children: "Restaurar padr\xE3o" }) }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { ref: containerRef, children: mounted && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
             ResponsiveGridLayout,
             {
