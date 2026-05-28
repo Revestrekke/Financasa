@@ -19,10 +19,16 @@ npm install
 npm start
 ```
 
+Esse comando inicia a versão web local. Para abrir a versão desktop Electron:
+
+```bash
+npm run desktop
+```
+
 ## Build desktop
 
 ```bash
-npm run build
+npm run build:desktop
 ```
 
 ## Build web
@@ -42,6 +48,13 @@ Use o serviço **Static Site** do Render. O arquivo `render.yaml` já define:
 - Branch: `main`
 
 O app Electron não deve ser usado como Web Service no Render, porque `npm start` abre uma janela desktop. Para hospedagem web, publique a versão estática.
+
+Se você já criou um **Web Service** no Render, também funciona com:
+
+- Build Command: `npm ci && npm run build:web`
+- Start Command: `npm start`
+
+Para evitar a tela de erro antiga, faça deploy do commit mais recente da branch `main`.
 
 ## Banco de dados Supabase
 

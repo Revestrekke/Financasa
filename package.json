@@ -4,9 +4,12 @@
   "description": "Sistema financeiro local",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "node server.js",
+    "desktop": "electron .",
+    "start:desktop": "electron .",
     "build:web": "node scripts/build-web.js",
-    "build": "electron-builder"
+    "build:desktop": "electron-builder",
+    "build": "npm run build:web"
   },
   "devDependencies": {
     "electron": "^30.0.0",
@@ -19,7 +22,8 @@
       "index.html",
       "main.js",
       "preload.js",
-      "package.json"
+      "package.json",
+      "server.js"
     ],
     "win": {
       "target": "nsis"
