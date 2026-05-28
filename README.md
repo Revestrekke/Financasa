@@ -1,6 +1,6 @@
 # FinanCasa
 
-Aplicativo local de gestão financeira pessoal construído com **Electron** e interface em HTML/CSS/JS.
+SaaS web de gestão financeira familiar construído com HTML/CSS/JS, Supabase e Render.
 
 ## Requisitos
 
@@ -16,20 +16,11 @@ npm install
 ## Execução em desenvolvimento
 
 ```bash
+npm run build:web
 npm start
 ```
 
-Esse comando inicia a versão web local. Para abrir a versão desktop Electron:
-
-```bash
-npm run desktop
-```
-
-## Build desktop
-
-```bash
-npm run build:desktop
-```
+Esse comando inicia a versão web local. O sistema é online-only: é necessário login no Supabase para carregar e salvar dados.
 
 ## Build web
 
@@ -46,8 +37,6 @@ Use o serviço **Static Site** do Render. O arquivo `render.yaml` já define:
 - Build command: `npm ci && npm run build:web`
 - Publish directory: `web-dist`
 - Branch: `main`
-
-O app Electron não deve ser usado como Web Service no Render, porque `npm start` abre uma janela desktop. Para hospedagem web, publique a versão estática.
 
 Se você já criou um **Web Service** no Render, também funciona com:
 
@@ -76,25 +65,20 @@ SUPABASE_URL=https://seu-projeto.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sua-chave-publica
 ```
 
-Nunca coloque `service_role` ou secret keys no app desktop. Se essas chaves forem expostas, rotacione no painel do Supabase.
+No Render, cadastre essas duas variáveis em **Environment**. Confira a URL em **Supabase > Project Settings > API > Project URL**.
+
+Se o deploy abrir a tela de login mas não entrar/salvar, confira primeiro se `SUPABASE_URL` resolve corretamente. A URL deve ser exatamente a Project URL mostrada no painel do Supabase.
+
+Nunca coloque `service_role` ou secret keys no app. Se essas chaves forem expostas, rotacione no painel do Supabase.
 
 ## Estrutura atual
 
-- `main.js`: processo principal do Electron
-- `preload.js`: camada de isolamento para APIs seguras
 - `index.html`: interface e lógica do app
+- `server.js`: servidor web para Render Web Service
+- `scripts/build-web.js`: gera `web-dist/` e `config.js`
 - `database/supabase-schema.sql`: tabela e políticas de acesso do Supabase
-
-## Segurança (desktop)
-
-A janela Electron foi configurada com:
-
-- `contextIsolation: true`
-- `sandbox: true`
-- `nodeIntegration: false`
-- bloqueio de navegação externa na janela principal
 
 ## Observações
 
-- Os dados são sincronizados com Supabase por usuário autenticado e também mantidos em cache local por usuário.
+- Os dados são sincronizados exclusivamente com Supabase por usuário autenticado.
 - Recomenda-se evolução para modularização do front-end e sanitização centralizada de conteúdo renderizado.

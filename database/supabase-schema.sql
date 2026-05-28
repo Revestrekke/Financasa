@@ -27,6 +27,9 @@ alter table public.financasa_state enable row level security;
 drop policy if exists "financasa_state_read" on public.financasa_state;
 drop policy if exists "financasa_state_insert" on public.financasa_state;
 drop policy if exists "financasa_state_update" on public.financasa_state;
+drop policy if exists "financasa_state_read_own" on public.financasa_state;
+drop policy if exists "financasa_state_insert_own" on public.financasa_state;
+drop policy if exists "financasa_state_update_own" on public.financasa_state;
 
 create policy "financasa_state_read_own"
 on public.financasa_state

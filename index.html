@@ -278,6 +278,140 @@
     .auth-mini strong{display:block;margin-bottom:6px}
     .auth-mini span{color:var(--muted);font-size:13px;line-height:1.4}
 
+    body{
+      background:#f6f8fb;
+      color:#172033;
+    }
+    :root{
+      --bg:#f6f8fb;
+      --panel:#ffffff;
+      --panel2:#f8fafc;
+      --panel3:#eef4f8;
+      --line:#d8e1eb;
+      --line2:#c5d1df;
+      --text:#172033;
+      --muted:#65758a;
+      --muted2:#8794a7;
+      --green:#07966d;
+      --green2:#0bbf88;
+      --red:#dc3545;
+      --blue:#2563eb;
+      --purple:#4f46e5;
+      --amber:#d97706;
+      --pink:#be185d;
+      --radius:8px;
+      --shadow:0 12px 28px rgba(15,23,42,.08);
+    }
+    .app{background:#f6f8fb}
+    .sidebar{
+      background:#ffffff;
+      border-right:1px solid #dce5ee;
+      box-shadow:4px 0 20px rgba(15,23,42,.04);
+    }
+    .brand-mark{
+      border-color:#07966d;
+      color:#07966d;
+      box-shadow:none;
+      background:#ecfdf5;
+    }
+    .brand-name,.pro-title,.card-title,.page-header h2,.auth-card h2,.tx-name,.goal-name,.account-name,.category-name{color:#172033}
+    .brand-pro{color:#07966d}
+    .user-card,.theme-pill,.search,.auth-mini{
+      background:#f8fafc;
+      border-color:#dce5ee;
+    }
+    .user-title,.user-sub,.section-title,.hello p,.caption,.tx-meta,.goal-meta,.account-sub,label{color:#65758a}
+    .nav-item{color:#526174}
+    .nav-ico{color:#7b8798}
+    .nav-item:hover{background:#eef4f8;color:#172033}
+    .nav-item.active{
+      background:#e8f7f1;
+      color:#076b50;
+      box-shadow:none;
+      font-weight:800;
+    }
+    .pro-card{
+      background:#f1f5f9;
+      border-color:#dce5ee;
+    }
+    .pro-copy{color:#65758a}
+    .switch{background:#d8e1eb}
+    .switch:after{background:#ffffff;box-shadow:0 1px 4px rgba(15,23,42,.18)}
+    .shell{background:#f6f8fb}
+    .search input{color:#172033}
+    .icon-btn,.round-btn{
+      background:#ffffff;
+      color:#172033;
+      border:1px solid #dce5ee;
+      box-shadow:0 8px 18px rgba(15,23,42,.06);
+    }
+    .round-btn{
+      background:#07966d;
+      color:#ffffff;
+      border-color:#07966d;
+    }
+    .btn{
+      background:#ffffff;
+      color:#172033;
+      border-color:#cfd9e5;
+    }
+    .btn:hover{background:#f8fafc;border-color:#aebdcb}
+    .btn-primary{background:#172033;color:#ffffff;border-color:#172033}
+    .btn-green{background:#07966d;color:#ffffff;border-color:#07966d}
+    .btn-danger{background:#fff1f2;border-color:#fecdd3;color:#b4232f}
+    .card,.kpi-card,.glass,.auth-card{
+      background:#ffffff;
+      border:1px solid #dce5ee;
+      box-shadow:var(--shadow);
+    }
+    .kpi-card:after{background:linear-gradient(0deg,rgba(7,150,109,.08),transparent)}
+    .kpi-icon{background:#ecfdf5;color:#07966d}
+    .kpi-icon.red{background:#fff1f2;color:#dc3545}
+    .kpi-label{color:#65758a}
+    .kpi-value{color:#172033}
+    .trend.up{background:#ecfdf5;color:#07966d}
+    .trend.down{background:#fff1f2;color:#dc3545}
+    .break-row,.cash-line,td{color:#334155}
+    .progress{background:#edf2f7}
+    .tx-card,.goal-card,.account-card,.list-card,.cash-line{border-bottom-color:#e6edf4}
+    .tx-ico,.account-ico,.goal-ico{background:#eef4ff;color:#2563eb}
+    input,select,textarea{
+      background:#ffffff;
+      color:#172033;
+      border-color:#cfd9e5;
+    }
+    input:focus,select:focus,textarea:focus{
+      border-color:#07966d;
+      box-shadow:0 0 0 3px rgba(7,150,109,.12);
+    }
+    select option{background:#ffffff;color:#172033}
+    .segmented,.auth-tabs{background:#f1f5f9;border-color:#dce5ee}
+    .segmented button,.auth-tabs button{color:#65758a}
+    .segmented button.active.in,.auth-tabs button.active{background:#ffffff;color:#07966d;box-shadow:0 1px 6px rgba(15,23,42,.08)}
+    .segmented button.active.out{background:#ffffff;color:#dc3545;box-shadow:0 1px 6px rgba(15,23,42,.08)}
+    th{color:#65758a;border-bottom-color:#dce5ee}
+    tr:hover td{background:#f8fafc}
+    .filter-btn{background:#ffffff;color:#526174;border-color:#cfd9e5}
+    .filter-btn.active{background:#e8f7f1;border-color:#bce7d5;color:#076b50}
+    .badge.in{background:#ecfdf5;color:#07966d}
+    .badge.out{background:#fff1f2;color:#dc3545}
+    .empty{color:#65758a}
+    .toast{
+      background:#ffffff;
+      color:#172033;
+      border-color:#dce5ee;
+      box-shadow:0 16px 40px rgba(15,23,42,.14);
+    }
+    .toast.success{border-color:#9ee3c9;color:#076b50}
+    .toast.error{border-color:#fecdd3;color:#b4232f}
+    .auth-screen{
+      background:linear-gradient(135deg,#f8fafc 0%,#eef6f2 48%,#ffffff 100%);
+    }
+    .auth-copy p,.auth-mini span{color:#65758a}
+    .auth-card-wrap{background:rgba(255,255,255,.36)}
+    .auth-copy h1{color:#172033}
+    .auth-card{background:#ffffff}
+
     @media(max-width:1320px){
       .dashboard-grid{grid-template-columns:1fr}
       .right-col{display:grid;grid-template-columns:repeat(3,1fr)}
@@ -615,40 +749,42 @@
     </main>
   </div>
 
+  <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const DEFAULT_CATS_DESPESA=['Aluguel','Alimentação','Transporte','Saúde','Lazer','Educação','Roupas','Contas','Outros'];
     const DEFAULT_CATS_RECEITA=['Salário','Freelance','Investimentos','Outras Receitas'];
     const QUICK=['Café R$8','Almoço R$35','Gasolina R$120','Mercado R$200','Farmácia R$50'];
     const COLORS=['#09d98f','#3b82f6','#ff3f57','#a78bfa','#f59e0b','#e946a4','#14b8a6','#64748b'];
-    const SUPABASE_URL='https://fzozyfzzihfltgebmufsp.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY='sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2';
+    const SUPABASE_URL=window.FINANCASA_CONFIG?.SUPABASE_URL||'https://fzozyfzzihfltgebmufsp.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY=window.FINANCASA_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2';
     let authMode='login';
     let currentUser=null;
 
-    let state={
-      transacoes:[],
-      contas:[
-        {id:1,nome:'Conta Corrente',tipo:'Conta Corrente',saldo:1250,icone:'🏦'},
-        {id:2,nome:'Conta Poupança',tipo:'Conta Poupança',saldo:4500,icone:'💳'},
-        {id:3,nome:'Carteira Digital',tipo:'Carteira Digital',saldo:890,icone:'🟣'},
-        {id:4,nome:'Investimentos',tipo:'Investimentos',saldo:12430,icone:'📈'}
-      ],
-      metas:[
-        {id:1,nome:'Viagem em Família',alvo:5000,atual:3200,prazo:'2026-12-01',icone:'✈'},
-        {id:2,nome:'Reserva de Emergência',alvo:15000,atual:8500,prazo:'2026-10-01',icone:'🛡'},
-        {id:3,nome:'Trocar de Carro',alvo:30000,atual:12000,prazo:'2027-04-01',icone:'🚗'}
-      ],
-      categorias:{despesa:[...DEFAULT_CATS_DESPESA],receita:[...DEFAULT_CATS_RECEITA]},
-      orcamento:{Aluguel:1500,Alimentação:900,Transporte:650,Saúde:400,Lazer:500},
-      filtroTx:'todas',
-      tipoLanc:'despesa'
-    };
+    function createInitialState(){
+      return{
+        transacoes:[],
+        contas:[
+          {id:1,nome:'Conta Corrente',tipo:'Conta Corrente',saldo:1250,icone:'🏦'},
+          {id:2,nome:'Conta Poupança',tipo:'Conta Poupança',saldo:4500,icone:'💳'},
+          {id:3,nome:'Carteira Digital',tipo:'Carteira Digital',saldo:890,icone:'🟣'},
+          {id:4,nome:'Investimentos',tipo:'Investimentos',saldo:12430,icone:'📈'}
+        ],
+        metas:[
+          {id:1,nome:'Viagem em Família',alvo:5000,atual:3200,prazo:'2026-12-01',icone:'✈'},
+          {id:2,nome:'Reserva de Emergência',alvo:15000,atual:8500,prazo:'2026-10-01',icone:'🛡'},
+          {id:3,nome:'Trocar de Carro',alvo:30000,atual:12000,prazo:'2027-04-01',icone:'🚗'}
+        ],
+        categorias:{despesa:[...DEFAULT_CATS_DESPESA],receita:[...DEFAULT_CATS_RECEITA]},
+        orcamento:{Aluguel:1500,Alimentação:900,Transporte:650,Saúde:400,Lazer:500},
+        filtroTx:'todas',
+        tipoLanc:'despesa'
+      };
+    }
+
+    let state=createInitialState();
 
     let browserSupabaseClient=null;
-    function getStorageAdapter(){
-      return browserSupabaseStorage;
-    }
     function getBrowserSupabaseClient(){
       if(browserSupabaseClient)return browserSupabaseClient;
       if(!window.supabase?.createClient)return null;
@@ -661,9 +797,6 @@
       const email=user?.email||'';
       const name=email.split('@')[0]||'FC';
       return name.slice(0,2).toUpperCase();
-    }
-    function localStateKey(){
-      return currentUser?.id?`fc_state_${currentUser.id}`:'fc_state';
     }
     function setAuthMode(mode){
       authMode=mode;
@@ -697,6 +830,7 @@
       const client=getBrowserSupabaseClient();
       await client?.auth.signOut();
       currentUser=null;
+      state=createInitialState();
       document.getElementById('app-shell').style.display='none';
       document.getElementById('auth-screen').style.display='grid';
       setText('auth-message','');
@@ -713,6 +847,7 @@
     }
     async function startAuthenticatedApp(user){
       currentUser=user;
+      state=createInitialState();
       updateUserUi(user);
       document.getElementById('auth-screen').style.display='none';
       document.getElementById('app-shell').style.display='grid';
@@ -727,27 +862,25 @@
       document.getElementById('auth-screen').style.display='grid';
       document.getElementById('app-shell').style.display='none';
     }
-    const browserSupabaseStorage={
-      async load(){
-        const client=getBrowserSupabaseClient();
-        if(!client)return null;
-        if(!currentUser)throw new Error('Usuário não autenticado');
-        const {data,error}=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
-        if(error)throw error;
-        return data?data.state:null;
-      },
-      async save(snapshot){
-        const client=getBrowserSupabaseClient();
-        if(!client)return{ok:false,source:'localStorage',error:'Supabase SDK não carregado'};
-        if(!currentUser)return{ok:false,source:'localStorage',error:'Usuário não autenticado'};
-        const {error}=await client.from('financasa_state').upsert(
-          {user_id:currentUser.id,state:snapshot,updated_at:new Date().toISOString()},
-          {onConflict:'user_id'}
-        );
-        if(error)return{ok:false,source:'localStorage',error:error.message};
-        return{ok:true,source:'supabase'};
-      }
-    };
+    async function loadRemoteState(){
+      const client=getBrowserSupabaseClient();
+      if(!client)throw new Error('Supabase SDK não carregado');
+      if(!currentUser)throw new Error('Usuário não autenticado');
+      const {data,error}=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
+      if(error)throw error;
+      return data?data.state:null;
+    }
+    async function saveRemoteState(snapshot){
+      const client=getBrowserSupabaseClient();
+      if(!client)throw new Error('Supabase SDK não carregado');
+      if(!currentUser)throw new Error('Usuário não autenticado');
+      const {error}=await client.from('financasa_state').upsert(
+        {user_id:currentUser.id,state:snapshot,updated_at:new Date().toISOString()},
+        {onConflict:'user_id'}
+      );
+      if(error)throw error;
+      return{ok:true,source:'supabase'};
+    }
 
     let saveTimer=null;
     function save(){
@@ -755,34 +888,27 @@
       const snapshot=JSON.parse(JSON.stringify(state));
       saveTimer=setTimeout(async()=>{
         try{
-          const result=await getStorageAdapter().save(snapshot);
-          if(!result?.ok){
-            localStorage.setItem(localStateKey(),JSON.stringify(snapshot));
-            console.warn('Estado salvo apenas localmente:',result?.error||'Supabase indisponível');
-          }
+          await saveRemoteState(snapshot);
         }catch(error){
-          localStorage.setItem(localStateKey(),JSON.stringify(snapshot));
-          console.warn('Falha ao salvar estado:',error);
+          console.error('Falha ao salvar no Supabase:',error);
+          toast('Não foi possível salvar no Supabase. Verifique sua conexão.','error');
         }
       },250);
     }
     async function load(){
       try{
-        const saved=await getStorageAdapter().load();
-        if(saved){state=Object.assign(state,saved);return}
+        const saved=await loadRemoteState();
+        if(saved)state=Object.assign(state,saved);
+        return true;
       }catch(error){
-        console.warn('Falha ao carregar estado externo:',error);
-      }
-
-      try{
-        const legacy=JSON.parse(localStorage.getItem(localStateKey())||localStorage.getItem('fc_state')||'null');
-        if(legacy)state=Object.assign(state,legacy);
-      }catch(error){
-        console.warn('Falha ao migrar estado antigo:',error);
+        console.error('Falha ao carregar estado do Supabase:',error);
+        toast('Não foi possível carregar seus dados online. Tente novamente.','error');
+        return false;
       }
     }
     async function init(){
-      await load();
+      const loaded=await load();
+      if(!loaded)return;
       normalizeState();
       seedDemoData();
       save();
@@ -1202,7 +1328,7 @@
     function drawDonut(id,values,colors){
       const c=document.getElementById(id);if(!c)return;const ctx=prepCanvas(c),w=c.clientWidth,h=c.clientHeight,r=Math.min(w,h)/2-9,cx=w/2,cy=h/2,total=values.reduce((a,b)=>a+(Number(b)||0),0)||1;let start=-Math.PI/2;ctx.clearRect(0,0,w,h);ctx.lineWidth=18;ctx.lineCap='butt';
       values.forEach((v,i)=>{const end=start+(v/total)*Math.PI*2;ctx.beginPath();ctx.arc(cx,cy,r,start,end);ctx.strokeStyle=colors[i%colors.length];ctx.stroke();start=end});
-      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.04)';ctx.stroke();
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='rgba(15,23,42,.08)';ctx.stroke();
     }
     function drawEvolution(){
       const vals=[];let acc=0;const labels=[];const now=new Date();

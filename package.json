@@ -1,40 +1,14 @@
 {
   "name": "financasa",
   "version": "1.0.0",
-  "description": "Sistema financeiro local",
-  "main": "main.js",
+  "description": "SaaS web de gestão financeira familiar",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "desktop": "electron .",
-    "start:desktop": "electron .",
     "build:web": "node scripts/build-web.js",
-    "build:desktop": "electron-builder",
     "build": "npm run build:web"
   },
-  "devDependencies": {
-    "electron": "^30.0.0",
-    "electron-builder": "^24.0.0"
-  },
-  "build": {
-    "appId": "com.financasa.app",
-    "productName": "FinanCasa",
-    "files": [
-      "index.html",
-      "main.js",
-      "preload.js",
-      "package.json",
-      "server.js"
-    ],
-    "win": {
-      "target": "nsis"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": true,
-      "allowElevation": true,
-      "allowToChangeInstallationDirectory": true
-    }
-  },
+  "devDependencies": {},
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -19,6 +19,16 @@ const contentTypes = {
   '.svg': 'image/svg+xml'
 }
 
+function sendConfig(res) {
+  const config = {
+    SUPABASE_URL: process.env.SUPABASE_URL || 'https://fzozyfzzihfltgebmufsp.supabase.co',
+    SUPABASE_PUBLISHABLE_KEY: process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2'
+  }
+
+  res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' })
+  res.end(`window.FINANCASA_CONFIG = ${JSON.stringify(config, null, 2)};\n`)
+}
+
 function sendFile(res, filePath) {
   fs.readFile(filePath, (error, data) => {
     if (error) {
@@ -36,6 +46,12 @@ function sendFile(res, filePath) {
 
 http.createServer((req, res) => {
   const urlPath = decodeURIComponent((req.url || '/').split('?')[0])
+
+  if (urlPath === '/config.js') {
+    sendConfig(res)
+    return
+  }
+
   const relativePath = urlPath === '/' ? 'index.html' : urlPath.slice(1)
   const requestedPath = path.resolve(rootDir, relativePath)
 
