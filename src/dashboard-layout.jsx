@@ -12,7 +12,6 @@ const CARD_IDS = [
   'metas',
   'contas-carteiras',
   'gastos-categoria',
-  'planejamento',
   'acoes-rapidas',
   'ultimas-transacoes'
 ];
@@ -28,11 +27,10 @@ const DEFAULT_LG_LAYOUT = [
   { i: 'visao-mes', x: 6, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
   { i: 'despesas-categoria', x: 10, y: 3, w: 2, h: 7, minW: 2, minH: 4 },
   { i: 'gastos-categoria', x: 0, y: 10, w: 8, h: 7, minW: 3, minH: 4 },
-  { i: 'planejamento', x: 8, y: 10, w: 4, h: 7, minW: 2, minH: 4 },
-  { i: 'acoes-rapidas', x: 0, y: 17, w: 8, h: 5, minW: 3, minH: 3 },
-  { i: 'ultimas-transacoes', x: 8, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
-  { i: 'metas', x: 0, y: 22, w: 6, h: 5, minW: 2, minH: 3 },
-  { i: 'contas-carteiras', x: 6, y: 22, w: 6, h: 5, minW: 2, minH: 3 }
+  { i: 'acoes-rapidas', x: 8, y: 10, w: 4, h: 7, minW: 3, minH: 3 },
+  { i: 'ultimas-transacoes', x: 0, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
+  { i: 'metas', x: 4, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
+  { i: 'contas-carteiras', x: 8, y: 17, w: 4, h: 5, minW: 2, minH: 3 }
 ];
 
 function cloneLayout(layout) {
@@ -232,16 +230,6 @@ function CategoryTotalCard() {
   );
 }
 
-function PlanningCard() {
-  return (
-    <div className="card">
-      <div className="card-title">Planejamento Financeiro</div>
-      <p className="caption" id="planning-copy" style={{ margin: '10px 0 14px' }}>Você está no caminho certo.</p>
-      <div className="donut-center saving-donut"><canvas id="saving-donut"></canvas><div className="donut-text"><div id="saving-rate">0%<span>Poupança</span></div></div></div>
-    </div>
-  );
-}
-
 function QuickActionsCard() {
   return (
     <div className="card">
@@ -279,7 +267,6 @@ const CARD_RENDERERS = {
   metas: GoalsCard,
   'contas-carteiras': AccountsCard,
   'gastos-categoria': CategoryTotalCard,
-  planejamento: PlanningCard,
   'acoes-rapidas': QuickActionsCard,
   'ultimas-transacoes': RecentTransactionsCard
 };

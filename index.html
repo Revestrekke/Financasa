@@ -126,7 +126,6 @@
     .dashboard-layout-card .category-donut-layout{flex:1 1 auto;min-height:0}
     .dashboard-layout-card .quick-grid{grid-template-columns:repeat(auto-fit,minmax(78px,1fr));overflow:auto;padding:2px}
     .dashboard-layout-card .tx-list{overflow:auto}
-    .dashboard-layout-card .saving-donut{margin:auto;width:130px;height:130px;max-width:100%;max-height:42%}
     .dashboard-layout-card .goal-list,.dashboard-layout-card .account-list{max-height:calc(100% - 52px);overflow:auto}
     .dashboard-layout-card .kpi-card{display:flex;flex-direction:column;padding:clamp(10px,5cqw,18px)}
     .dashboard-layout-card .kpi-head{gap:clamp(8px,3cqw,14px);margin-bottom:clamp(3px,1.8cqh,10px)}
@@ -660,11 +659,6 @@
               <div class="breakdown category-breakdown" id="cat-breakdown"></div>
             </div>
           </div>
-            <div class="card span-4">
-            <div class="card-title">Planejamento Financeiro</div>
-            <p class="caption" id="planning-copy" style="margin:10px 0 14px">Você está no caminho certo.</p>
-            <div class="donut-center saving-donut" style="margin:auto;width:130px;height:130px"><canvas id="saving-donut"></canvas><div class="donut-text"><div id="saving-rate">0%<span>Poupança</span></div></div></div>
-          </div>
             <div class="card span-8">
             <div class="card-title" style="margin-bottom:14px">Ações Rápidas</div>
             <div class="quick-grid">
@@ -1094,7 +1088,7 @@
       const sparkData=getMonthlySparkData();
       setText('kpi-saldo',fmtBRL(total));setText('kpi-receita',fmtBRL(rec));setText('kpi-despesa',fmtBRL(dep));
       setTrend('kpi-saldo-trend',0,true);setTrend('kpi-receita-trend',recPct,recPct>=0);setTrend('kpi-despesa-trend',depPct,depPct<0);
-      setDonutLabel('month-rate',saving+'%','Poupança');setDonutLabel('saving-rate',saving+'%','Poupança');setText('planning-copy',saving>=20?'Você está no caminho certo!':'Ajuste as despesas para melhorar a poupança.');
+      setDonutLabel('month-rate',saving+'%','Poupança');
       drawSpark('spark-saldo',sparkData.saldo,COLORS[0]);
       drawSpark('spark-receita',sparkData.receitas,COLORS[0]);
       drawSpark('spark-despesa',sparkData.despesas,COLORS[2]);
@@ -1106,7 +1100,6 @@
       renderAccounts('dash-accounts',4);
       setText('dash-total',fmtBRL(total));
       renderMonthOverview(rec,dep,saving);
-      drawDonut('saving-donut',[saving,Math.max(100-saving,0)],[COLORS[0],'#20324c']);
     }
     function getDashboardLayoutUserId(){return currentUser?.id||currentUser?.email||'anonimo'}
     function mountCurrentDashboardLayout(){window.mountDashboardLayout?.(getDashboardLayoutUserId())}

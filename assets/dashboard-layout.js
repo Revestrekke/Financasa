@@ -27035,7 +27035,6 @@
         "metas",
         "contas-carteiras",
         "gastos-categoria",
-        "planejamento",
         "acoes-rapidas",
         "ultimas-transacoes"
       ];
@@ -27049,11 +27048,10 @@
         { i: "visao-mes", x: 6, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
         { i: "despesas-categoria", x: 10, y: 3, w: 2, h: 7, minW: 2, minH: 4 },
         { i: "gastos-categoria", x: 0, y: 10, w: 8, h: 7, minW: 3, minH: 4 },
-        { i: "planejamento", x: 8, y: 10, w: 4, h: 7, minW: 2, minH: 4 },
-        { i: "acoes-rapidas", x: 0, y: 17, w: 8, h: 5, minW: 3, minH: 3 },
-        { i: "ultimas-transacoes", x: 8, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
-        { i: "metas", x: 0, y: 22, w: 6, h: 5, minW: 2, minH: 3 },
-        { i: "contas-carteiras", x: 6, y: 22, w: 6, h: 5, minW: 2, minH: 3 }
+        { i: "acoes-rapidas", x: 8, y: 10, w: 4, h: 7, minW: 3, minH: 3 },
+        { i: "ultimas-transacoes", x: 0, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
+        { i: "metas", x: 4, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
+        { i: "contas-carteiras", x: 8, y: 17, w: 4, h: 5, minW: 2, minH: 3 }
       ];
       function cloneLayout2(layout) {
         return layout.map((item) => ({ ...item }));
@@ -27297,19 +27295,6 @@
           ] })
         ] });
       }
-      function PlanningCard() {
-        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Planejamento Financeiro" }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "caption", id: "planning-copy", style: { margin: "10px 0 14px" }, children: "Voc\xEA est\xE1 no caminho certo." }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "donut-center saving-donut", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("canvas", { id: "saving-donut" }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "donut-text", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { id: "saving-rate", children: [
-              "0%",
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Poupan\xE7a" })
-            ] }) })
-          ] })
-        ] });
-      }
       function QuickActionsCard() {
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", style: { marginBottom: 14 }, children: "A\xE7\xF5es R\xE1pidas" }),
@@ -27397,7 +27382,6 @@
         metas: GoalsCard,
         "contas-carteiras": AccountsCard,
         "gastos-categoria": CategoryTotalCard,
-        planejamento: PlanningCard,
         "acoes-rapidas": QuickActionsCard,
         "ultimas-transacoes": RecentTransactionsCard
       };
