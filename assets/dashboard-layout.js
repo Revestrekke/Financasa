@@ -27029,36 +27029,50 @@
         "saldo-total",
         "receitas-mes",
         "despesas-mes",
-        "visao-mes",
         "receitas-despesas",
+        "visao-mes",
         "despesas-categoria",
         "metas",
-        "contas-carteiras"
+        "contas-carteiras",
+        "gastos-categoria",
+        "planejamento",
+        "acoes-rapidas",
+        "ultimas-transacoes"
       ];
       var BREAKPOINTS = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
       var COLS = { lg: 12, md: 10, sm: 6, xs: 1, xxs: 1 };
       var DEFAULT_LG_LAYOUT = [
-        { i: "saldo-total", x: 0, y: 0, w: 4, h: 3, minW: 3, minH: 3 },
-        { i: "receitas-mes", x: 4, y: 0, w: 4, h: 3, minW: 3, minH: 3 },
-        { i: "despesas-mes", x: 8, y: 0, w: 4, h: 3, minW: 3, minH: 3 },
-        { i: "visao-mes", x: 0, y: 3, w: 4, h: 6, minW: 3, minH: 5 },
-        { i: "receitas-despesas", x: 4, y: 3, w: 8, h: 7, minW: 5, minH: 5 },
-        { i: "despesas-categoria", x: 0, y: 9, w: 6, h: 7, minW: 4, minH: 5 },
-        { i: "metas", x: 6, y: 10, w: 3, h: 6, minW: 3, minH: 4 },
-        { i: "contas-carteiras", x: 9, y: 10, w: 3, h: 6, minW: 3, minH: 4 }
+        { i: "saldo-total", x: 0, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
+        { i: "receitas-mes", x: 4, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
+        { i: "despesas-mes", x: 8, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
+        { i: "receitas-despesas", x: 0, y: 3, w: 6, h: 7, minW: 3, minH: 4 },
+        { i: "visao-mes", x: 6, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
+        { i: "despesas-categoria", x: 10, y: 3, w: 2, h: 7, minW: 2, minH: 4 },
+        { i: "gastos-categoria", x: 0, y: 10, w: 8, h: 7, minW: 3, minH: 4 },
+        { i: "planejamento", x: 8, y: 10, w: 4, h: 7, minW: 2, minH: 4 },
+        { i: "acoes-rapidas", x: 0, y: 17, w: 8, h: 5, minW: 3, minH: 3 },
+        { i: "ultimas-transacoes", x: 8, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
+        { i: "metas", x: 0, y: 22, w: 6, h: 5, minW: 2, minH: 3 },
+        { i: "contas-carteiras", x: 6, y: 22, w: 6, h: 5, minW: 2, minH: 3 }
       ];
       function cloneLayout2(layout) {
         return layout.map((item) => ({ ...item }));
       }
       function stackedLayout() {
-        return DEFAULT_LG_LAYOUT.map((item, index) => ({
-          ...item,
-          x: 0,
-          y: index * Math.max(item.h, 4),
-          w: 1,
-          h: Math.max(item.h, 4),
-          minW: 1
-        }));
+        let y = 0;
+        return DEFAULT_LG_LAYOUT.map((item) => {
+          const h = Math.max(item.h, 4);
+          const stacked = {
+            ...item,
+            x: 0,
+            y,
+            w: 1,
+            h,
+            minW: 1
+          };
+          y += h;
+          return stacked;
+        });
       }
       function defaultLayouts() {
         return {
@@ -27075,10 +27089,16 @@
         Object.keys(fallback).forEach((breakpoint) => {
           const source = Array.isArray(layouts == null ? void 0 : layouts[breakpoint]) ? layouts[breakpoint] : fallback[breakpoint];
           const byId = new Map(source.filter((item) => CARD_IDS.includes(item.i)).map((item) => [item.i, item]));
-          normalized[breakpoint] = fallback[breakpoint].map((fallbackItem) => ({
-            ...fallbackItem,
-            ...byId.get(fallbackItem.i) || {}
-          }));
+          normalized[breakpoint] = fallback[breakpoint].map((fallbackItem) => {
+            const savedItem = byId.get(fallbackItem.i) || {};
+            return {
+              ...fallbackItem,
+              x: Number.isFinite(savedItem.x) ? savedItem.x : fallbackItem.x,
+              y: Number.isFinite(savedItem.y) ? savedItem.y : fallbackItem.y,
+              w: Math.max(fallbackItem.minW || 1, Number.isFinite(savedItem.w) ? savedItem.w : fallbackItem.w),
+              h: Math.max(fallbackItem.minH || 1, Number.isFinite(savedItem.h) ? savedItem.h : fallbackItem.h)
+            };
+          });
         });
         return normalized;
       }
@@ -27247,6 +27267,125 @@
           ] })
         ] });
       }
+      function CategoryTotalCard() {
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card-head", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Gastos por Categoria" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("select", { className: "dashboard-card-action", onChange: () => {
+              var _a;
+              return (_a = window.renderDashboard) == null ? void 0 : _a.call(window);
+            }, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { children: "Este m\xEAs" }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "category-donut-layout", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "donut-center", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("canvas", { id: "cat-donut" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "donut-text", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { id: "cat-total", children: [
+                "R$ 0,00",
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Total" })
+              ] }) })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "breakdown category-breakdown", id: "cat-breakdown" })
+          ] })
+        ] });
+      }
+      function PlanningCard() {
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Planejamento Financeiro" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "caption", id: "planning-copy", style: { margin: "10px 0 14px" }, children: "Voc\xEA est\xE1 no caminho certo." }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "donut-center saving-donut", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("canvas", { id: "saving-donut" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "donut-text", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { id: "saving-rate", children: [
+              "0%",
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Poupan\xE7a" })
+            ] }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "caption", style: { marginTop: 12 }, children: "Dicas personalizadas" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "list-card", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "tx-name", children: "Reduza gastos com lazer" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "tx-meta", children: "Compare com o m\xEAs passado." })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "\u203A" })
+          ] })
+        ] });
+      }
+      function QuickActionsCard() {
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", style: { marginBottom: 14 }, children: "A\xE7\xF5es R\xE1pidas" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "quick-grid", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("button", { className: "quick-action dashboard-card-action", onClick: () => {
+              var _a;
+              return (_a = window.navTo) == null ? void 0 : _a.call(window, "lancamentos");
+            }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "quick-icon", children: "+" }),
+              "Novo Lan\xE7amento"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("button", { className: "quick-action dashboard-card-action", onClick: () => {
+              var _a, _b;
+              (_a = window.navTo) == null ? void 0 : _a.call(window, "metas");
+              (_b = window.showAddMeta) == null ? void 0 : _b.call(window);
+            }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "quick-icon", children: "\u25CE" }),
+              "Nova Meta"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("button", { className: "quick-action dashboard-card-action", onClick: () => {
+              var _a, _b;
+              (_a = window.navTo) == null ? void 0 : _a.call(window, "contas");
+              (_b = window.showAddConta) == null ? void 0 : _b.call(window);
+            }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "quick-icon", children: "\u25A3" }),
+              "Nova Conta"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("button", { className: "quick-action dashboard-card-action", onClick: () => {
+              var _a;
+              return (_a = window.toast) == null ? void 0 : _a.call(window, "Transfer\xEAncias em breve", "success");
+            }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "quick-icon", children: "\u21C4" }),
+              "Transfer\xEAncia"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("button", { className: "quick-action dashboard-card-action", onClick: () => {
+              var _a;
+              return (_a = window.navTo) == null ? void 0 : _a.call(window, "relatorios");
+            }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "quick-icon", children: "\u25A4" }),
+              "Relat\xF3rio"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("button", { className: "quick-action dashboard-card-action", onClick: () => {
+              var _a;
+              return (_a = window.navTo) == null ? void 0 : _a.call(window, "orcamento");
+            }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "quick-icon", children: "\u25D4" }),
+              "Or\xE7amento"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("button", { className: "quick-action dashboard-card-action", onClick: () => {
+              var _a;
+              return (_a = window.navTo) == null ? void 0 : _a.call(window, "investimentos");
+            }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "quick-icon", children: "\u2197" }),
+              "Investir"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("button", { className: "quick-action dashboard-card-action", onClick: () => {
+              var _a;
+              return (_a = window.toast) == null ? void 0 : _a.call(window, "Importa\xE7\xE3o em breve", "success");
+            }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "quick-icon", children: "\u2601" }),
+              "Importar Extrato"
+            ] })
+          ] })
+        ] });
+      }
+      function RecentTransactionsCard() {
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card-head", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "\xDAltimas Transa\xE7\xF5es" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "btn btn-ghost dashboard-card-action", onClick: () => {
+              var _a;
+              return (_a = window.navTo) == null ? void 0 : _a.call(window, "transacoes");
+            }, children: "Ver todas" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "tx-list", id: "recent-list" })
+        ] });
+      }
       var CARD_RENDERERS = {
         "saldo-total": KpiSaldo,
         "receitas-mes": KpiReceitas,
@@ -27255,7 +27394,11 @@
         "receitas-despesas": RevenueExpenseChart,
         "despesas-categoria": CategoryExpenseChart,
         metas: GoalsCard,
-        "contas-carteiras": AccountsCard
+        "contas-carteiras": AccountsCard,
+        "gastos-categoria": CategoryTotalCard,
+        planejamento: PlanningCard,
+        "acoes-rapidas": QuickActionsCard,
+        "ultimas-transacoes": RecentTransactionsCard
       };
       function DashboardLayoutApp({ userId }) {
         const desktop = useDesktopMode();
@@ -27315,7 +27458,7 @@
               draggableCancel: ".dashboard-card-action, input, select, button, textarea, canvas, a",
               isDraggable: editing && desktop,
               isResizable: editing && desktop,
-              resizeHandles: ["se"],
+              resizeHandles: ["s", "e", "se"],
               onLayoutChange: handleLayoutChange,
               onDragStop: scheduleDashboardRender,
               onResize: scheduleDashboardRender,

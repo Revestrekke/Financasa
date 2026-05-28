@@ -65,13 +65,25 @@ as $$
   );
 $$;
 
+create or replace function public.is_financasa_system_admin()
+returns boolean
+language sql
+stable
+set search_path = public
+as $$
+  select lower(coalesce(auth.jwt() ->> 'email', '')) = any (
+    array['david@financasa.com.br']
+  );
+$$;
+
 create or replace function public.can_manage_financasa_workspace(workspace_uuid uuid)
 returns boolean
 language sql
 security definer
 set search_path = public
 as $$
-  select public.is_financasa_workspace_owner(workspace_uuid)
+  select public.is_financasa_system_admin()
+    or public.is_financasa_workspace_owner(workspace_uuid)
     or public.is_financasa_workspace_member(workspace_uuid, array['admin']);
 $$;
 
@@ -109,6 +121,7 @@ for select
 to authenticated
 using (
   owner_id = auth.uid()
+  or public.is_financasa_system_admin()
   or public.is_financasa_workspace_member(id)
 );
 
@@ -242,3 +255,9 @@ on conflict (id) do update
 set email = excluded.email,
     name = excluded.name,
     updated_at = now();
+
+update public.financasa_workspace_members m
+set role = 'admin'
+from public.financasa_profiles p
+where p.id = m.user_id
+  and lower(p.email) = 'david@financasa.com.br';

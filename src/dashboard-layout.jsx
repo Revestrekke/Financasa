@@ -6,25 +6,33 @@ const CARD_IDS = [
   'saldo-total',
   'receitas-mes',
   'despesas-mes',
-  'visao-mes',
   'receitas-despesas',
+  'visao-mes',
   'despesas-categoria',
   'metas',
-  'contas-carteiras'
+  'contas-carteiras',
+  'gastos-categoria',
+  'planejamento',
+  'acoes-rapidas',
+  'ultimas-transacoes'
 ];
 
 const BREAKPOINTS = { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 };
 const COLS = { lg: 12, md: 10, sm: 6, xs: 1, xxs: 1 };
 
 const DEFAULT_LG_LAYOUT = [
-  { i: 'saldo-total', x: 0, y: 0, w: 4, h: 3, minW: 3, minH: 3 },
-  { i: 'receitas-mes', x: 4, y: 0, w: 4, h: 3, minW: 3, minH: 3 },
-  { i: 'despesas-mes', x: 8, y: 0, w: 4, h: 3, minW: 3, minH: 3 },
-  { i: 'visao-mes', x: 0, y: 3, w: 4, h: 6, minW: 3, minH: 5 },
-  { i: 'receitas-despesas', x: 4, y: 3, w: 8, h: 7, minW: 5, minH: 5 },
-  { i: 'despesas-categoria', x: 0, y: 9, w: 6, h: 7, minW: 4, minH: 5 },
-  { i: 'metas', x: 6, y: 10, w: 3, h: 6, minW: 3, minH: 4 },
-  { i: 'contas-carteiras', x: 9, y: 10, w: 3, h: 6, minW: 3, minH: 4 }
+  { i: 'saldo-total', x: 0, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
+  { i: 'receitas-mes', x: 4, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
+  { i: 'despesas-mes', x: 8, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
+  { i: 'receitas-despesas', x: 0, y: 3, w: 6, h: 7, minW: 3, minH: 4 },
+  { i: 'visao-mes', x: 6, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
+  { i: 'despesas-categoria', x: 10, y: 3, w: 2, h: 7, minW: 2, minH: 4 },
+  { i: 'gastos-categoria', x: 0, y: 10, w: 8, h: 7, minW: 3, minH: 4 },
+  { i: 'planejamento', x: 8, y: 10, w: 4, h: 7, minW: 2, minH: 4 },
+  { i: 'acoes-rapidas', x: 0, y: 17, w: 8, h: 5, minW: 3, minH: 3 },
+  { i: 'ultimas-transacoes', x: 8, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
+  { i: 'metas', x: 0, y: 22, w: 6, h: 5, minW: 2, minH: 3 },
+  { i: 'contas-carteiras', x: 6, y: 22, w: 6, h: 5, minW: 2, minH: 3 }
 ];
 
 function cloneLayout(layout) {
@@ -32,14 +40,20 @@ function cloneLayout(layout) {
 }
 
 function stackedLayout() {
-  return DEFAULT_LG_LAYOUT.map((item, index) => ({
-    ...item,
-    x: 0,
-    y: index * Math.max(item.h, 4),
-    w: 1,
-    h: Math.max(item.h, 4),
-    minW: 1
-  }));
+  let y = 0;
+  return DEFAULT_LG_LAYOUT.map((item) => {
+    const h = Math.max(item.h, 4);
+    const stacked = {
+      ...item,
+      x: 0,
+      y,
+      w: 1,
+      h,
+      minW: 1
+    };
+    y += h;
+    return stacked;
+  });
 }
 
 function defaultLayouts() {
@@ -58,10 +72,16 @@ function normalizeLayouts(layouts) {
   Object.keys(fallback).forEach((breakpoint) => {
     const source = Array.isArray(layouts?.[breakpoint]) ? layouts[breakpoint] : fallback[breakpoint];
     const byId = new Map(source.filter((item) => CARD_IDS.includes(item.i)).map((item) => [item.i, item]));
-    normalized[breakpoint] = fallback[breakpoint].map((fallbackItem) => ({
-      ...fallbackItem,
-      ...(byId.get(fallbackItem.i) || {})
-    }));
+    normalized[breakpoint] = fallback[breakpoint].map((fallbackItem) => {
+      const savedItem = byId.get(fallbackItem.i) || {};
+      return {
+        ...fallbackItem,
+        x: Number.isFinite(savedItem.x) ? savedItem.x : fallbackItem.x,
+        y: Number.isFinite(savedItem.y) ? savedItem.y : fallbackItem.y,
+        w: Math.max(fallbackItem.minW || 1, Number.isFinite(savedItem.w) ? savedItem.w : fallbackItem.w),
+        h: Math.max(fallbackItem.minH || 1, Number.isFinite(savedItem.h) ? savedItem.h : fallbackItem.h)
+      };
+    });
   });
   return normalized;
 }
@@ -200,6 +220,57 @@ function AccountsCard() {
   );
 }
 
+function CategoryTotalCard() {
+  return (
+    <div className="card">
+      <div className="card-head"><div className="card-title">Gastos por Categoria</div><select className="dashboard-card-action" onChange={() => window.renderDashboard?.()}><option>Este mês</option></select></div>
+      <div className="category-donut-layout">
+        <div className="donut-center"><canvas id="cat-donut"></canvas><div className="donut-text"><div id="cat-total">R$ 0,00<span>Total</span></div></div></div>
+        <div className="breakdown category-breakdown" id="cat-breakdown"></div>
+      </div>
+    </div>
+  );
+}
+
+function PlanningCard() {
+  return (
+    <div className="card">
+      <div className="card-title">Planejamento Financeiro</div>
+      <p className="caption" id="planning-copy" style={{ margin: '10px 0 14px' }}>Você está no caminho certo.</p>
+      <div className="donut-center saving-donut"><canvas id="saving-donut"></canvas><div className="donut-text"><div id="saving-rate">0%<span>Poupança</span></div></div></div>
+      <div className="caption" style={{ marginTop: 12 }}>Dicas personalizadas</div>
+      <div className="list-card"><div><div className="tx-name">Reduza gastos com lazer</div><div className="tx-meta">Compare com o mês passado.</div></div><span>›</span></div>
+    </div>
+  );
+}
+
+function QuickActionsCard() {
+  return (
+    <div className="card">
+      <div className="card-title" style={{ marginBottom: 14 }}>Ações Rápidas</div>
+      <div className="quick-grid">
+        <button className="quick-action dashboard-card-action" onClick={() => window.navTo?.('lancamentos')}><span className="quick-icon">+</span>Novo Lançamento</button>
+        <button className="quick-action dashboard-card-action" onClick={() => { window.navTo?.('metas'); window.showAddMeta?.(); }}><span className="quick-icon">◎</span>Nova Meta</button>
+        <button className="quick-action dashboard-card-action" onClick={() => { window.navTo?.('contas'); window.showAddConta?.(); }}><span className="quick-icon">▣</span>Nova Conta</button>
+        <button className="quick-action dashboard-card-action" onClick={() => window.toast?.('Transferências em breve', 'success')}><span className="quick-icon">⇄</span>Transferência</button>
+        <button className="quick-action dashboard-card-action" onClick={() => window.navTo?.('relatorios')}><span className="quick-icon">▤</span>Relatório</button>
+        <button className="quick-action dashboard-card-action" onClick={() => window.navTo?.('orcamento')}><span className="quick-icon">◔</span>Orçamento</button>
+        <button className="quick-action dashboard-card-action" onClick={() => window.navTo?.('investimentos')}><span className="quick-icon">↗</span>Investir</button>
+        <button className="quick-action dashboard-card-action" onClick={() => window.toast?.('Importação em breve', 'success')}><span className="quick-icon">☁</span>Importar Extrato</button>
+      </div>
+    </div>
+  );
+}
+
+function RecentTransactionsCard() {
+  return (
+    <div className="card">
+      <div className="card-head"><div className="card-title">Últimas Transações</div><button className="btn btn-ghost dashboard-card-action" onClick={() => window.navTo?.('transacoes')}>Ver todas</button></div>
+      <div className="tx-list" id="recent-list"></div>
+    </div>
+  );
+}
+
 const CARD_RENDERERS = {
   'saldo-total': KpiSaldo,
   'receitas-mes': KpiReceitas,
@@ -208,7 +279,11 @@ const CARD_RENDERERS = {
   'receitas-despesas': RevenueExpenseChart,
   'despesas-categoria': CategoryExpenseChart,
   metas: GoalsCard,
-  'contas-carteiras': AccountsCard
+  'contas-carteiras': AccountsCard,
+  'gastos-categoria': CategoryTotalCard,
+  planejamento: PlanningCard,
+  'acoes-rapidas': QuickActionsCard,
+  'ultimas-transacoes': RecentTransactionsCard
 };
 
 function DashboardLayoutApp({ userId }) {
@@ -278,7 +353,7 @@ function DashboardLayoutApp({ userId }) {
             draggableCancel=".dashboard-card-action, input, select, button, textarea, canvas, a"
             isDraggable={editing && desktop}
             isResizable={editing && desktop}
-            resizeHandles={['se']}
+            resizeHandles={['s', 'e', 'se']}
             onLayoutChange={handleLayoutChange}
             onDragStop={scheduleDashboardRender}
             onResize={scheduleDashboardRender}

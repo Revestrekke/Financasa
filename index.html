@@ -118,11 +118,17 @@
     .export-row{display:flex;justify-content:flex-end;margin:-4px 0 18px}
     .dashboard-layout-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin:0 0 14px;flex-wrap:wrap}
     .dashboard-layout-actions .btn.active{background:#07966d;color:#ffffff;border-color:#07966d}
-    .dashboard-layout-root{margin-bottom:18px;overflow:hidden}
-    .dashboard-layout-card{height:100%;position:relative}
-    .dashboard-layout-card>.card,.dashboard-layout-card>.kpi-card{height:100%;min-height:0;overflow:hidden}
-    .dashboard-layout-card .chart-box{height:calc(100% - 56px);min-height:150px}
-    .dashboard-layout-card .donut-layout{height:calc(100% - 34px);align-content:center}
+    .dashboard-layout-root{margin-bottom:18px;overflow:visible}
+    .dashboard-layout-card{height:100%;min-width:0;min-height:0;position:relative}
+    .dashboard-layout-card>.card,.dashboard-layout-card>.kpi-card{height:100%;min-width:0;min-height:0;overflow:hidden}
+    .dashboard-layout-card>.card{display:flex;flex-direction:column}
+    .dashboard-layout-card .card-head{flex:0 0 auto}
+    .dashboard-layout-card .chart-box{height:auto;flex:1 1 auto;min-height:0}
+    .dashboard-layout-card .donut-layout{flex:1 1 auto;min-height:0;align-content:center}
+    .dashboard-layout-card .category-donut-layout{flex:1 1 auto;min-height:0}
+    .dashboard-layout-card .quick-grid{grid-template-columns:repeat(auto-fit,minmax(78px,1fr));overflow:auto;padding:2px}
+    .dashboard-layout-card .tx-list{overflow:auto}
+    .dashboard-layout-card .saving-donut{margin:auto;width:130px;height:130px;max-width:100%;max-height:42%}
     .dashboard-layout-card .goal-list,.dashboard-layout-card .account-list{max-height:calc(100% - 52px);overflow:auto}
     .dashboard-drag-handle{
       position:absolute;top:8px;right:9px;z-index:2;width:22px;height:22px;border-radius:7px;
@@ -131,7 +137,6 @@
     }
     .dashboard-layout-card.is-editing .dashboard-drag-handle{display:grid}
     .dashboard-layout-card.is-editing>.card,.dashboard-layout-card.is-editing>.kpi-card{outline:1px dashed rgba(7,150,109,.35);outline-offset:-4px}
-    .dashboard-static-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);gap:16px;margin-top:16px}
     .dashboard-fallback-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
     .dashboard-fallback-grid .kpi-card,.dashboard-fallback-grid .card{min-height:220px}
     .dashboard-fallback-grid .span-3{grid-column:span 3}
@@ -327,12 +332,13 @@
     }
     .app{background:#edf9f3}
     .sidebar{
-      background:#07966d;
-      border-right:0;
-      box-shadow:6px 0 24px rgba(7,150,109,.16);
+      background:#ffffff;
+      border-right:1px solid #dce5ee;
+      box-shadow:6px 0 24px rgba(15,23,42,.06);
     }
     .sidebar .brand{
       background:#ffffff;
+      border:1px solid #dce5ee;
       border-radius:8px;
       padding:10px 12px;
     }
@@ -343,25 +349,25 @@
       border-color:#dce5ee;
     }
     .user-title,.user-sub,.section-title,.hello p,.caption,.tx-meta,.goal-meta,.account-sub,label{color:#000000}
-    .sidebar .section-title{color:#c8ffea}
-    .nav-item{color:#ecfff7}
-    .nav-ico{color:#d4ffed}
-    .nav-item:hover{background:rgba(255,255,255,.14);color:#ffffff}
+    .sidebar .section-title{color:#07966d}
+    .nav-item{color:#172033}
+    .nav-ico{color:#07966d}
+    .nav-item:hover{background:#e8f7f1;color:#076b50}
     .nav-item.active{
-      background:#ffffff;
-      color:#076b50;
+      background:#07966d;
+      color:#ffffff;
       box-shadow:none;
       font-weight:800;
     }
-    .nav-item.active .nav-ico{color:#076b50}
+    .nav-item.active .nav-ico{color:#ffffff}
     .pro-card{
-      background:rgba(255,255,255,.13);
-      border-color:rgba(255,255,255,.22);
+      background:#e8f7f1;
+      border-color:#bce7d5;
     }
-    .pro-title{color:#ffffff}
-    .pro-copy{color:#e0fff2}
-    .theme-pill{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.22);color:#ffffff}
-    .switch{background:rgba(255,255,255,.24)}
+    .pro-title{color:#076b50}
+    .pro-copy{color:#172033}
+    .theme-pill{background:#f8fafc;border-color:#dce5ee;color:#172033}
+    .switch{background:#dce5ee}
     .switch:after{background:#ffffff;box-shadow:0 1px 4px rgba(15,23,42,.18)}
     .shell{background:#edf9f3}
     .search input{color:#172033}
@@ -462,7 +468,7 @@
       .mobile-menu{display:inline-flex}
       .topbar{grid-template-columns:1fr;gap:14px}
       .top-actions,.export-row{justify-content:flex-start}
-      .kpi-grid,.row-grid,.mini-grid,.content-grid,.right-col,.member-grid,.dashboard-static-grid{grid-template-columns:1fr}
+      .kpi-grid,.row-grid,.mini-grid,.content-grid,.right-col,.member-grid{grid-template-columns:1fr}
       .dashboard-fallback-grid{grid-template-columns:1fr}
       .dashboard-fallback-grid .span-3,.dashboard-fallback-grid .span-4,.dashboard-fallback-grid .span-6,.dashboard-fallback-grid .span-8{grid-column:1}
       .dashboard-layout-actions{justify-content:flex-start}
@@ -634,24 +640,21 @@
               <div class="account-list" id="dash-accounts"></div>
               <div class="cash-line" style="border-bottom:0;font-weight:800"><span>Total</span><span id="dash-total">R$ 0,00</span></div>
             </div>
-          </div>
-        </div>
-        <div class="dashboard-static-grid">
-          <div class="card">
+            <div class="card span-8">
             <div class="card-head"><div class="card-title">Gastos por Categoria</div><select onchange="renderDashboard()"><option>Este mês</option></select></div>
             <div class="category-donut-layout">
               <div class="donut-center"><canvas id="cat-donut"></canvas><div class="donut-text"><div id="cat-total">R$ 0,00<span>Total</span></div></div></div>
               <div class="breakdown category-breakdown" id="cat-breakdown"></div>
             </div>
           </div>
-          <div class="card">
+            <div class="card span-4">
             <div class="card-title">Planejamento Financeiro</div>
             <p class="caption" id="planning-copy" style="margin:10px 0 14px">Você está no caminho certo.</p>
-            <div class="donut-center" style="margin:auto;width:130px;height:130px"><canvas id="saving-donut"></canvas><div class="donut-text"><div id="saving-rate">0%<span>Poupança</span></div></div></div>
+            <div class="donut-center saving-donut" style="margin:auto;width:130px;height:130px"><canvas id="saving-donut"></canvas><div class="donut-text"><div id="saving-rate">0%<span>Poupança</span></div></div></div>
             <div class="caption" style="margin-top:12px">Dicas personalizadas</div>
             <div class="list-card"><div><div class="tx-name">Reduza gastos com lazer</div><div class="tx-meta">Compare com o mês passado.</div></div><span>›</span></div>
           </div>
-          <div class="card">
+            <div class="card span-8">
             <div class="card-title" style="margin-bottom:14px">Ações Rápidas</div>
             <div class="quick-grid">
               <button class="quick-action" onclick="navTo('lancamentos')"><span class="quick-icon">+</span>Novo Lançamento</button>
@@ -664,9 +667,10 @@
               <button class="quick-action" onclick="toast('Importação em breve','success')"><span class="quick-icon">☁</span>Importar Extrato</button>
             </div>
           </div>
-          <div class="card">
+            <div class="card span-4">
             <div class="card-head"><div class="card-title">Últimas Transações</div><button class="btn btn-ghost" onclick="navTo('transacoes')">Ver todas</button></div>
             <div class="tx-list" id="recent-list"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -776,6 +780,7 @@
     const COLORS=['#09d98f','#3b82f6','#ff3f57','#a78bfa','#f59e0b','#e946a4','#14b8a6','#64748b'];
     const SUPABASE_URL=window.FINANCASA_CONFIG?.SUPABASE_URL||'https://fzozyfzihfltgebmufsp.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY=window.FINANCASA_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2';
+    const SYSTEM_ADMIN_EMAILS=['david@financasa.com.br'];
     let authMode='login';
     let currentUser=null;
     let currentWorkspace=null;
@@ -821,6 +826,10 @@
     function getUserName(user=currentUser){
       const email=user?.email||'usuario@financasa';
       return user?.user_metadata?.name||user?.user_metadata?.full_name||email.split('@')[0]||'usuário';
+    }
+    function isSystemAdmin(user=currentUser){
+      const email=String(user?.email||'').trim().toLowerCase();
+      return SYSTEM_ADMIN_EMAILS.includes(email);
     }
     function setAuthMode(mode){
       authMode=mode;
@@ -902,7 +911,9 @@
           .order('created_at',{ascending:true})
         ;
         if(error)throw error;
-        let data=(workspaces||[]).find(workspace=>workspace.owner_id===currentUser.id)||(workspaces||[])[0];
+        const ownedWorkspace=(workspaces||[]).find(workspace=>workspace.owner_id===currentUser.id);
+        const sharedWorkspace=(workspaces||[]).find(workspace=>workspace.owner_id!==currentUser.id);
+        let data=ownedWorkspace||(isSystemAdmin()?null:sharedWorkspace);
         if(!data){
           let initial=createInitialState();
           const legacy=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
@@ -921,6 +932,7 @@
           );
         }
         currentWorkspace=data;
+        await ensureSystemAdminMembership(client);
         await loadWorkspaceMembers(client);
         return data.state||null;
       }catch(error){
@@ -974,6 +986,14 @@
         .order('created_at',{ascending:true});
       if(error)throw error;
       workspaceMembers=data||[];
+    }
+    async function ensureSystemAdminMembership(client=getBrowserSupabaseClient()){
+      if(!isSystemAdmin()||!currentWorkspace?.id||!currentUser?.id)return;
+      const {error}=await client.from('financasa_workspace_members').upsert(
+        {workspace_id:currentWorkspace.id,user_id:currentUser.id,role:'admin'},
+        {onConflict:'workspace_id,user_id'}
+      );
+      if(error)console.warn('Não foi possível sincronizar administrador do sistema:',error.message);
     }
 
     let saveTimer=null;
@@ -1565,10 +1585,12 @@
     function normalizeMembers(){
       const members=workspaceMembers.map(m=>{
         const profile=Array.isArray(m.financasa_profiles)?m.financasa_profiles[0]:m.financasa_profiles;
-        return{user_id:m.user_id,role:m.role||'editor',email:profile?.email||'',name:profile?.name||profile?.email||'Usuário'};
+        const email=profile?.email||'';
+        const admin=isSystemAdmin({email});
+        return{user_id:m.user_id,role:admin?'admin':(m.role||'editor'),email,name:profile?.name||email||'Usuário'};
       });
       if(currentUser&&!members.some(m=>m.user_id===currentUser.id)){
-        members.unshift({user_id:currentUser.id,role:isWorkspaceOwner()?'admin':'editor',email:currentUser.email||'',name:getUserName(currentUser)});
+        members.unshift({user_id:currentUser.id,role:(isWorkspaceOwner()||isSystemAdmin())?'admin':'editor',email:currentUser.email||'',name:getUserName(currentUser)});
       }
       return members;
     }
@@ -1580,11 +1602,12 @@
       return `<div class="list-card member-row"><div><div class="account-name">${escapeHtml(member.name)}</div><div class="account-sub">${escapeHtml(member.email)}${isMe?' · você':''}</div></div>${roleSelect}<div class="inline-actions">${remove}</div></div>`;
     }
     function getCurrentMemberRole(){
+      if(isSystemAdmin())return'admin';
       const member=workspaceMembers.find(member=>member.user_id===currentUser?.id);
       return member?.role||'';
     }
     function isWorkspaceOwner(){return !!currentWorkspace&&currentWorkspace.owner_id===currentUser?.id}
-    function canManageWorkspaceUsers(){return isWorkspaceOwner()||getCurrentMemberRole()==='admin'}
+    function canManageWorkspaceUsers(){return isSystemAdmin()||isWorkspaceOwner()||getCurrentMemberRole()==='admin'}
     async function updateProfileInfo(){
       const client=getBrowserSupabaseClient();
       const name=(document.getElementById('profile-name').value||'').trim();
