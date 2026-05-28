@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinanCasa</title>
+  <link rel="stylesheet" href="assets/dashboard-layout.css">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
@@ -13,9 +14,9 @@
       --panel3:#101d31;
       --line:#1e314b;
       --line2:#29405f;
-      --text:#f4f7fb;
-      --muted:#9aa8bf;
-      --muted2:#65748c;
+      --text:#000000;
+      --muted:#000000;
+      --muted2:#000000;
       --green:#09d98f;
       --green2:#00a96f;
       --red:#ff3f57;
@@ -25,7 +26,7 @@
       --pink:#e946a4;
       --radius:14px;
       --shadow:0 24px 80px rgba(0,0,0,.36);
-      font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+      font-family:Arial,sans-serif;
     }
     body{
       min-height:100vh;
@@ -38,6 +39,10 @@
     }
     button,input,select,textarea{font:inherit}
     button{cursor:pointer}
+    button:disabled,input:disabled,select:disabled{
+      cursor:not-allowed;
+      opacity:.62;
+    }
     .app{display:grid;grid-template-columns:268px minmax(0,1fr);height:100vh}
     .sidebar{
       background:linear-gradient(180deg,rgba(8,18,35,.98),rgba(4,12,24,.98));
@@ -49,13 +54,10 @@
       overflow-y:auto;
     }
     .brand{display:flex;align-items:center;gap:12px}
-    .brand-mark{
-      width:42px;height:42px;border:2px solid var(--green);border-radius:12px;
-      display:grid;place-items:center;color:var(--green);font-weight:800;font-size:22px;
-      box-shadow:0 0 26px rgba(9,217,143,.18);
+    .brand-logo{
+      width:174px;max-width:100%;height:auto;display:block;
     }
-    .brand-name{font-size:23px;font-weight:800;letter-spacing:-.5px}
-    .brand-pro{margin-left:auto;color:var(--green);font-size:12px;font-weight:800}
+    .auth-copy .brand-logo{width:236px}
     .user-card{
       display:flex;align-items:center;gap:12px;background:rgba(19,34,57,.86);
       border:1px solid rgba(68,90,126,.25);border-radius:8px;padding:12px;
@@ -114,6 +116,22 @@
     .icon-btn{width:42px;height:42px;border-radius:50%}
     .round-btn{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#00a96f,#08db92);font-size:25px}
     .export-row{display:flex;justify-content:flex-end;margin:-4px 0 18px}
+    .dashboard-layout-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+    .dashboard-layout-actions .btn.active{background:#07966d;color:#ffffff;border-color:#07966d}
+    .dashboard-layout-root{margin-bottom:18px;overflow:hidden}
+    .dashboard-layout-card{height:100%;position:relative}
+    .dashboard-layout-card>.card,.dashboard-layout-card>.kpi-card{height:100%;min-height:0;overflow:hidden}
+    .dashboard-layout-card .chart-box{height:calc(100% - 56px);min-height:150px}
+    .dashboard-layout-card .donut-layout{height:calc(100% - 34px);align-content:center}
+    .dashboard-layout-card .goal-list,.dashboard-layout-card .account-list{max-height:calc(100% - 52px);overflow:auto}
+    .dashboard-drag-handle{
+      position:absolute;top:8px;right:9px;z-index:2;width:22px;height:22px;border-radius:7px;
+      display:none;place-items:center;color:#076b50;background:rgba(7,150,109,.11);
+      border:1px solid rgba(7,150,109,.2);font-size:13px;line-height:1;cursor:grab;
+    }
+    .dashboard-layout-card.is-editing .dashboard-drag-handle{display:grid}
+    .dashboard-layout-card.is-editing>.card,.dashboard-layout-card.is-editing>.kpi-card{outline:1px dashed rgba(7,150,109,.35);outline-offset:-4px}
+    .dashboard-static-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);gap:16px;margin-top:16px}
     .btn{
       border:1px solid rgba(83,106,146,.38);border-radius:8px;background:#101d31;color:white;
       padding:9px 14px;display:inline-flex;align-items:center;gap:8px;font-size:13px;
@@ -262,7 +280,6 @@
     }
     .auth-copy{padding:56px;display:flex;flex-direction:column;justify-content:space-between;min-height:100vh}
     .auth-copy .brand{width:max-content}
-    .auth-copy .brand-pro{margin-left:0}
     .auth-copy h1{font-size:48px;line-height:1.02;letter-spacing:0;margin:36px 0 18px;max-width:660px}
     .auth-copy p{color:#b8c7dd;font-size:17px;line-height:1.55;max-width:590px}
     .auth-card-wrap{display:grid;place-items:center;padding:36px}
@@ -280,7 +297,7 @@
 
     body{
       background:#f6f8fb;
-      color:#172033;
+      color:#000000;
     }
     :root{
       --bg:#f6f8fb;
@@ -289,9 +306,9 @@
       --panel3:#eef4f8;
       --line:#d8e1eb;
       --line2:#c5d1df;
-      --text:#172033;
-      --muted:#65758a;
-      --muted2:#8794a7;
+      --text:#000000;
+      --muted:#000000;
+      --muted2:#000000;
       --green:#07966d;
       --green2:#0bbf88;
       --red:#dc3545;
@@ -308,30 +325,18 @@
       border-right:0;
       box-shadow:6px 0 24px rgba(7,150,109,.16);
     }
-    .brand-mark{
-      border-color:rgba(255,255,255,.86);
-      color:#ffffff;
-      box-shadow:none;
-      background:rgba(255,255,255,.14);
+    .sidebar .brand{
+      background:#ffffff;
+      border-radius:8px;
+      padding:10px 12px;
     }
-    .brand-name{color:#ffffff}
-    .pro-title,.card-title,.page-header h2,.auth-card h2,.tx-name,.goal-name,.account-name,.category-name{color:#172033}
-    .brand-pro{color:#d7fff0}
-    .profile-card{
-      width:100%;display:flex;align-items:center;gap:12px;text-align:left;
-      background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.26);
-      border-radius:8px;padding:12px;color:#ffffff;
-    }
-    .profile-card:hover{background:rgba(255,255,255,.2)}
-    .profile-label{font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:#cfffea;font-weight:800}
-    .profile-title{font-size:13px;font-weight:800;color:#ffffff;margin-top:2px}
-    .profile-sub{font-size:12px;color:#ddfff1;margin-top:2px}
-    .profile-card .avatar{background:#ffffff;color:#07966d}
+    .sidebar .brand-logo{width:206px}
+    .pro-title,.card-title,.page-header h2,.auth-card h2,.tx-name,.goal-name,.account-name,.category-name{color:#000000}
     .theme-pill,.search,.auth-mini{
       background:#f8fafc;
       border-color:#dce5ee;
     }
-    .user-title,.user-sub,.section-title,.hello p,.caption,.tx-meta,.goal-meta,.account-sub,label{color:#65758a}
+    .user-title,.user-sub,.section-title,.hello p,.caption,.tx-meta,.goal-meta,.account-sub,label{color:#000000}
     .sidebar .section-title{color:#c8ffea}
     .nav-item{color:#ecfff7}
     .nav-ico{color:#d4ffed}
@@ -383,7 +388,7 @@
     .kpi-icon{background:#ecfdf5;color:#07966d}
     .kpi-icon.red{background:#fff1f2;color:#dc3545}
     .kpi-label{color:#65758a}
-    .kpi-value{color:#172033}
+    .kpi-value{color:#000000}
     .trend.up{background:#ecfdf5;color:#07966d}
     .trend.down{background:#fff1f2;color:#dc3545}
     .break-row,.cash-line,td{color:#334155}
@@ -392,14 +397,14 @@
     .tx-ico,.account-ico,.goal-ico{background:#eef4ff;color:#2563eb}
     input,select,textarea{
       background:#ffffff;
-      color:#172033;
+      color:#000000;
       border-color:#cfd9e5;
     }
     input:focus,select:focus,textarea:focus{
       border-color:#07966d;
       box-shadow:0 0 0 3px rgba(7,150,109,.12);
     }
-    select option{background:#ffffff;color:#172033}
+    select option{background:#ffffff;color:#000000}
     .segmented,.auth-tabs{background:#f1f5f9;border-color:#dce5ee}
     .segmented button,.auth-tabs button{color:#65758a}
     .segmented button.active.in,.auth-tabs button.active{background:#ffffff;color:#07966d;box-shadow:0 1px 6px rgba(15,23,42,.08)}
@@ -413,7 +418,7 @@
     .empty{color:#65758a}
     .toast{
       background:#ffffff;
-      color:#172033;
+      color:#000000;
       border-color:#dce5ee;
       box-shadow:0 16px 40px rgba(15,23,42,.14);
     }
@@ -424,7 +429,7 @@
     }
     .auth-copy p,.auth-mini span{color:#65758a}
     .auth-card-wrap{background:rgba(255,255,255,.36)}
-    .auth-copy h1{color:#172033}
+    .auth-copy h1{color:#000000}
     .auth-card{background:#ffffff}
     .page-actions,.inline-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
     .member-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px}
@@ -451,7 +456,8 @@
       .mobile-menu{display:inline-flex}
       .topbar{grid-template-columns:1fr;gap:14px}
       .top-actions,.export-row{justify-content:flex-start}
-      .kpi-grid,.row-grid,.mini-grid,.content-grid,.right-col,.member-grid{grid-template-columns:1fr}
+      .kpi-grid,.row-grid,.mini-grid,.content-grid,.right-col,.member-grid,.dashboard-static-grid{grid-template-columns:1fr}
+      .dashboard-layout-actions{justify-content:flex-start}
       .quick-grid{grid-template-columns:repeat(4,1fr)}
     }
     @media(max-width:640px){
@@ -466,9 +472,7 @@
     <div class="auth-copy">
       <div>
         <div class="brand">
-          <div class="brand-mark">$</div>
-          <div class="brand-name">FinanCasa</div>
-          <div class="brand-pro">SaaS</div>
+          <img class="brand-logo" src="assets/logo.png" alt="FinanCasa">
         </div>
         <h1>Controle financeiro familiar com dados seguros na nuvem.</h1>
         <p>Organize contas, metas, orçamentos e relatórios em um painel online acessível de qualquer lugar.</p>
@@ -508,18 +512,8 @@
   <div class="app" id="app-shell" style="display:none">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <div class="brand-mark">$</div>
-        <div class="brand-name">FinanCasa</div>
-        <div class="brand-pro">PRO</div>
+        <img class="brand-logo" src="assets/logo.png" alt="FinanCasa">
       </div>
-      <button class="profile-card" type="button" onclick="navTo('usuarios')">
-        <div class="avatar" id="sidebar-avatar">FC</div>
-        <div>
-          <div class="profile-label">Minha área</div>
-          <div class="profile-title">Perfil e usuários</div>
-          <div class="profile-sub" id="workspace-label">Área principal</div>
-        </div>
-      </button>
 
       <div>
         <button class="nav-item active" data-page="dashboard"><span class="nav-ico">▣</span>Dashboard</button>
@@ -571,7 +565,7 @@
           <button class="round-btn" onclick="navTo('lancamentos')">+</button>
           <button class="icon-btn" onclick="navTo('relatorios')">▣</button>
           <button class="icon-btn" onclick="toast('Sem novas notificações','success')">♢</button>
-          <button class="icon-btn" id="top-user-avatar" onclick="signOut()">--</button>
+          <button class="icon-btn" id="top-user-avatar" onclick="openMinhaArea()" title="Minha área" aria-label="Minha área">--</button>
         </div>
       </div>
       <div class="export-row">
@@ -579,103 +573,39 @@
       </div>
 
       <section class="page active" id="page-dashboard">
-        <div class="dashboard-grid">
-          <div class="main-col">
-            <div class="kpi-grid">
-              <div class="kpi-card">
-                <div class="kpi-head"><div class="kpi-icon">▣</div><div><div class="kpi-label">Saldo Total</div><div class="kpi-value" id="kpi-saldo">R$ 0,00</div><div class="kpi-sub">Todas as contas</div></div></div>
-                <div class="trend up" id="kpi-saldo-trend">▲ 0,0%</div>
-                <canvas class="spark" id="spark-saldo"></canvas>
-              </div>
-              <div class="kpi-card">
-                <div class="kpi-head"><div class="kpi-icon">↑</div><div><div class="kpi-label">Receitas do Mês</div><div class="kpi-value" id="kpi-receita">R$ 0,00</div><div class="kpi-sub">vs mês anterior</div></div></div>
-                <div class="trend up" id="kpi-receita-trend">▲ 0,0%</div>
-                <canvas class="spark" id="spark-receita"></canvas>
-              </div>
-              <div class="kpi-card">
-                <div class="kpi-head"><div class="kpi-icon red">↓</div><div><div class="kpi-label">Despesas do Mês</div><div class="kpi-value" id="kpi-despesa">R$ 0,00</div><div class="kpi-sub">vs mês anterior</div></div></div>
-                <div class="trend down" id="kpi-despesa-trend">▼ 0,0%</div>
-                <canvas class="spark" id="spark-despesa"></canvas>
-              </div>
-            </div>
-
-            <div class="row-grid">
-              <div class="card">
-                <div class="card-head">
-                  <div>
-                    <div class="card-title">Receitas vs Despesas</div>
-                    <div class="legend"><span><span class="dot" style="background:var(--green)"></span>Receitas</span><span><span class="dot" style="background:var(--red)"></span>Despesas</span></div>
-                  </div>
-                  <select id="range-chart" onchange="renderDashboard()"><option value="6">Últimos 6 meses</option><option value="12">Últimos 12 meses</option></select>
-                </div>
-                <div class="chart-box"><canvas id="bar-chart"></canvas></div>
-              </div>
-              <div class="card">
-                <div class="card-head">
-                  <div>
-                    <div class="card-title">Despesas por Categoria</div>
-                    <div class="caption">Ranking do mês atual</div>
-                  </div>
-                  <select onchange="renderDashboard()"><option>Este mês</option></select>
-                </div>
-                <div class="chart-box"><canvas id="cat-expense-chart"></canvas></div>
-              </div>
-            </div>
-
-            <div class="mini-grid">
-              <div class="card">
-                <div class="card-head"><div class="card-title">Gastos por Categoria</div><select onchange="renderDashboard()"><option>Este mês</option></select></div>
-                <div class="category-donut-layout">
-                  <div class="donut-center"><canvas id="cat-donut"></canvas><div class="donut-text"><div id="cat-total">R$ 0,00<span>Total</span></div></div></div>
-                  <div class="breakdown category-breakdown" id="cat-breakdown"></div>
-                </div>
-              </div>
-              <div class="card">
-                <div class="card-title">Planejamento Financeiro</div>
-                <p class="caption" id="planning-copy" style="margin:10px 0 14px">Você está no caminho certo.</p>
-                <div class="donut-center" style="margin:auto;width:130px;height:130px"><canvas id="saving-donut"></canvas><div class="donut-text"><div id="saving-rate">0%<span>Poupança</span></div></div></div>
-                <div class="caption" style="margin-top:12px">Dicas personalizadas</div>
-                <div class="list-card"><div><div class="tx-name">Reduza gastos com lazer</div><div class="tx-meta">Compare com o mês passado.</div></div><span>›</span></div>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-title" style="margin-bottom:14px">Ações Rápidas</div>
-              <div class="quick-grid">
-                <button class="quick-action" onclick="navTo('lancamentos')"><span class="quick-icon">+</span>Novo Lançamento</button>
-                <button class="quick-action" onclick="navTo('metas');showAddMeta()"><span class="quick-icon">◎</span>Nova Meta</button>
-                <button class="quick-action" onclick="navTo('contas');showAddConta()"><span class="quick-icon">▣</span>Nova Conta</button>
-                <button class="quick-action" onclick="toast('Transferências em breve','success')"><span class="quick-icon">⇄</span>Transferência</button>
-                <button class="quick-action" onclick="navTo('relatorios')"><span class="quick-icon">▤</span>Relatório</button>
-                <button class="quick-action" onclick="navTo('orcamento')"><span class="quick-icon">◔</span>Orçamento</button>
-                <button class="quick-action" onclick="navTo('investimentos')"><span class="quick-icon">↗</span>Investir</button>
-                <button class="quick-action" onclick="toast('Importação em breve','success')"><span class="quick-icon">☁</span>Importar Extrato</button>
-              </div>
+        <div id="dashboard-layout-root" class="dashboard-layout-root"></div>
+        <div class="dashboard-static-grid">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Gastos por Categoria</div><select onchange="renderDashboard()"><option>Este mês</option></select></div>
+            <div class="category-donut-layout">
+              <div class="donut-center"><canvas id="cat-donut"></canvas><div class="donut-text"><div id="cat-total">R$ 0,00<span>Total</span></div></div></div>
+              <div class="breakdown category-breakdown" id="cat-breakdown"></div>
             </div>
           </div>
-
-          <aside class="right-col">
-            <div class="card">
-              <div class="card-title" style="margin-bottom:16px">Visão Geral do Mês</div>
-              <div class="donut-layout">
-                <div class="donut-center"><canvas id="month-donut"></canvas><div class="donut-text"><div id="month-rate">0%<span>Poupança</span></div></div></div>
-                <div class="breakdown" id="month-breakdown"></div>
-              </div>
+          <div class="card">
+            <div class="card-title">Planejamento Financeiro</div>
+            <p class="caption" id="planning-copy" style="margin:10px 0 14px">Você está no caminho certo.</p>
+            <div class="donut-center" style="margin:auto;width:130px;height:130px"><canvas id="saving-donut"></canvas><div class="donut-text"><div id="saving-rate">0%<span>Poupança</span></div></div></div>
+            <div class="caption" style="margin-top:12px">Dicas personalizadas</div>
+            <div class="list-card"><div><div class="tx-name">Reduza gastos com lazer</div><div class="tx-meta">Compare com o mês passado.</div></div><span>›</span></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">Ações Rápidas</div>
+            <div class="quick-grid">
+              <button class="quick-action" onclick="navTo('lancamentos')"><span class="quick-icon">+</span>Novo Lançamento</button>
+              <button class="quick-action" onclick="navTo('metas');showAddMeta()"><span class="quick-icon">◎</span>Nova Meta</button>
+              <button class="quick-action" onclick="navTo('contas');showAddConta()"><span class="quick-icon">▣</span>Nova Conta</button>
+              <button class="quick-action" onclick="toast('Transferências em breve','success')"><span class="quick-icon">⇄</span>Transferência</button>
+              <button class="quick-action" onclick="navTo('relatorios')"><span class="quick-icon">▤</span>Relatório</button>
+              <button class="quick-action" onclick="navTo('orcamento')"><span class="quick-icon">◔</span>Orçamento</button>
+              <button class="quick-action" onclick="navTo('investimentos')"><span class="quick-icon">↗</span>Investir</button>
+              <button class="quick-action" onclick="toast('Importação em breve','success')"><span class="quick-icon">☁</span>Importar Extrato</button>
             </div>
-            <div class="card">
-              <div class="card-head"><div class="card-title">Metas</div><button class="btn btn-ghost" onclick="navTo('metas')">Ver todas</button></div>
-              <div class="goal-list" id="dash-goals"></div>
-            </div>
-            <div class="card">
-              <div class="card-head"><div class="card-title">Contas e Carteiras</div><button class="btn btn-ghost" onclick="navTo('contas')">Ver todas</button></div>
-              <div class="account-list" id="dash-accounts"></div>
-              <div class="cash-line" style="border-bottom:0;font-weight:800"><span>Total</span><span id="dash-total">R$ 0,00</span></div>
-            </div>
-            <div class="card">
-              <div class="card-head"><div class="card-title">Últimas Transações</div><button class="btn btn-ghost" onclick="navTo('transacoes')">Ver todas</button></div>
-              <div class="tx-list" id="recent-list"></div>
-            </div>
-          </aside>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Últimas Transações</div><button class="btn btn-ghost" onclick="navTo('transacoes')">Ver todas</button></div>
+            <div class="tx-list" id="recent-list"></div>
+          </div>
         </div>
       </section>
 
@@ -776,6 +706,7 @@
 
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/dashboard-layout.js"></script>
   <script>
     const DEFAULT_CATS_DESPESA=['Aluguel','Alimentação','Transporte','Saúde','Lazer','Educação','Roupas','Contas','Outros'];
     const DEFAULT_CATS_RECEITA=['Salário','Freelance','Investimentos','Outras Receitas'];
@@ -871,12 +802,14 @@
       document.getElementById('auth-screen').style.display='grid';
       setText('auth-message','');
     }
+    function openMinhaArea(){
+      navTo('usuarios');
+    }
     function updateUserUi(user){
       const name=getUserName(user);
       const initials=getUserInitials(user);
       setText('hello-title',`Olá, ${name}!`);
       setText('top-user-avatar',initials);
-      setText('sidebar-avatar',initials);
     }
     async function startAuthenticatedApp(user){
       currentUser=user;
@@ -901,13 +834,13 @@
       if(!currentUser)throw new Error('Usuário não autenticado');
       try{
         await ensureProfile(client);
-        let {data,error}=await client
+        const {data:workspaces,error}=await client
           .from('financasa_workspaces')
           .select('id,owner_id,name,state,created_at,updated_at')
           .order('created_at',{ascending:true})
-          .limit(1)
-          .maybeSingle();
+        ;
         if(error)throw error;
+        let data=(workspaces||[]).find(workspace=>workspace.owner_id===currentUser.id)||(workspaces||[])[0];
         if(!data){
           let initial=createInitialState();
           const legacy=await client.from('financasa_state').select('state').eq('user_id',currentUser.id).maybeSingle();
@@ -926,7 +859,6 @@
           );
         }
         currentWorkspace=data;
-        setText('workspace-label',data.name||'Minha área');
         await loadWorkspaceMembers(client);
         return data.state||null;
       }catch(error){
@@ -935,7 +867,6 @@
         if(fallbackError)throw fallbackError;
         currentWorkspace=null;
         workspaceMembers=[];
-        setText('workspace-label','Área individual');
         return data?data.state:null;
       }
     }
@@ -1013,6 +944,7 @@
       normalizeState();
       seedDemoData();
       save();
+      mountCurrentDashboardLayout();
       renderDashboard();
     }
 
@@ -1088,6 +1020,13 @@
     }
 
     function renderDashboard(){
+      if(!document.getElementById('kpi-saldo')){
+        mountCurrentDashboardLayout();
+        if(!document.getElementById('kpi-saldo')){
+          setTimeout(renderDashboard,0);
+          return;
+        }
+      }
       const {rec,dep,saldo}=getMesSummary();
       const prev=getMesSummary(new Date(new Date().getFullYear(),new Date().getMonth()-1,1).toISOString().slice(0,7));
       const total=getSaldoTotal();
@@ -1110,6 +1049,8 @@
       renderMonthOverview(rec,dep,saving);
       drawDonut('saving-donut',[saving,Math.max(100-saving,0)],[COLORS[0],'#20324c']);
     }
+    function getDashboardLayoutUserId(){return currentUser?.id||currentUser?.email||'anonimo'}
+    function mountCurrentDashboardLayout(){window.mountDashboardLayout?.(getDashboardLayoutUserId())}
 
     function renderBarChart(){
       const count=Number(document.getElementById('range-chart')?.value||6);
@@ -1528,12 +1469,12 @@
     function renderUsuarios(){
       const email=currentUser?.email||'';
       const name=getUserName(currentUser);
-      const owner=isWorkspaceOwner();
+      const owner=canManageWorkspaceUsers();
       const members=normalizeMembers();
       document.getElementById('page-usuarios').innerHTML=`<div class="page-header"><div><h2>Minha área</h2><p class="caption">Perfil, área financeira compartilhada e usuários com acesso.</p></div><span class="status-pill">${owner?'Administrador':'Convidado'}</span></div>
       <div class="member-grid">
         <div class="card">
-          <div class="card-title">Informações do Perfil</div>
+          <div class="card-head"><div class="card-title">Informações do Perfil</div><button class="btn btn-ghost" onclick="signOut()">Sair</button></div>
           <div class="profile-summary" style="margin:16px 0 18px">
             <div class="avatar">${escapeHtml(getUserInitials(currentUser))}</div>
             <div><div class="account-name">${escapeHtml(name)}</div><div class="account-sub">${escapeHtml(email)}</div><div class="account-sub">${escapeHtml(currentWorkspace?.name||'Área individual')}</div></div>
@@ -1576,7 +1517,12 @@
       const remove=lock?'<span class="caption">Perfil atual</span>':`<button class="btn btn-danger" onclick="removeWorkspaceUser('${member.user_id}')">Remover</button>`;
       return `<div class="list-card member-row"><div><div class="account-name">${escapeHtml(member.name)}</div><div class="account-sub">${escapeHtml(member.email)}${isMe?' · você':''}</div></div>${roleSelect}<div class="inline-actions">${remove}</div></div>`;
     }
+    function getCurrentMemberRole(){
+      const member=workspaceMembers.find(member=>member.user_id===currentUser?.id);
+      return member?.role||'';
+    }
     function isWorkspaceOwner(){return !!currentWorkspace&&currentWorkspace.owner_id===currentUser?.id}
+    function canManageWorkspaceUsers(){return isWorkspaceOwner()||getCurrentMemberRole()==='admin'}
     async function updateProfileInfo(){
       const client=getBrowserSupabaseClient();
       const name=(document.getElementById('profile-name').value||'').trim();
@@ -1591,7 +1537,7 @@
     }
     async function addWorkspaceUser(){
       if(!currentWorkspace?.id){toast('Execute o novo SQL do Supabase para ativar usuários.','error');return}
-      if(!isWorkspaceOwner()){toast('Somente o administrador pode adicionar usuários.','error');return}
+      if(!canManageWorkspaceUsers()){toast('Somente administradores podem adicionar usuários.','error');return}
       const client=getBrowserSupabaseClient();
       const email=(document.getElementById('member-email').value||'').trim().toLowerCase();
       const role=document.getElementById('member-role').value||'editor';
@@ -1610,7 +1556,7 @@
       toast('Usuário adicionado à sua área','success');
     }
     async function changeMemberRole(userId,role){
-      if(!isWorkspaceOwner())return;
+      if(!canManageWorkspaceUsers())return;
       const client=getBrowserSupabaseClient();
       const {error}=await client.from('financasa_workspace_members').update({role}).eq('workspace_id',currentWorkspace.id).eq('user_id',userId);
       if(error){toast(error.message,'error');return}
@@ -1619,7 +1565,7 @@
       toast('Permissão atualizada','success');
     }
     async function removeWorkspaceUser(userId){
-      if(!isWorkspaceOwner())return;
+      if(!canManageWorkspaceUsers())return;
       const member=normalizeMembers().find(m=>m.user_id===userId);
       if(!confirm(`Remover o acesso de "${member?.name||'usuário'}"?`))return;
       const client=getBrowserSupabaseClient();

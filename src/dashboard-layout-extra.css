@@ -1,0 +1,52 @@
+.react-grid-layout {
+  position: relative;
+  width: 100%;
+}
+
+.react-grid-item {
+  transition: transform 180ms ease, width 180ms ease, height 180ms ease;
+  min-width: 0;
+}
+
+.react-grid-item.cssTransforms {
+  transition-property: transform, width, height;
+}
+
+.react-grid-item.react-grid-placeholder {
+  background: rgba(7, 150, 109, .14);
+  border: 1px dashed rgba(7, 150, 109, .45);
+  border-radius: 8px;
+  opacity: 1;
+}
+
+.react-grid-item.react-draggable-dragging,
+.react-grid-item.resizing {
+  z-index: 5;
+  transition: none;
+}
+
+.react-resizable-handle {
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.react-grid-item:has(.dashboard-layout-card.is-editing) .react-resizable-handle,
+.react-grid-item:hover .react-resizable-handle {
+  opacity: 1;
+}
+
+.react-resizable-handle.react-resizable-handle-se {
+  right: 8px;
+  bottom: 8px;
+  width: 18px;
+  height: 18px;
+}
+
+.react-resizable-handle.react-resizable-handle-se::after {
+  right: 3px;
+  bottom: 3px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid rgba(7, 107, 80, .75);
+  border-bottom: 2px solid rgba(7, 107, 80, .75);
+}

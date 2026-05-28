@@ -65,6 +65,16 @@ as $$
   );
 $$;
 
+create or replace function public.can_manage_financasa_workspace(workspace_uuid uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select public.is_financasa_workspace_owner(workspace_uuid)
+    or public.is_financasa_workspace_member(workspace_uuid, array['admin']);
+$$;
+
 drop policy if exists "profiles_select_authenticated" on public.financasa_profiles;
 drop policy if exists "profiles_insert_self" on public.financasa_profiles;
 drop policy if exists "profiles_update_self" on public.financasa_profiles;
@@ -138,7 +148,8 @@ for select
 to authenticated
 using (
   user_id = auth.uid()
-  or public.is_financasa_workspace_owner(workspace_id)
+  or public.is_financasa_workspace_member(workspace_id)
+  or public.can_manage_financasa_workspace(workspace_id)
 );
 
 create policy "members_insert_owner"
@@ -146,7 +157,7 @@ on public.financasa_workspace_members
 for insert
 to authenticated
 with check (
-  public.is_financasa_workspace_owner(workspace_id)
+  public.can_manage_financasa_workspace(workspace_id)
 );
 
 create policy "members_update_owner"
@@ -154,10 +165,10 @@ on public.financasa_workspace_members
 for update
 to authenticated
 using (
-  public.is_financasa_workspace_owner(workspace_id)
+  public.can_manage_financasa_workspace(workspace_id)
 )
 with check (
-  public.is_financasa_workspace_owner(workspace_id)
+  public.can_manage_financasa_workspace(workspace_id)
 );
 
 create policy "members_delete_owner"
@@ -165,7 +176,7 @@ on public.financasa_workspace_members
 for delete
 to authenticated
 using (
-  public.is_financasa_workspace_owner(workspace_id)
+  public.can_manage_financasa_workspace(workspace_id)
 );
 
 drop policy if exists "financasa_state_read" on public.financasa_state;
