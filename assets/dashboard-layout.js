@@ -27467,10 +27467,17 @@
           setLayouts(nextLayouts);
           saveLayouts(userId, nextLayouts);
         }
+        function preventLockedInteraction(_layout, _oldItem, _newItem, _placeholder, event) {
+          var _a, _b;
+          if (editing && desktop) return true;
+          (_a = event == null ? void 0 : event.preventDefault) == null ? void 0 : _a.call(event);
+          (_b = event == null ? void 0 : event.stopPropagation) == null ? void 0 : _b.call(event);
+          return false;
+        }
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_jsx_runtime2.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { ref: containerRef, children: mounted && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
           ResponsiveGridLayout,
           {
-            className: "dashboard-editable-grid",
+            className: `dashboard-editable-grid ${editing && desktop ? "is-editing" : "is-locked"}`,
             layouts,
             breakpoints: BREAKPOINTS,
             cols: COLS,
@@ -27482,12 +27489,14 @@
             preventCollision: false,
             isBounded: true,
             useCSSTransforms: true,
-            draggableHandle: ".dashboard-drag-handle",
-            draggableCancel: ".dashboard-card-action, input, select, button, textarea, canvas, a",
+            draggableHandle: editing && desktop ? ".dashboard-drag-handle" : ".dashboard-drag-disabled",
+            draggableCancel: editing && desktop ? ".dashboard-card-action, input, select, button, textarea, canvas, a" : ".dashboard-layout-card, .card, .kpi-card, input, select, button, textarea, canvas, a",
             isDraggable: editing && desktop,
             isResizable: editing && desktop,
             resizeHandles: editing && desktop ? ["s", "e", "se"] : [],
             onLayoutChange: handleLayoutChange,
+            onDragStart: preventLockedInteraction,
+            onResizeStart: preventLockedInteraction,
             onDragStop: scheduleDashboardRender,
             onResize: scheduleDashboardRender,
             onResizeStop: scheduleDashboardRender,

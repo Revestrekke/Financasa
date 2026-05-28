@@ -41,6 +41,23 @@
   opacity: 1;
 }
 
+.dashboard-editable-grid.is-locked .react-grid-item,
+.dashboard-editable-grid.is-locked .dashboard-layout-card,
+.dashboard-editable-grid.is-locked .card,
+.dashboard-editable-grid.is-locked .kpi-card {
+  cursor: default !important;
+}
+
+.dashboard-editable-grid.is-locked .dashboard-drag-handle,
+.dashboard-editable-grid.is-locked .react-resizable-handle {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.dashboard-editable-grid.is-locked .react-grid-placeholder {
+  display: none !important;
+}
+
 .react-grid-item > .react-resizable-handle.react-resizable-handle-se {
   right: 8px;
   bottom: 8px;

@@ -367,12 +367,19 @@ function DashboardLayoutApp({ userId }) {
     saveLayouts(userId, nextLayouts);
   }
 
+  function preventLockedInteraction(_layout, _oldItem, _newItem, _placeholder, event) {
+    if (editing && desktop) return true;
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    return false;
+  }
+
   return (
     <>
       <div ref={containerRef}>
         {mounted && (
           <Responsive
-            className="dashboard-editable-grid"
+            className={`dashboard-editable-grid ${editing && desktop ? 'is-editing' : 'is-locked'}`}
             layouts={layouts}
             breakpoints={BREAKPOINTS}
             cols={COLS}
@@ -384,12 +391,14 @@ function DashboardLayoutApp({ userId }) {
             preventCollision={false}
             isBounded
             useCSSTransforms
-            draggableHandle=".dashboard-drag-handle"
-            draggableCancel=".dashboard-card-action, input, select, button, textarea, canvas, a"
+            draggableHandle={editing && desktop ? '.dashboard-drag-handle' : '.dashboard-drag-disabled'}
+            draggableCancel={editing && desktop ? '.dashboard-card-action, input, select, button, textarea, canvas, a' : '.dashboard-layout-card, .card, .kpi-card, input, select, button, textarea, canvas, a'}
             isDraggable={editing && desktop}
             isResizable={editing && desktop}
             resizeHandles={editing && desktop ? ['s', 'e', 'se'] : []}
             onLayoutChange={handleLayoutChange}
+            onDragStart={preventLockedInteraction}
+            onResizeStart={preventLockedInteraction}
             onDragStop={scheduleDashboardRender}
             onResize={scheduleDashboardRender}
             onResizeStop={scheduleDashboardRender}
