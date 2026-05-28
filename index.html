@@ -245,6 +245,14 @@
     .break-row{display:grid;grid-template-columns:1fr auto;gap:12px;color:#d8dfed;font-size:12px}
     .progress{height:6px;background:#20324c;border-radius:12px;overflow:hidden;margin-top:8px}
     .progress span{display:block;height:100%;border-radius:12px;background:linear-gradient(90deg,var(--green),#60a5fa)}
+    .budget-summary{display:flex;flex-direction:column;gap:12px;min-height:0}
+    .budget-total{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .budget-total>span{font-size:22px;font-weight:850;line-height:1;color:#ffffff}
+    .budget-total small{color:var(--muted);font-size:12px}
+    .budget-progress{height:8px;margin-top:0}
+    .budget-list{display:flex;flex-direction:column;min-height:0;overflow:auto}
+    .budget-item{padding:9px 0;border-bottom:1px solid rgba(82,104,143,.16)}
+    .budget-item:last-child{border-bottom:0}
     .goal-card{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(82,104,143,.18)}
     .goal-card.editable{grid-template-columns:42px minmax(0,1fr) auto auto}
     .goal-card:last-child{border-bottom:0}
@@ -416,6 +424,7 @@
     .trend.up{background:#eff6ff;color:#2563eb}
     .trend.down{background:#fff1f2;color:#dc3545}
     .legend,.break-row,.cash-line,td,.quick-action{color:#000000}
+    .budget-total>span{color:#000000}
     .progress{background:#edf2f7}
     .tx-card,.goal-card,.account-card,.list-card,.cash-line{border-bottom-color:#e6edf4}
     .tx-ico,.account-ico,.goal-ico{background:#eef4ff;color:#2563eb}
@@ -627,7 +636,6 @@
               <div class="card-head">
                 <div>
                   <div class="card-title">Receitas vs Despesas</div>
-                  <div class="legend"><span><span class="dot" style="background:var(--green)"></span>Receitas</span><span><span class="dot" style="background:var(--red)"></span>Despesas</span></div>
                 </div>
                 <select id="range-chart" onchange="renderDashboard()"><option value="6">Últimos 6 meses</option><option value="12">Últimos 12 meses</option></select>
               </div>
@@ -636,12 +644,20 @@
             <div class="card span-6">
               <div class="card-head">
                 <div>
-                  <div class="card-title">Despesas por Categoria</div>
-                  <div class="caption">Ranking do mês atual</div>
+                  <div class="card-title">Orçamento</div>
+                  <div class="caption" id="dash-budget-caption">Mês atual</div>
                 </div>
-                <select onchange="renderDashboard()"><option>Este mês</option></select>
+                <button class="btn btn-ghost" onclick="navTo('orcamento')">Ver</button>
               </div>
-              <div class="chart-box"><canvas id="cat-expense-chart"></canvas></div>
+              <div class="budget-summary">
+                <div class="budget-total">
+                  <span id="dash-budget-used">R$ 0,00</span>
+                  <small>de <strong id="dash-budget-total">R$ 0,00</strong></small>
+                </div>
+                <div class="progress budget-progress"><span id="dash-budget-progress"></span></div>
+                <div class="cash-line budget-balance"><span id="dash-budget-status-label">Restante</span><strong id="dash-budget-available">R$ 0,00</strong></div>
+                <div class="budget-list" id="dash-budget-list"></div>
+              </div>
             </div>
             <div class="card span-3">
               <div class="card-head"><div class="card-title">Metas</div><button class="btn btn-ghost" onclick="navTo('metas')">Ver todas</button></div>
@@ -1093,7 +1109,7 @@
       drawSpark('spark-receita',sparkData.receitas,COLORS[0]);
       drawSpark('spark-despesa',sparkData.despesas,COLORS[2]);
       renderBarChart();
-      renderCategoryExpenseChart();
+      renderBudgetSummary();
       renderRecentList();
       renderCategoryDonut();
       renderGoals('dash-goals',3);
@@ -1136,6 +1152,42 @@
       txs.filter(t=>t.tipo==='despesa').forEach(t=>catMap[t.categoria]=(catMap[t.categoria]||0)+t.valor);
       const sorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
       drawHorizontalBars('cat-expense-chart',sorted.map(([cat])=>cat),sorted.map(([,val])=>val),COLORS);
+    }
+    function renderBudgetSummary(){
+      const list=document.getElementById('dash-budget-list');
+      if(!list)return;
+      const {txs}=getMesSummary();
+      const gastos={};
+      txs.filter(t=>t.tipo==='despesa').forEach(t=>gastos[t.categoria]=(gastos[t.categoria]||0)+t.valor);
+      const budgetItems=getCategorias('despesa').map(cat=>({
+        cat,
+        limit:Number(state.orcamento?.[cat])||0,
+        spent:gastos[cat]||0
+      })).filter(item=>item.limit>0);
+      const totalLimit=budgetItems.reduce((sum,item)=>sum+item.limit,0);
+      const totalSpent=budgetItems.reduce((sum,item)=>sum+item.spent,0);
+      const available=totalLimit-totalSpent;
+      const pct=totalLimit?Math.min(100,Math.round(totalSpent/totalLimit*100)):0;
+      setText('dash-budget-total',fmtBRL(totalLimit));
+      setText('dash-budget-used',fmtBRL(totalSpent));
+      setText('dash-budget-available',fmtBRL(Math.abs(available)));
+      setText('dash-budget-status-label',available>=0?'Restante':'Estourado');
+      setText('dash-budget-caption',totalLimit?`${pct}% utilizado`:'Configure limites');
+      const availableEl=document.getElementById('dash-budget-available');
+      if(availableEl)availableEl.className=available>=0?'positive':'negative';
+      const progress=document.getElementById('dash-budget-progress');
+      if(progress){
+        progress.style.width=pct+'%';
+        progress.style.background=pct>90?COLORS[2]:pct>70?COLORS[4]:COLORS[0];
+      }
+      list.innerHTML=budgetItems.sort((a,b)=>(b.spent/b.limit)-(a.spent/a.limit)).slice(0,4).map((item,i)=>{
+        const itemPct=Math.min(100,Math.round(item.spent/item.limit*100));
+        const color=itemPct>90?COLORS[2]:itemPct>70?COLORS[4]:COLORS[i%COLORS.length];
+        return `<div class="budget-item">
+          <div class="break-row"><strong>${escapeHtml(item.cat)}</strong><span>${fmtBRL(item.spent)} / ${fmtBRL(item.limit)}</span></div>
+          <div class="progress"><span style="width:${itemPct}%;background:${color}"></span></div>
+        </div>`;
+      }).join('')||'<div class="empty">Defina limites e salve.</div>';
     }
     function renderRecentList(){
       const txs=state.transacoes.slice().sort((a,b)=>b.data.localeCompare(a.data)).slice(0,6);
@@ -1336,7 +1388,7 @@
         return `<div style="margin-bottom:16px"><div class="break-row"><strong>${escapeHtml(cat)}</strong><span>${fmtBRL(g)} / ${fmtBRL(lim)}</span></div><div class="progress"><span style="width:${pct}%;background:${pct>90?COLORS[2]:pct>70?COLORS[4]:COLORS[0]}"></span></div><div class="caption">${pct}% utilizado</div></div>`;
       }).join('')||'<div class="empty">Defina limites e salve.</div>';
     }
-    function salvarOrcamento(){getCategorias('despesa').forEach(cat=>{const el=document.getElementById('orc-'+slug(cat));if(el)state.orcamento[cat]=parseFloat(el.value)||0});save();renderOrcamento();toast('Orçamento salvo','success')}
+    function salvarOrcamento(){getCategorias('despesa').forEach(cat=>{const el=document.getElementById('orc-'+slug(cat));if(el)state.orcamento[cat]=parseFloat(el.value)||0});save();renderOrcamento();renderDashboard();toast('Orçamento salvo','success')}
 
     function renderMetas(){renderGoals('metas-list')}
     function resetMetaForm(){

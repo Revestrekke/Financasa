@@ -8,7 +8,7 @@ const CARD_IDS = [
   'despesas-mes',
   'receitas-despesas',
   'visao-mes',
-  'despesas-categoria',
+  'orcamento',
   'metas',
   'contas-carteiras',
   'gastos-categoria',
@@ -23,9 +23,9 @@ const DEFAULT_LG_LAYOUT = [
   { i: 'saldo-total', x: 0, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
   { i: 'receitas-mes', x: 4, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
   { i: 'despesas-mes', x: 8, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
-  { i: 'receitas-despesas', x: 0, y: 3, w: 6, h: 7, minW: 3, minH: 4 },
-  { i: 'visao-mes', x: 6, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
-  { i: 'despesas-categoria', x: 10, y: 3, w: 2, h: 7, minW: 2, minH: 4 },
+  { i: 'receitas-despesas', x: 0, y: 3, w: 5, h: 7, minW: 3, minH: 4 },
+  { i: 'visao-mes', x: 5, y: 3, w: 3, h: 7, minW: 3, minH: 4 },
+  { i: 'orcamento', x: 8, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
   { i: 'gastos-categoria', x: 0, y: 10, w: 8, h: 7, minW: 3, minH: 4 },
   { i: 'acoes-rapidas', x: 8, y: 10, w: 4, h: 7, minW: 3, minH: 3 },
   { i: 'ultimas-transacoes', x: 0, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
@@ -92,7 +92,7 @@ function removeLegacyCardsFromStorage(userId) {
   try {
     const key = storageKey(userId);
     const raw = window.localStorage.getItem(key);
-    if (!raw || !raw.includes('planejamento')) return;
+    if (!raw || (!raw.includes('planejamento') && !raw.includes('despesas-categoria'))) return;
     const layouts = JSON.parse(raw);
     Object.keys(layouts || {}).forEach((breakpoint) => {
       if (Array.isArray(layouts[breakpoint])) {
@@ -193,7 +193,6 @@ function RevenueExpenseChart() {
       <div className="card-head">
         <div>
           <div className="card-title">Receitas vs Despesas</div>
-          <div className="legend"><span><span className="dot" style={{ background: 'var(--green)' }}></span>Receitas</span><span><span className="dot" style={{ background: 'var(--red)' }}></span>Despesas</span></div>
         </div>
         <select id="range-chart" className="dashboard-card-action" onChange={() => window.renderDashboard?.()}><option value="6">Últimos 6 meses</option><option value="12">Últimos 12 meses</option></select>
       </div>
@@ -202,17 +201,25 @@ function RevenueExpenseChart() {
   );
 }
 
-function CategoryExpenseChart() {
+function BudgetCard() {
   return (
     <div className="card">
       <div className="card-head">
         <div>
-          <div className="card-title">Despesas por Categoria</div>
-          <div className="caption">Ranking do mês atual</div>
+          <div className="card-title">Orçamento</div>
+          <div className="caption" id="dash-budget-caption">Mês atual</div>
         </div>
-        <select className="dashboard-card-action" onChange={() => window.renderDashboard?.()}><option>Este mês</option></select>
+        <button className="btn btn-ghost dashboard-card-action" onClick={() => window.navTo?.('orcamento')}>Ver</button>
       </div>
-      <div className="chart-box"><canvas id="cat-expense-chart"></canvas></div>
+      <div className="budget-summary">
+        <div className="budget-total">
+          <span id="dash-budget-used">R$ 0,00</span>
+          <small>de <strong id="dash-budget-total">R$ 0,00</strong></small>
+        </div>
+        <div className="progress budget-progress"><span id="dash-budget-progress"></span></div>
+        <div className="cash-line budget-balance"><span id="dash-budget-status-label">Restante</span><strong id="dash-budget-available">R$ 0,00</strong></div>
+        <div className="budget-list" id="dash-budget-list"></div>
+      </div>
     </div>
   );
 }
@@ -281,7 +288,7 @@ const CARD_RENDERERS = {
   'despesas-mes': KpiDespesas,
   'visao-mes': MonthOverview,
   'receitas-despesas': RevenueExpenseChart,
-  'despesas-categoria': CategoryExpenseChart,
+  orcamento: BudgetCard,
   metas: GoalsCard,
   'contas-carteiras': AccountsCard,
   'gastos-categoria': CategoryTotalCard,
@@ -330,6 +337,7 @@ function DashboardLayoutApp({ userId }) {
   }), [editing, desktop]);
 
   function handleLayoutChange(_layout, allLayouts) {
+    if (!editing || !desktop) return;
     const nextLayouts = normalizeLayouts(allLayouts);
     setLayouts(nextLayouts);
     saveLayouts(userId, nextLayouts);
@@ -356,7 +364,7 @@ function DashboardLayoutApp({ userId }) {
             draggableCancel=".dashboard-card-action, input, select, button, textarea, canvas, a"
             isDraggable={editing && desktop}
             isResizable={editing && desktop}
-            resizeHandles={['s', 'e', 'se']}
+            resizeHandles={editing && desktop ? ['s', 'e', 'se'] : []}
             onLayoutChange={handleLayoutChange}
             onDragStop={scheduleDashboardRender}
             onResize={scheduleDashboardRender}

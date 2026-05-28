@@ -32,8 +32,12 @@
   z-index: 4;
 }
 
-.react-grid-item:has(.dashboard-layout-card.is-editing) > .react-resizable-handle,
-.react-grid-item:hover > .react-resizable-handle {
+.dashboard-editable-grid .react-grid-item:hover > .react-resizable-handle {
+  opacity: 0;
+}
+
+.dashboard-editable-grid .react-grid-item:has(.dashboard-layout-card.is-editing) > .react-resizable-handle,
+.dashboard-editable-grid .react-grid-item:has(.dashboard-layout-card.is-editing):hover > .react-resizable-handle {
   opacity: 1;
 }
 

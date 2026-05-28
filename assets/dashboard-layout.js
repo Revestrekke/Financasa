@@ -27031,7 +27031,7 @@
         "despesas-mes",
         "receitas-despesas",
         "visao-mes",
-        "despesas-categoria",
+        "orcamento",
         "metas",
         "contas-carteiras",
         "gastos-categoria",
@@ -27044,9 +27044,9 @@
         { i: "saldo-total", x: 0, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
         { i: "receitas-mes", x: 4, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
         { i: "despesas-mes", x: 8, y: 0, w: 4, h: 3, minW: 2, minH: 2 },
-        { i: "receitas-despesas", x: 0, y: 3, w: 6, h: 7, minW: 3, minH: 4 },
-        { i: "visao-mes", x: 6, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
-        { i: "despesas-categoria", x: 10, y: 3, w: 2, h: 7, minW: 2, minH: 4 },
+        { i: "receitas-despesas", x: 0, y: 3, w: 5, h: 7, minW: 3, minH: 4 },
+        { i: "visao-mes", x: 5, y: 3, w: 3, h: 7, minW: 3, minH: 4 },
+        { i: "orcamento", x: 8, y: 3, w: 4, h: 7, minW: 3, minH: 4 },
         { i: "gastos-categoria", x: 0, y: 10, w: 8, h: 7, minW: 3, minH: 4 },
         { i: "acoes-rapidas", x: 8, y: 10, w: 4, h: 7, minW: 3, minH: 3 },
         { i: "ultimas-transacoes", x: 0, y: 17, w: 4, h: 5, minW: 2, minH: 3 },
@@ -27107,7 +27107,7 @@
         try {
           const key = storageKey(userId);
           const raw = window.localStorage.getItem(key);
-          if (!raw || !raw.includes("planejamento")) return;
+          if (!raw || !raw.includes("planejamento") && !raw.includes("despesas-categoria")) return;
           const layouts = JSON.parse(raw);
           Object.keys(layouts || {}).forEach((breakpoint) => {
             if (Array.isArray(layouts[breakpoint])) {
@@ -27224,19 +27224,7 @@
       function RevenueExpenseChart() {
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card-head", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Receitas vs Despesas" }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "legend", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "dot", style: { background: "var(--green)" } }),
-                  "Receitas"
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "dot", style: { background: "var(--red)" } }),
-                  "Despesas"
-                ] })
-              ] })
-            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Receitas vs Despesas" }) }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("select", { id: "range-chart", className: "dashboard-card-action", onChange: () => {
               var _a;
               return (_a = window.renderDashboard) == null ? void 0 : _a.call(window);
@@ -27248,19 +27236,33 @@
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "chart-box", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("canvas", { id: "bar-chart" }) })
         ] });
       }
-      function CategoryExpenseChart() {
+      function BudgetCard() {
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card-head", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Despesas por Categoria" }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "caption", children: "Ranking do m\xEAs atual" })
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Or\xE7amento" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "caption", id: "dash-budget-caption", children: "M\xEAs atual" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("select", { className: "dashboard-card-action", onChange: () => {
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "btn btn-ghost dashboard-card-action", onClick: () => {
               var _a;
-              return (_a = window.renderDashboard) == null ? void 0 : _a.call(window);
-            }, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { children: "Este m\xEAs" }) })
+              return (_a = window.navTo) == null ? void 0 : _a.call(window, "orcamento");
+            }, children: "Ver" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "chart-box", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("canvas", { id: "cat-expense-chart" }) })
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "budget-summary", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "budget-total", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { id: "dash-budget-used", children: "R$ 0,00" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("small", { children: [
+                "de ",
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("strong", { id: "dash-budget-total", children: "R$ 0,00" })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "progress budget-progress", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { id: "dash-budget-progress" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "cash-line budget-balance", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { id: "dash-budget-status-label", children: "Restante" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("strong", { id: "dash-budget-available", children: "R$ 0,00" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "budget-list", id: "dash-budget-list" })
+          ] })
         ] });
       }
       function GoalsCard() {
@@ -27395,7 +27397,7 @@
         "despesas-mes": KpiDespesas,
         "visao-mes": MonthOverview,
         "receitas-despesas": RevenueExpenseChart,
-        "despesas-categoria": CategoryExpenseChart,
+        orcamento: BudgetCard,
         metas: GoalsCard,
         "contas-carteiras": AccountsCard,
         "gastos-categoria": CategoryTotalCard,
@@ -27436,6 +27438,7 @@
           ] }, id);
         }), [editing, desktop]);
         function handleLayoutChange(_layout, allLayouts) {
+          if (!editing || !desktop) return;
           const nextLayouts = normalizeLayouts(allLayouts);
           setLayouts(nextLayouts);
           saveLayouts(userId, nextLayouts);
@@ -27459,7 +27462,7 @@
             draggableCancel: ".dashboard-card-action, input, select, button, textarea, canvas, a",
             isDraggable: editing && desktop,
             isResizable: editing && desktop,
-            resizeHandles: ["s", "e", "se"],
+            resizeHandles: editing && desktop ? ["s", "e", "se"] : [],
             onLayoutChange: handleLayoutChange,
             onDragStop: scheduleDashboardRender,
             onResize: scheduleDashboardRender,
