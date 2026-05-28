@@ -21,7 +21,7 @@ const contentTypes = {
 
 function sendConfig(res) {
   const config = {
-    SUPABASE_URL: process.env.SUPABASE_URL || 'https://fzozyfzzihfltgebmufsp.supabase.co',
+    SUPABASE_URL: process.env.SUPABASE_URL || 'https://fzozyfzihfltgebmufsp.supabase.co',
     SUPABASE_PUBLISHABLE_KEY: process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2'
   }
 
