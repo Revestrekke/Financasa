@@ -193,6 +193,10 @@
       content:"";position:absolute;inset:auto -20px -44px -20px;height:90px;
       background:linear-gradient(0deg,rgba(37,99,235,.12),transparent);pointer-events:none;
     }
+    .kpi-card.balance-negative{border-color:rgba(255,63,87,.46);box-shadow:0 24px 80px rgba(255,63,87,.12)}
+    .kpi-card.balance-negative:after{background:linear-gradient(0deg,rgba(255,63,87,.18),transparent)}
+    .kpi-card.balance-negative .kpi-icon{background:linear-gradient(135deg,#ff3f57,#b8203e)}
+    .kpi-card.balance-negative .kpi-value{color:var(--red)}
     .kpi-head{display:flex;align-items:center;gap:14px;margin-bottom:10px}
     .kpi-icon{
       width:43px;height:43px;border-radius:10px;display:grid;place-items:center;
@@ -227,6 +231,7 @@
       width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
       background:rgba(59,130,246,.25);color:white;
     }
+    .account-icon-img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
     .tx-name,.goal-name,.account-name{font-weight:750;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tx-meta,.goal-meta,.account-sub{color:var(--muted2);font-size:12px;margin-top:3px}
     .money{font-weight:800;font-size:14px;white-space:nowrap}
@@ -504,15 +509,24 @@
     .profile-summary .avatar{width:58px;height:58px}
     .member-row{display:grid;grid-template-columns:minmax(0,1fr) 130px auto;gap:12px;align-items:center}
     .status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 10px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800}
-    .credit-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-    .credit-card-item{display:flex;flex-direction:column;gap:14px;border:1px solid #e6edf4;border-radius:8px;padding:14px;background:#ffffff}
+    .credit-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+    .credit-card-item{display:flex;flex-direction:column;gap:14px;border:1px solid #dbe5f0;border-radius:8px;padding:16px;background:#ffffff;box-shadow:0 10px 28px rgba(15,23,42,.06)}
     .credit-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
     .credit-card-brand{font-size:18px;font-weight:850;color:#000000}
-    .credit-card-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:7px}
+    .credit-card-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:7px}
     .mini-pill{display:inline-flex;align-items:center;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800;padding:4px 9px}
     .invoice-list{display:flex;flex-direction:column;gap:8px}
-    .invoice-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #e6edf4;border-radius:8px;padding:10px}
+    .invoice-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid #e6edf4;border-radius:8px;padding:12px;background:#fff}
     .invoice-row strong{white-space:nowrap}
+    .invoice-card{display:grid;gap:12px;border:1px solid #dbe5f0;border-radius:8px;padding:14px;background:#ffffff;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+    .invoice-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+    .invoice-title{font-size:15px;font-weight:850;color:#000000}
+    .invoice-amount{font-size:18px;font-weight:900;white-space:nowrap}
+    .invoice-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 14px}
+    .invoice-detail{min-width:0}
+    .invoice-detail span{display:block;color:#65758a;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+    .invoice-detail strong{display:block;color:#000000;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .invoice-actions{border-top:1px solid #e6edf4;padding-top:10px;justify-content:flex-start}
     .status-previsto{color:#d97706}
     .status-pago{color:#2563eb}
     .status-cancelado{color:#b4232f}
@@ -603,7 +617,6 @@
       <div class="section-title">Principal</div>
       <button class="nav-item" data-page="lancamentos"><span class="nav-ico">▧</span>Lançamentos</button>
       <button class="nav-item" data-page="transacoes"><span class="nav-ico">☰</span>Transações</button>
-      <button class="nav-item" data-page="recorrentes"><span class="nav-ico">↻</span>Recorrentes</button>
       <button class="nav-item" data-page="categorias"><span class="nav-ico">⌘</span>Categorias</button>
 
       <div class="section-title">Gestão</div>
@@ -717,7 +730,7 @@
               <div class="cash-line" style="border-bottom:0;font-weight:800"><span>Total</span><span id="dash-total">R$ 0,00</span></div>
             </div>
             <div class="card span-8">
-            <div class="card-head"><div class="card-title">Gastos por Categoria</div><select onchange="renderDashboard()"><option>Este mês</option></select></div>
+            <div class="card-head"><div><div class="card-title">Gastos por Categoria</div><div class="caption">Mês selecionado no dashboard</div></div></div>
             <div class="category-donut-layout">
               <div class="donut-center"><canvas id="cat-donut"></canvas><div class="donut-text"><div id="cat-total">R$ 0,00<span>Total</span></div></div></div>
               <div class="breakdown category-breakdown" id="cat-breakdown"></div>
@@ -815,7 +828,7 @@
             <div class="form-group full"><label>Nome</label><input id="c-nome" placeholder="Ex: Nubank"></div>
             <div class="form-group"><label>Tipo</label><select id="c-tipo"><option>Conta Corrente</option><option>Conta Poupança</option><option>Carteira Digital</option><option>Cartão de Crédito</option><option>Investimentos</option><option>Dinheiro</option></select></div>
             <div class="form-group"><label>Saldo Inicial</label><input type="number" id="c-saldo"></div>
-            <div class="form-group"><label>Ícone</label><select id="c-icone"><option>🏦</option><option>💳</option><option>💵</option><option>📈</option><option>🟣</option></select></div>
+            <div class="form-group"><label>Ícone</label><select id="c-icone"><option value="🏦">Banco genérico</option><option value="💳">Cartão</option><option value="💵">Dinheiro</option><option value="📈">Investimentos</option><option value="🟣">Digital</option><option value="assets/Banco do Brasil.jpeg">Banco do Brasil</option><option value="assets/Banco Inter.jpeg">Banco Inter</option><option value="assets/Bradesco.jpeg">Bradesco</option><option value="assets/Caixa.jpeg">Caixa</option><option value="assets/Nubank.jpeg">Nubank</option><option value="assets/Sicoob.jpeg">Sicoob</option></select></div>
           </div>
           <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-green" id="conta-save-btn" onclick="salvarConta()">Adicionar Conta</button><button class="btn" onclick="cancelContaForm()">Cancelar</button></div>
         </div>
@@ -864,7 +877,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/dashboard-layout.js?v=20260529-2"></script>
   <script>
-    const DEFAULT_CATS_DESPESA=['Aluguel','Alimentação','Transporte','Saúde','Lazer','Educação','Roupas','Contas','Outros'];
+    const DEFAULT_CATS_DESPESA=['Aluguel','Alimentação','Transporte','Saúde','Lazer','Educação','Roupas','Contas','Outros','Sem categoria'];
     const DEFAULT_CATS_RECEITA=['Salário','Freelance','Investimentos','Outras Receitas'];
     const QUICK=['Café R$8','Almoço R$35','Gasolina R$120','Mercado R$200','Farmácia R$50'];
     const COLORS=['#2563eb','#38bdf8','#ff3f57','#a78bfa','#f59e0b','#e946a4','#0f4c81','#64748b'];
@@ -1148,6 +1161,7 @@
           status:tx.status||'confirmado',
           tags:tx.tags||'',
           transfer_id:tx.transfer_id||null,
+          fatura_cartao_id:tx.fatura_cartao_id||null,
           created_at:tx.created_at||new Date().toISOString(),
           updated_at:tx.updated_at||new Date().toISOString(),
           created_by:tx.created_by||currentUser?.id||null
@@ -1179,25 +1193,32 @@
           created_at:card.created_at||new Date().toISOString()
         };
       });
-      state.faturas_cartao=state.faturas_cartao.map((invoice,index)=>({
-        id:invoice.id||String(Date.now()+index),
-        cartao_id:invoice.cartao_id||invoice.card_id||'',
-        valor:Number(invoice.valor)||0,
-        mes_competencia:invoice.mes_competencia||invoice.competencia||currentMonth(),
-        mes_pagamento:invoice.mes_pagamento||invoice.pagamento||invoice.mes_competencia||currentMonth(),
-        descricao:invoice.descricao||invoice.observacao||'',
-        status:['previsto','pago','cancelado'].includes(invoice.status)?invoice.status:'previsto',
-        conta_id:invoice.conta_id||'',
-        transaction_id:invoice.transaction_id||invoice.transacao_id||null,
-        created_at:invoice.created_at||new Date().toISOString(),
-        updated_at:invoice.updated_at||new Date().toISOString()
-      }));
+      state.faturas_cartao=state.faturas_cartao.map((invoice,index)=>{
+        const categoria=invoice.categoria||invoice.categoria_id||'Sem categoria';
+        return{
+          id:invoice.id||String(Date.now()+index),
+          cartao_id:invoice.cartao_id||invoice.card_id||'',
+          valor:Number(invoice.valor)||0,
+          mes_competencia:invoice.mes_competencia||invoice.competencia||currentMonth(),
+          mes_pagamento:invoice.mes_pagamento||invoice.pagamento||invoice.mes_competencia||currentMonth(),
+          descricao:invoice.descricao||invoice.observacao||'',
+          categoria,
+          categoria_id:invoice.categoria_id||categoria,
+          status:['previsto','pago','cancelado'].includes(invoice.status)?invoice.status:'previsto',
+          conta_id:invoice.conta_id||'',
+          transaction_id:invoice.transaction_id||invoice.transacao_id||null,
+          data_pagamento:invoice.data_pagamento||invoice.paid_at?.slice?.(0,10)||null,
+          created_at:invoice.created_at||new Date().toISOString(),
+          updated_at:invoice.updated_at||new Date().toISOString()
+        };
+      });
       migrateInitialBalancesFromStoredSaldo();
       state.filtroTx=state.filtroTx||'todas';
       state.tipoLanc=state.tipoLanc||'despesa';
     }
 
     const fmtBRL=v=>'R$ '+Math.abs(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const fmtSignedBRL=v=>(Number(v)<0?'-':'')+fmtBRL(v);
     const fmtDate=s=>{if(!s)return'';const [y,m,d]=s.split('-');return `${d}/${m}/${y}`};
     const getCategorias=tipo=>(state.categorias&&state.categorias[tipo]?state.categorias[tipo]:[]).filter(Boolean);
     const currentMonth=()=>new Date().toISOString().slice(0,7);
@@ -1232,6 +1253,46 @@
       const card=getCreditCardById(invoice?.cartao_id);
       const day=Math.min(getMonthLastDay(month),Math.max(1,Number(card?.vencimento)||1));
       return `${month}-${String(day).padStart(2,'0')}`;
+    }
+    function getInvoiceCategory(invoice){
+      return invoice?.categoria||invoice?.categoria_id||'Sem categoria';
+    }
+    function formatInvoiceStatus(status){
+      return {previsto:'Previsto',pago:'Pago',cancelado:'Cancelado'}[status]||status||'Previsto';
+    }
+    function getExpenseCategoryMap(mes=currentMonth()){
+      const {txs,depTotal}=getMesSummary(mes);
+      const catMap={};
+      txs.filter(t=>t.tipo==='despesa').forEach(t=>{
+        const cat=t.categoria||t.categoria_id||'Sem categoria';
+        catMap[cat]=(catMap[cat]||0)+(Number(t.valor)||0);
+      });
+      getCreditCardInvoicesForMonth(mes)
+        .filter(invoice=>invoice.status==='previsto')
+        .forEach(invoice=>{
+          const cat=getInvoiceCategory(invoice);
+          catMap[cat]=(catMap[cat]||0)+(Number(invoice.valor)||0);
+        });
+      return{catMap,depTotal};
+    }
+    function renderAccountIcon(value){
+      const icon=value||'▣';
+      if(/^assets\/.+\.(png|jpe?g|webp|gif|svg)$/i.test(icon)){
+        return `<img class="account-icon-img" src="${escapeHtml(icon)}" alt="">`;
+      }
+      return escapeHtml(icon);
+    }
+    function guessBankIconByName(name){
+      const normalized=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      const matches=[
+        ['banco do brasil','assets/Banco do Brasil.jpeg'],
+        ['inter','assets/Banco Inter.jpeg'],
+        ['bradesco','assets/Bradesco.jpeg'],
+        ['caixa','assets/Caixa.jpeg'],
+        ['nubank','assets/Nubank.jpeg'],
+        ['sicoob','assets/Sicoob.jpeg']
+      ];
+      return matches.find(([key])=>normalized.includes(key))?.[1]||'';
     }
     function normalizeTransactionType(tipo){
       if(tipo==='transferência'||tipo==='transferencia')return'transferencia_saida';
@@ -1289,7 +1350,7 @@
     }
     function getCreditCardInvoiceSummary(mes=currentMonth()){
       const invoices=getCreditCardInvoicesForMonth(mes);
-      const predicted=invoices.filter(invoice=>invoice.status==='previsto'||!invoice.transaction_id);
+      const predicted=invoices.filter(invoice=>invoice.status==='previsto');
       const paid=invoices.filter(invoice=>invoice.status==='pago');
       return{
         invoices,
@@ -1337,10 +1398,7 @@
       return totals;
     }
     function getTopExpenseCategory(mes=currentMonth()){
-      const {txs,depTotal,depPrevista}=getMesSummary(mes);
-      const map={};
-      txs.filter(t=>t.tipo==='despesa').forEach(t=>map[t.categoria]=(map[t.categoria]||0)+(Number(t.valor)||0));
-      if(depPrevista)map['Cartão de Crédito']=(map['Cartão de Crédito']||0)+depPrevista;
+      const {catMap:map,depTotal}=getExpenseCategoryMap(mes);
       const [categoria,valor]=Object.entries(map).sort((a,b)=>b[1]-a[1])[0]||['Sem gastos',0];
       return{categoria,valor,pct:depTotal?Math.round(valor/depTotal*100):0};
     }
@@ -1445,10 +1503,7 @@
     }
     function getAlerts(mes=getDashboardMonth()){
       const alerts=[];
-      const {txs,depPrevista}=getMesSummary(mes);
-      const gastos={};
-      txs.filter(t=>t.tipo==='despesa').forEach(t=>gastos[t.categoria]=(gastos[t.categoria]||0)+(Number(t.valor)||0));
-      if(depPrevista)gastos['Cartão de Crédito']=(gastos['Cartão de Crédito']||0)+depPrevista;
+      const {catMap:gastos}=getExpenseCategoryMap(mes);
       Object.entries(state.orcamento||{}).forEach(([cat,limit])=>{
         const pct=Number(limit)?Math.round((gastos[cat]||0)/Number(limit)*100):0;
         if(pct>=85)alerts.push({type:pct>=100?'danger':'warning',text:`${cat} atingiu ${pct}% do orçamento mensal.`});
@@ -1520,8 +1575,10 @@
       const depPct=prev.depTotal?((depTotal-prev.depTotal)/prev.depTotal)*100:0;
       const saving=rec?Math.max(0,Math.round((saldo/rec)*100)):0;
       const sparkData=getMonthlySparkData(12,mes);
-      setText('kpi-saldo',fmtBRL(total));setText('kpi-receita',fmtBRL(rec));setText('kpi-despesa',fmtBRL(depTotal));
-      setTrend('kpi-saldo-trend',0,true);setTrend('kpi-receita-trend',recPct,recPct>=0);setTrend('kpi-despesa-trend',depPct,depPct<0);
+      setText('kpi-saldo',fmtSignedBRL(total));setText('kpi-receita',fmtBRL(rec));setText('kpi-despesa',fmtBRL(depTotal));
+      const saldoCard=document.getElementById('kpi-saldo')?.closest('.kpi-card');
+      if(saldoCard)saldoCard.classList.toggle('balance-negative',total<0);
+      setTrend('kpi-saldo-trend',0,total>=0);setTrend('kpi-receita-trend',recPct,recPct>=0);setTrend('kpi-despesa-trend',depPct,depPct<0);
       setDonutLabel('month-rate',saving+'%','Poupança');
       drawSpark('spark-saldo',sparkData.saldo,COLORS[0]);
       drawSpark('spark-receita',sparkData.receitas,COLORS[0]);
@@ -1535,7 +1592,7 @@
       renderCategoryDonut(mes);
       renderGoals('dash-goals',3);
       renderAccounts('dash-accounts',4);
-      setText('dash-total',fmtBRL(total));
+      setText('dash-total',fmtSignedBRL(total));
       renderMonthOverview(rec,depTotal,saving,mes);
     }
     function getDashboardLayoutUserId(){return currentUser?.id||currentUser?.email||'anonimo'}
@@ -1570,19 +1627,14 @@
       return{receitas,despesas,saldo};
     }
     function renderCategoryExpenseChart(mes=getDashboardMonth()){
-      const {txs}=getMesSummary(mes);
-      const catMap={};
-      txs.filter(t=>t.tipo==='despesa').forEach(t=>catMap[t.categoria]=(catMap[t.categoria]||0)+t.valor);
+      const {catMap}=getExpenseCategoryMap(mes);
       const sorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
       drawHorizontalBars('cat-expense-chart',sorted.map(([cat])=>cat),sorted.map(([,val])=>val),COLORS);
     }
     function renderBudgetSummary(mes=getDashboardMonth()){
       const list=document.getElementById('dash-budget-list');
       if(!list)return;
-      const {txs,depPrevista}=getMesSummary(mes);
-      const gastos={};
-      txs.filter(t=>t.tipo==='despesa').forEach(t=>gastos[t.categoria]=(gastos[t.categoria]||0)+t.valor);
-      if(depPrevista)gastos['Cartão de Crédito']=(gastos['Cartão de Crédito']||0)+depPrevista;
+      const {catMap:gastos}=getExpenseCategoryMap(mes);
       const budgetItems=getCategorias('despesa').map(cat=>({
         cat,
         limit:Number(state.orcamento?.[cat])||0,
@@ -1670,10 +1722,7 @@
       return `<div class="tx-card"><div class="tx-ico">${ico}</div><div><div class="tx-name">${escapeHtml(getTransactionDescription(t)||t.categoria||label)}</div><div class="tx-meta">${fmtDate(getTransactionDate(t))} · ${escapeHtml(t.categoria||label)}</div></div><div class="money ${positive?'positive':'negative'}">${positive?'+':'-'}${fmtBRL(t.valor)}</div><span style="color:var(--muted2)">›</span></div>`;
     }
     function renderCategoryDonut(mes=getDashboardMonth()){
-      const {txs,depTotal,depPrevista}=getMesSummary(mes);
-      const catMap={};
-      txs.filter(t=>t.tipo==='despesa').forEach(t=>catMap[t.categoria]=(catMap[t.categoria]||0)+t.valor);
-      if(depPrevista)catMap['Cartão de Crédito']=(catMap['Cartão de Crédito']||0)+depPrevista;
+      const {catMap,depTotal}=getExpenseCategoryMap(mes);
       const sorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
       setDonutLabel('cat-total',fmtBRL(depTotal),'Total');
       drawDonut('cat-donut',sorted.map(x=>x[1]),COLORS);
@@ -1729,7 +1778,8 @@
         const actions=editable?`<div class="inline-actions"><button class="btn btn-ghost" onclick="editConta('${escapeHtml(c.id)}')">Editar</button><button class="btn btn-danger" onclick="deleteConta('${escapeHtml(c.id)}')">Remover</button></div>`:'';
         const saldo=calculateAccountBalance(c);
         const pct=getSaldoTotal()?Math.round((saldo/getSaldoTotal())*100):0;
-        return `<div class="account-card"><div class="account-ico">${escapeHtml(c.icone||'▣')}</div><div><div class="account-name">${escapeHtml(c.nome)}</div><div class="account-sub">${escapeHtml(c.tipo)} · ${pct}% do patrimônio · inicial ${fmtBRL(c.saldo_inicial)}</div></div><div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap"><div class="money ${saldo>=0?'':'negative'}">${saldo<0?'-':''}${fmtBRL(saldo)}</div>${actions}</div></div>`;
+        const icon=(c.icone==='🏦'?guessBankIconByName(c.nome):'')||c.icone||guessBankIconByName(c.nome)||'▣';
+        return `<div class="account-card"><div class="account-ico">${renderAccountIcon(icon)}</div><div><div class="account-name">${escapeHtml(c.nome)}</div><div class="account-sub">${escapeHtml(c.tipo)} · ${pct}% do patrimônio · inicial ${fmtSignedBRL(c.saldo_inicial)}</div></div><div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap"><div class="money ${saldo>=0?'':'negative'}">${fmtSignedBRL(saldo)}</div>${actions}</div></div>`;
       }).join('');
     }
 
@@ -1892,9 +1942,7 @@
     }
 
     function renderOrcamento(){
-      const {txs,depPrevista}=getMesSummary(getDashboardMonth());
-      const gastos={};txs.filter(t=>t.tipo==='despesa').forEach(t=>gastos[t.categoria]=(gastos[t.categoria]||0)+t.valor);
-      if(depPrevista)gastos['Cartão de Crédito']=(gastos['Cartão de Crédito']||0)+depPrevista;
+      const {catMap:gastos}=getExpenseCategoryMap(getDashboardMonth());
       document.getElementById('orc-form').innerHTML=getCategorias('despesa').map(cat=>`<div class="form-group" style="margin-bottom:12px"><label>${escapeHtml(cat)}</label><input type="number" id="orc-${slug(cat)}" value="${state.orcamento[cat]||0}" min="0"></div>`).join('');
       document.getElementById('orc-progress').innerHTML=getCategorias('despesa').filter(cat=>state.orcamento[cat]>0).map((cat,i)=>{
         const lim=state.orcamento[cat],g=gastos[cat]||0,pct=Math.min(100,Math.round(g/lim*100));
@@ -1972,7 +2020,9 @@
     }
     function salvarConta(){
       const nome=document.getElementById('c-nome').value.trim();if(!nome){toast('Nome obrigatório','error');return}
-      const payload={nome,tipo:document.getElementById('c-tipo').value,saldo_inicial:parseFloat(document.getElementById('c-saldo').value)||0,data_criacao:new Date().toISOString().slice(0,10),ativo:true,icone:document.getElementById('c-icone').value};
+      let icone=document.getElementById('c-icone').value;
+      if(icone==='🏦')icone=guessBankIconByName(nome)||icone;
+      const payload={nome,tipo:document.getElementById('c-tipo').value,saldo_inicial:parseFloat(document.getElementById('c-saldo').value)||0,data_criacao:new Date().toISOString().slice(0,10),ativo:true,icone};
       if(editingContaId!==null){
         const conta=state.contas.find(c=>String(c.id)===String(editingContaId));if(!conta)return;
         const oldName=conta.nome;
@@ -2002,6 +2052,7 @@
     let editingCartaoId=null;
     function renderCartoes(){
       const accountOptions=state.contas.filter(c=>c.ativo!==false).map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.nome)}</option>`).join('');
+      const categoryOptions=getCategorias('despesa').map(cat=>`<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
       const cardOptions=state.cartoes.filter(c=>c.ativo!==false).map(c=>{
         const debitAccount=getCreditCardDebitAccount(c);
         return `<option value="${escapeHtml(c.id)}">${escapeHtml(c.nome)} · ${escapeHtml(debitAccount?.nome||'sem conta de débito')}</option>`;
@@ -2026,6 +2077,7 @@
           <div class="form-grid" style="margin-top:14px">
             <div class="form-group full"><label>Cartão</label><select id="ft-cartao">${cardOptions||'<option value="">Cadastre um cartão</option>'}</select></div>
             <div class="form-group"><label>Valor da fatura</label><input type="number" id="ft-valor" min="0" step="0.01"></div>
+            <div class="form-group"><label>Categoria do gasto</label><select id="ft-categoria" required>${categoryOptions}</select></div>
             <div class="form-group"><label>Mês de competência</label><input type="month" id="ft-competencia" value="${escapeHtml(getDashboardMonth())}"></div>
             <div class="form-group"><label>Mês de pagamento</label><input type="month" id="ft-pagamento" value="${escapeHtml(addMonths(getDashboardMonth(),1))}"></div>
             <div class="form-group"><label>Status</label><select id="ft-status"><option value="previsto">Previsto</option><option value="pago">Pago</option><option value="cancelado">Cancelado</option></select></div>
@@ -2047,6 +2099,9 @@
         const futureValue=monthInvoices.reduce((s,invoice)=>s+(Number(invoice.valor)||0),0);
         const nextInvoice=invoices.slice().sort((a,b)=>a.mes_pagamento.localeCompare(b.mes_pagamento))[0];
         const debitAccount=getCreditCardDebitAccount(card);
+        const currentInvoice=monthInvoices[0]||nextInvoice;
+        const currentStatus=monthInvoices.length?[...new Set(monthInvoices.map(invoice=>formatInvoiceStatus(invoice.status)))].join(', '):(currentInvoice?formatInvoiceStatus(currentInvoice.status):'-');
+        const categories=monthInvoices.length?[...new Set(monthInvoices.map(getInvoiceCategory))].join(', '):(currentInvoice?getInvoiceCategory(currentInvoice):'-');
         return `<div class="credit-card-item">
           <div class="credit-card-top">
             <div><div class="credit-card-brand">${escapeHtml(card.nome)}</div><div class="caption">${escapeHtml(debitAccount?.nome||'Conta de débito não definida')} ${card.final4?`· final ${escapeHtml(card.final4)}`:''}</div></div>
@@ -2058,8 +2113,14 @@
             <span class="mini-pill">Vence dia ${card.vencimento}</span>
             <span class="mini-pill">Debita em ${escapeHtml(debitAccount?.nome||'-')}</span>
           </div>
-          <div class="cash-line"><span>Fatura em ${escapeHtml(formatMonth(selectedMonth))}</span><strong>${fmtBRL(futureValue)}</strong></div>
-          <div class="cash-line"><span>Mês de pagamento</span><strong>${escapeHtml(nextInvoice?formatMonth(nextInvoice.mes_pagamento):'-')}</strong></div>
+          <div>
+            <div class="cash-line"><span>Fatura atual</span><strong>${fmtBRL(futureValue)}</strong></div>
+            <div class="cash-line"><span>Mês de competência</span><strong>${escapeHtml(currentInvoice?formatMonth(currentInvoice.mes_competencia):'-')}</strong></div>
+            <div class="cash-line"><span>Mês de pagamento</span><strong>${escapeHtml(currentInvoice?formatMonth(currentInvoice.mes_pagamento):'-')}</strong></div>
+            <div class="cash-line"><span>Status</span><strong>${escapeHtml(currentStatus)}</strong></div>
+            <div class="cash-line"><span>Categoria</span><strong>${escapeHtml(categories)}</strong></div>
+            <div class="cash-line" style="border-bottom:0"><span>Conta de pagamento</span><strong>${escapeHtml(debitAccount?.nome||'-')}</strong></div>
+          </div>
           <div class="inline-actions"><button class="btn btn-ghost" onclick="editCartao('${escapeHtml(card.id)}')">Editar</button><button class="btn btn-danger" onclick="deleteCartao('${escapeHtml(card.id)}')">Remover</button></div>
         </div>`;
       }).join('');
@@ -2072,9 +2133,21 @@
         const card=getCreditCardById(invoice.cartao_id);
         const account=getAccountById(invoice.conta_id)||getCreditCardDebitAccount(card);
         const canPay=invoice.status==='previsto';
-        return `<div class="invoice-row">
-          <div><div class="account-name">${escapeHtml(card?.nome||'Cartão removido')} · ${escapeHtml(formatMonth(invoice.mes_pagamento))}</div><div class="account-sub">${escapeHtml(invoice.descricao||'Sem observação')} · competência ${escapeHtml(formatMonth(invoice.mes_competencia))} · ${escapeHtml(account?.nome||'conta não definida')}</div></div>
-          <div class="inline-actions"><strong class="status-${escapeHtml(invoice.status)}">${fmtBRL(invoice.valor)}</strong><span class="badge ${invoice.status==='pago'?'in':'out'}">${escapeHtml(invoice.status)}</span><button class="btn btn-ghost" onclick="editFaturaCartao('${escapeHtml(invoice.id)}')">Editar</button>${canPay?`<button class="btn btn-green" onclick="pagarFaturaCartao('${escapeHtml(invoice.id)}')">Marcar pago</button><button class="btn btn-danger" onclick="cancelarFaturaCartao('${escapeHtml(invoice.id)}')">Cancelar</button>`:''}</div>
+        const statusClass=invoice.status==='pago'?'in':invoice.status==='cancelado'?'out':'';
+        return `<div class="invoice-card">
+          <div class="invoice-card-head">
+            <div><div class="invoice-title">${escapeHtml(invoice.descricao||`Fatura ${card?.nome||'cartão'}`)}</div><div class="caption">${escapeHtml(card?.nome||'Cartão removido')}</div></div>
+            <div class="invoice-amount status-${escapeHtml(invoice.status)}">${fmtBRL(invoice.valor)}</div>
+          </div>
+          <div class="invoice-details">
+            <div class="invoice-detail"><span>Categoria</span><strong>${escapeHtml(getInvoiceCategory(invoice))}</strong></div>
+            <div class="invoice-detail"><span>Status</span><strong><span class="badge ${statusClass}">${escapeHtml(formatInvoiceStatus(invoice.status))}</span></strong></div>
+            <div class="invoice-detail"><span>Competência</span><strong>${escapeHtml(formatMonth(invoice.mes_competencia))}</strong></div>
+            <div class="invoice-detail"><span>Pagamento</span><strong>${escapeHtml(formatMonth(invoice.mes_pagamento))}${invoice.data_pagamento?` · ${fmtDate(invoice.data_pagamento)}`:''}</strong></div>
+            <div class="invoice-detail"><span>Conta de pagamento</span><strong>${escapeHtml(account?.nome||'conta não definida')}</strong></div>
+            <div class="invoice-detail"><span>Cartão</span><strong>${escapeHtml(card?.final4?`${card.nome} final ${card.final4}`:(card?.nome||'Cartão removido'))}</strong></div>
+          </div>
+          <div class="inline-actions invoice-actions"><button class="btn btn-ghost" onclick="editFaturaCartao('${escapeHtml(invoice.id)}')">Editar</button><button class="btn btn-green" onclick="pagarFaturaCartao('${escapeHtml(invoice.id)}')" ${canPay?'':'disabled'}>Marcar pago</button><button class="btn btn-danger" onclick="cancelarFaturaCartao('${escapeHtml(invoice.id)}')" ${canPay?'':'disabled'}>Cancelar</button></div>
         </div>`;
       }).join('');
     }
@@ -2084,6 +2157,7 @@
       if(document.getElementById('ft-cartao'))document.getElementById('ft-cartao').value=state.cartoes.find(c=>c.ativo!==false)?.id||'';
       if(document.getElementById('ft-competencia'))document.getElementById('ft-competencia').value=getDashboardMonth();
       if(document.getElementById('ft-pagamento'))document.getElementById('ft-pagamento').value=addMonths(getDashboardMonth(),1);
+      if(document.getElementById('ft-categoria'))document.getElementById('ft-categoria').value=getCategorias('despesa')[0]||'Sem categoria';
       if(document.getElementById('ft-status'))document.getElementById('ft-status').value='previsto';
       if(document.getElementById('ft-conta'))document.getElementById('ft-conta').value='';
       setText('fatura-save-btn','Adicionar Fatura');
@@ -2098,6 +2172,7 @@
       document.getElementById('ft-valor').value=Number(invoice.valor)||0;
       document.getElementById('ft-competencia').value=invoice.mes_competencia||getDashboardMonth();
       document.getElementById('ft-pagamento').value=invoice.mes_pagamento||addMonths(getDashboardMonth(),1);
+      document.getElementById('ft-categoria').value=getInvoiceCategory(invoice);
       document.getElementById('ft-status').value=invoice.status||'previsto';
       document.getElementById('ft-conta').value=invoice.conta_id||'';
       document.getElementById('ft-desc').value=invoice.descricao||'';
@@ -2174,6 +2249,8 @@
       if(!card){toast('Cadastre ou selecione um cartão','error');return}
       if(!valor||valor<=0){toast('Valor da fatura inválido','error');return}
       const status=document.getElementById('ft-status').value||'previsto';
+      const categoria=document.getElementById('ft-categoria').value||'';
+      if(!categoria){toast('Selecione a categoria do gasto','error');return}
       const conta_id=document.getElementById('ft-conta').value||'';
       const debitAccount=getAccountById(conta_id)||getCreditCardDebitAccount(card);
       if(status==='pago'&&!debitAccount){toast('O cartão precisa ter uma conta de débito cadastrada','error');return}
@@ -2183,6 +2260,8 @@
         mes_competencia:document.getElementById('ft-competencia').value||getDashboardMonth(),
         mes_pagamento:document.getElementById('ft-pagamento').value||addMonths(getDashboardMonth(),1),
         descricao:(document.getElementById('ft-desc').value||'').trim(),
+        categoria,
+        categoria_id:categoria,
         status,
         conta_id:conta_id||card.conta_debito_id||'',
         updated_at:new Date().toISOString()
@@ -2192,20 +2271,30 @@
         const old={...invoice};
         if(invoice.transaction_id){
           const tx=state.transacoes.find(t=>String(t.id)===String(invoice.transaction_id));
-          if(tx){
+          if(payload.status!=='pago'){
+            state.transacoes=state.transacoes.filter(t=>String(t.id)!==String(invoice.transaction_id));
+            payload.transaction_id=null;
+            payload.data_pagamento=null;
+          }else if(tx){
             const account=getAccountById(payload.conta_id)||getCreditCardDebitAccount(card);
             tx.conta_id=account?.id||tx.conta_id;
             tx.conta=account?.nome||tx.conta;
             tx.valor=payload.valor;
+            tx.categoria=payload.categoria;
+            tx.categoria_id=payload.categoria_id;
             tx.data_movimento=getCreditCardPaymentDate(payload);
             tx.data=tx.data_movimento;
-            tx.descricao=payload.descricao||tx.descricao;
+            tx.descricao=payload.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(payload.mes_competencia)}`;
             tx.desc=tx.descricao;
+            tx.status='confirmado';
             tx.updated_at=new Date().toISOString();
           }
         }
         Object.assign(invoice,payload);
         addAuditLog('edição','fatura_cartao',invoice.id,old,invoice);
+        if(invoice.status==='pago'&&!invoice.transaction_id){
+          pagarFaturaCartao(invoice.id,true);
+        }
         resetFaturaCartaoForm();save();renderCartoes();renderDashboard();renderTransacoes();toast('Fatura atualizada','success');
         return;
       }
@@ -2221,17 +2310,18 @@
       const card=getCreditCardById(invoice.cartao_id);
       const account=getAccountById(invoice.conta_id)||getCreditCardDebitAccount(card);
       if(!account){toast('Edite o cartão e selecione uma conta cadastrada para debitar a fatura','error');return}
-      if(!state.categorias.despesa.includes('Cartão de Crédito'))state.categorias.despesa.push('Cartão de Crédito');
+      const categoria=getInvoiceCategory(invoice);
+      const dataPagamento=getCreditCardPaymentDate(invoice);
       const tx={
         id:String(Date.now())+Math.random().toString(16).slice(2),
         conta_id:account.id,
         conta:account.nome,
         tipo:'despesa',
-        categoria:'Cartão de Crédito',
-        categoria_id:'Cartão de Crédito',
+        categoria,
+        categoria_id:categoria,
         valor:Number(invoice.valor)||0,
-        data_movimento:getCreditCardPaymentDate(invoice),
-        data:getCreditCardPaymentDate(invoice),
+        data_movimento:dataPagamento,
+        data:dataPagamento,
         descricao:invoice.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(invoice.mes_competencia)}`,
         desc:invoice.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(invoice.mes_competencia)}`,
         tags:'cartão de crédito',
@@ -2246,6 +2336,7 @@
       invoice.status='pago';
       invoice.conta_id=account.id;
       invoice.transaction_id=tx.id;
+      invoice.data_pagamento=dataPagamento;
       invoice.updated_at=new Date().toISOString();
       addAuditLog('pagamento','fatura_cartao',invoice.id,old,invoice);
       addAuditLog('criação','transacao',tx.id,null,tx);

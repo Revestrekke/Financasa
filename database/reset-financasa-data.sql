@@ -8,12 +8,14 @@ set
     'contas', '[]'::jsonb,
     'metas', '[]'::jsonb,
     'categorias', jsonb_build_object(
-      'despesa', jsonb_build_array('Aluguel','Alimentação','Transporte','Saúde','Lazer','Educação','Roupas','Contas','Outros'),
+      'despesa', jsonb_build_array('Aluguel','Alimentação','Transporte','Saúde','Lazer','Educação','Roupas','Contas','Outros','Sem categoria'),
       'receita', jsonb_build_array('Salário','Freelance','Investimentos','Outras Receitas')
     ),
     'orcamento', '{}'::jsonb,
     'recorrentes', '[]'::jsonb,
     'investimentos', '[]'::jsonb,
+    'cartoes', '[]'::jsonb,
+    'faturas_cartao', '[]'::jsonb,
     'filtroTx', 'todas',
     'tipoLanc', 'despesa'
   ),

@@ -27334,13 +27334,10 @@
       }
       function CategoryTotalCard() {
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card-head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-head", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Gastos por Categoria" }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("select", { className: "dashboard-card-action", onChange: () => {
-              var _a;
-              return (_a = window.renderDashboard) == null ? void 0 : _a.call(window);
-            }, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { children: "Este m\xEAs" }) })
-          ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "caption", children: "M\xEAs selecionado no dashboard" })
+          ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "category-donut-layout", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "donut-center", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("canvas", { id: "cat-donut" }),

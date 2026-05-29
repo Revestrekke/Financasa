@@ -279,7 +279,7 @@ function AccountsCard() {
 function CategoryTotalCard() {
   return (
     <div className="card">
-      <div className="card-head"><div className="card-title">Gastos por Categoria</div><select className="dashboard-card-action" onChange={() => window.renderDashboard?.()}><option>Este mês</option></select></div>
+      <div className="card-head"><div><div className="card-title">Gastos por Categoria</div><div className="caption">Mês selecionado no dashboard</div></div></div>
       <div className="category-donut-layout">
         <div className="donut-center"><canvas id="cat-donut"></canvas><div className="donut-text"><div id="cat-total">R$ 0,00<span>Total</span></div></div></div>
         <div className="breakdown category-breakdown" id="cat-breakdown"></div>
