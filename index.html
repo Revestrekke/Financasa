@@ -514,15 +514,16 @@
     .profile-summary .avatar{width:58px;height:58px}
     .member-row{display:grid;grid-template-columns:minmax(0,1fr) 130px auto;gap:12px;align-items:center}
     .status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 10px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800}
-    .credit-card-page{display:flex;flex-direction:column;gap:18px;max-width:980px}
-    .credit-card-grid{display:flex;flex-direction:column;gap:16px}
-    .credit-card-item{display:flex;flex-direction:column;gap:14px;border:1px solid #dbe5f0;border-radius:8px;padding:16px;background:#ffffff;box-shadow:0 10px 28px rgba(15,23,42,.06)}
+    .credit-card-page{display:flex;flex-direction:column;gap:18px;max-width:760px}
+    .credit-card-grid{display:flex;flex-direction:column;gap:10px}
+    .credit-card-item{display:flex;flex-direction:column;gap:12px;border:1px solid #dbe5f0;border-radius:8px;padding:14px 18px;background:#ffffff;box-shadow:0 8px 20px rgba(15,23,42,.04);cursor:pointer;text-align:left;font:inherit;color:inherit}
+    .credit-card-item:hover,.credit-card-item.active{border-color:#bfdbfe;box-shadow:0 10px 24px rgba(37,99,235,.10)}
     .credit-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
     .credit-card-title-wrap{display:flex;align-items:flex-start;gap:12px;min-width:0}
-    .credit-card-icon{width:42px;height:42px;border-radius:8px;display:grid;place-items:center;background:#eff6ff;color:#1d4ed8;font-size:22px;flex:0 0 auto}
-    .credit-card-brand{font-size:18px;font-weight:850;color:#000000}
-    .credit-card-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:7px}
-    .mini-pill{display:inline-flex;align-items:center;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800;padding:4px 9px}
+    .credit-card-icon{width:52px;height:52px;border-radius:8px;display:grid;place-items:center;background:#eff6ff;color:#1d4ed8;font-size:24px;flex:0 0 auto}
+    .credit-card-brand{font-size:22px;font-weight:900;color:#000000;line-height:1.1}
+    .credit-card-meta{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+    .mini-pill{display:flex;align-items:center;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:14px;font-weight:900;padding:6px 12px}
     .invoice-manager-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
     .invoice-stat{border:1px solid #e6edf4;border-radius:8px;padding:12px;background:#f8fafc}
     .invoice-stat span{display:block;color:#65758a;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
@@ -2125,15 +2126,12 @@
     }
 
     let editingCartaoId=null;
+    let selectedCartaoId=null;
     function renderCartoes(){
       const accountOptions=state.contas.filter(c=>c.ativo!==false).map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.nome)}</option>`).join('');
       const categoryOptions=getCategorias('despesa').map(cat=>`<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
-      const selectedCardId=document.getElementById('compra-cartao')?.value||state.cartoes.find(c=>c.ativo!==false)?.id||'';
+      const selectedCardId=state.cartoes.some(c=>String(c.id)===String(selectedCartaoId))?selectedCartaoId:'';
       const selectedMonth=document.getElementById('compra-competencia')?.value||getDashboardMonth();
-      const cardOptions=state.cartoes.filter(c=>c.ativo!==false).map(c=>{
-        const debitAccount=getCreditCardDebitAccount(c);
-        return `<option value="${escapeHtml(c.id)}" ${String(c.id)===String(selectedCardId)?'selected':''}>${escapeHtml(c.nome)} · ${escapeHtml(debitAccount?.nome||'sem conta de débito')}</option>`;
-      }).join('');
       document.getElementById('page-cartoes').innerHTML=`<div class="page-header"><div><h2>Cartões de Crédito</h2><p class="caption">Registre compras na fatura aberta e lance o total como gasto previsto ao fechar.</p></div><button class="btn btn-green" onclick="showAddCartao()">Novo Cartão</button></div>
       <div id="cartao-form-wrap" class="card" style="display:none;margin-bottom:18px;max-width:820px">
         <div class="card-title" id="cartao-form-title">Novo Cartão</div>
@@ -2149,11 +2147,35 @@
       </div>
       <div class="credit-card-page">
         <div class="card"><div class="card-head"><div><div class="card-title">Cartões cadastrados</div><div class="caption">${state.cartoes.length} cartão(ões)</div></div></div><div class="credit-card-grid">${renderCreditCards()}</div></div>
-        <div class="card">
-          <div class="card-title">Gerenciamento da fatura</div>
-          <p class="caption" style="margin-top:6px">Cada compra registrada entra na fatura aberta. Quando ela fechar, o total vira gasto previsto no mês de pagamento.</p>
+        ${selectedCardId?renderSelectedCardInvoicePanel(selectedCardId,selectedMonth,categoryOptions,accountOptions):''}
+      </div>`;
+    }
+    function renderCreditCards(){
+      if(!state.cartoes.length)return'<div class="empty">Nenhum cartão cadastrado.</div>';
+      return state.cartoes.map(card=>{
+        const debitAccount=getCreditCardDebitAccount(card);
+        return `<button type="button" class="credit-card-item ${String(selectedCartaoId)===String(card.id)?'active':''}" onclick="selectCartao('${escapeHtml(card.id)}')">
+          <div class="credit-card-top">
+            <div class="credit-card-title-wrap"><div class="credit-card-icon">💳</div><div><div class="credit-card-brand">${escapeHtml(card.nome)}</div><div class="caption">${escapeHtml(debitAccount?.nome||'Conta de débito não definida')} ${card.final4?`· final ${escapeHtml(card.final4)}`:''}</div></div></div>
+          </div>
+          <div class="credit-card-meta">
+            <span class="mini-pill">Limite ${card.limite?fmtBRL(card.limite):'não informado'}</span>
+            <span class="mini-pill">Vence dia ${card.vencimento}</span>
+          </div>
+        </button>`;
+      }).join('');
+    }
+    function selectCartao(id){
+      selectedCartaoId=id;
+      renderCartoes();
+    }
+    function renderSelectedCardInvoicePanel(cardId,selectedMonth,categoryOptions,accountOptions){
+      const card=getCreditCardById(cardId);
+      if(!card)return'';
+      return `<div class="card">
+          <div class="card-head"><div><div class="card-title">Gerenciamento da fatura</div><div class="caption">${escapeHtml(card.nome)}</div></div><div class="inline-actions"><button class="btn btn-ghost" onclick="editCartao('${escapeHtml(card.id)}')">Editar</button><button class="btn btn-danger" onclick="deleteCartao('${escapeHtml(card.id)}')">Remover</button></div></div>
+          <input type="hidden" id="compra-cartao" value="${escapeHtml(card.id)}">
           <div class="form-grid" style="margin-top:14px">
-            <div class="form-group"><label>Cartão</label><select id="compra-cartao" onchange="renderCartoes()">${cardOptions||'<option value="">Cadastre um cartão</option>'}</select></div>
             <div class="form-group"><label>Mês da fatura</label><input type="month" id="compra-competencia" value="${escapeHtml(selectedMonth)}" onchange="renderCartoes()"></div>
             <div class="form-group"><label>Data da compra</label><input type="date" id="compra-data" value="${new Date().toISOString().slice(0,10)}"></div>
             <div class="form-group"><label>Valor da compra</label><input type="number" id="compra-valor" min="0" step="0.01"></div>
@@ -2161,52 +2183,8 @@
             <div class="form-group full"><label>Descrição da compra</label><input id="compra-desc" placeholder="Ex: mercado, farmácia, assinatura"></div>
           </div>
           <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-green" style="flex:1;justify-content:center" onclick="salvarCompraCartao()">Registrar compra</button></div>
-          ${renderInvoiceManager(selectedCardId,selectedMonth,accountOptions)}
-        </div>
-        <div class="card">
-          <div class="card-title">Faturas lançadas</div>
-          <p class="caption" style="margin-top:6px">Depois do fechamento, a fatura entra como gasto previsto e pode ser marcada como paga.</p>
-          <div class="invoice-list" style="margin-top:12px">${renderInvoiceList()}</div>
-        </div>
-      </div>`;
-    }
-    function renderCreditCards(){
-      if(!state.cartoes.length)return'<div class="empty">Nenhum cartão cadastrado.</div>';
-      const selectedMonth=getDashboardMonth();
-      return state.cartoes.map(card=>{
-        const invoices=state.faturas_cartao.filter(invoice=>String(invoice.cartao_id)===String(card.id)&&invoice.status!=='cancelado');
-        const monthInvoices=invoices.filter(invoice=>invoice.mes_pagamento===selectedMonth&&invoice.status!=='aberta');
-        const futureValue=monthInvoices.reduce((s,invoice)=>s+getCreditCardInvoiceTotal(invoice),0);
-        const openInvoices=invoices.filter(invoice=>invoice.status==='aberta');
-        const openValue=openInvoices.reduce((s,invoice)=>s+getCreditCardInvoiceTotal(invoice),0);
-        const nextInvoice=invoices.slice().sort((a,b)=>a.mes_pagamento.localeCompare(b.mes_pagamento))[0];
-        const debitAccount=getCreditCardDebitAccount(card);
-        const currentInvoice=monthInvoices[0]||nextInvoice;
-        const currentStatus=monthInvoices.length?[...new Set(monthInvoices.map(invoice=>formatInvoiceStatus(invoice.status)))].join(', '):(currentInvoice?formatInvoiceStatus(currentInvoice.status):'-');
-        const categories=monthInvoices.length?[...new Set(monthInvoices.map(getInvoiceCategory))].join(', '):(currentInvoice?getInvoiceCategory(currentInvoice):'-');
-        return `<div class="credit-card-item">
-          <div class="credit-card-top">
-            <div class="credit-card-title-wrap"><div class="credit-card-icon">💳</div><div><div class="credit-card-brand">${escapeHtml(card.nome)}</div><div class="caption">${escapeHtml(debitAccount?.nome||'Conta de débito não definida')} ${card.final4?`· final ${escapeHtml(card.final4)}`:''}</div></div></div>
-            <span class="mini-pill">Crédito</span>
-          </div>
-          <div class="credit-card-meta">
-            <span class="mini-pill">Limite ${card.limite?fmtBRL(card.limite):'não informado'}</span>
-            <span class="mini-pill">Fecha dia ${card.fechamento}</span>
-            <span class="mini-pill">Vence dia ${card.vencimento}</span>
-            <span class="mini-pill">Debita em ${escapeHtml(debitAccount?.nome||'-')}</span>
-          </div>
-          <div>
-            <div class="cash-line"><span>Faturas abertas</span><strong>${fmtBRL(openValue)}</strong></div>
-            <div class="cash-line"><span>Previsto no mês</span><strong>${fmtBRL(futureValue)}</strong></div>
-            <div class="cash-line"><span>Mês de competência</span><strong>${escapeHtml(currentInvoice?formatMonth(currentInvoice.mes_competencia):'-')}</strong></div>
-            <div class="cash-line"><span>Mês de pagamento</span><strong>${escapeHtml(currentInvoice?formatMonth(currentInvoice.mes_pagamento):'-')}</strong></div>
-            <div class="cash-line"><span>Status</span><strong>${escapeHtml(currentStatus)}</strong></div>
-            <div class="cash-line"><span>Categoria</span><strong>${escapeHtml(categories)}</strong></div>
-            <div class="cash-line" style="border-bottom:0"><span>Conta de pagamento</span><strong>${escapeHtml(debitAccount?.nome||'-')}</strong></div>
-          </div>
-          <div class="inline-actions"><button class="btn btn-ghost" onclick="editCartao('${escapeHtml(card.id)}')">Editar</button><button class="btn btn-danger" onclick="deleteCartao('${escapeHtml(card.id)}')">Remover</button></div>
+          ${renderInvoiceManager(cardId,selectedMonth,accountOptions)}
         </div>`;
-      }).join('');
     }
     function renderInvoiceManager(cardId,month,accountOptions){
       const card=getCreditCardById(cardId);
@@ -2328,6 +2306,7 @@
       }else{
         const card={id:String(Date.now()),...payload,created_at:new Date().toISOString()};
         state.cartoes.push(card);
+        selectedCartaoId=card.id;
         addAuditLog('criação','cartao_credito',card.id,null,card);
       }
       const msg=editingCartaoId!==null?'Cartão atualizado':'Cartão adicionado';
@@ -2338,6 +2317,7 @@
       if(state.faturas_cartao.some(invoice=>String(invoice.cartao_id)===String(id))){toast('Cartão com faturas não pode ser removido','error');return}
       if(!confirm(`Remover o cartão "${card.nome}"?`))return;
       state.cartoes=state.cartoes.filter(c=>String(c.id)!==String(id));
+      if(String(selectedCartaoId)===String(id))selectedCartaoId=null;
       addAuditLog('exclusão','cartao_credito',id,card,null);
       save();renderCartoes();renderDashboard();toast('Cartão removido','success');
     }
