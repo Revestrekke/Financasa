@@ -2166,14 +2166,18 @@
       }).join('');
     }
     function selectCartao(id){
-      selectedCartaoId=id;
+      selectedCartaoId=String(selectedCartaoId)===String(id)?null:id;
+      renderCartoes();
+    }
+    function closeCartaoPanel(){
+      selectedCartaoId=null;
       renderCartoes();
     }
     function renderSelectedCardInvoicePanel(cardId,selectedMonth,categoryOptions,accountOptions){
       const card=getCreditCardById(cardId);
       if(!card)return'';
       return `<div class="card">
-          <div class="card-head"><div><div class="card-title">Gerenciamento da fatura</div><div class="caption">${escapeHtml(card.nome)}</div></div><div class="inline-actions"><button class="btn btn-ghost" onclick="editCartao('${escapeHtml(card.id)}')">Editar</button><button class="btn btn-danger" onclick="deleteCartao('${escapeHtml(card.id)}')">Remover</button></div></div>
+          <div class="card-head"><div><div class="card-title">Gerenciamento da fatura</div><div class="caption">${escapeHtml(card.nome)}</div></div><div class="inline-actions"><button class="btn btn-ghost" onclick="closeCartaoPanel()">Fechar</button><button class="btn btn-ghost" onclick="editCartao('${escapeHtml(card.id)}')">Editar</button><button class="btn btn-danger" onclick="deleteCartao('${escapeHtml(card.id)}')">Remover</button></div></div>
           <input type="hidden" id="compra-cartao" value="${escapeHtml(card.id)}">
           <div class="form-grid" style="margin-top:14px">
             <div class="form-group"><label>Mês da fatura</label><input type="month" id="compra-competencia" value="${escapeHtml(selectedMonth)}" onchange="renderCartoes()"></div>
