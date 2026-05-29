@@ -341,13 +341,31 @@ function DashboardLayoutApp({ userId }) {
 
   useEffect(() => {
     window.toggleDashboardLayoutEdit = () => setEditing((value) => !value);
+    window.saveDashboardLayout = () => {
+      saveLayouts(userId, layouts);
+      window.toast?.('Layout salvo', 'success');
+    };
+    window.resetDashboardLayout = () => {
+      const nextLayouts = defaultLayouts();
+      setLayouts(nextLayouts);
+      saveLayouts(userId, nextLayouts);
+      scheduleDashboardRender();
+      window.toast?.('Layout restaurado', 'success');
+    };
     return () => {
       if (window.toggleDashboardLayoutEdit) delete window.toggleDashboardLayoutEdit;
+      if (window.saveDashboardLayout) delete window.saveDashboardLayout;
+      if (window.resetDashboardLayout) delete window.resetDashboardLayout;
     };
-  }, []);
+  }, [layouts, userId]);
 
   useEffect(() => {
     document.getElementById('top-layout-edit')?.classList.toggle('active', editing && desktop);
+    const editButton = document.getElementById('dashboard-edit-toggle');
+    if (editButton) {
+      editButton.classList.toggle('active', editing && desktop);
+      editButton.textContent = editing && desktop ? 'Desativar editor de layout' : 'Ativar editor de layout';
+    }
   }, [editing, desktop]);
 
   const cards = useMemo(() => CARD_IDS.map((id) => {

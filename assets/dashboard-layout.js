@@ -27446,13 +27446,33 @@
         }, [layouts, editing, desktop]);
         (0, import_react3.useEffect)(() => {
           window.toggleDashboardLayoutEdit = () => setEditing((value) => !value);
+          window.saveDashboardLayout = () => {
+            var _a;
+            saveLayouts(userId, layouts);
+            (_a = window.toast) == null ? void 0 : _a.call(window, "Layout salvo", "success");
+          };
+          window.resetDashboardLayout = () => {
+            var _a;
+            const nextLayouts = defaultLayouts();
+            setLayouts(nextLayouts);
+            saveLayouts(userId, nextLayouts);
+            scheduleDashboardRender();
+            (_a = window.toast) == null ? void 0 : _a.call(window, "Layout restaurado", "success");
+          };
           return () => {
             if (window.toggleDashboardLayoutEdit) delete window.toggleDashboardLayoutEdit;
+            if (window.saveDashboardLayout) delete window.saveDashboardLayout;
+            if (window.resetDashboardLayout) delete window.resetDashboardLayout;
           };
-        }, []);
+        }, [layouts, userId]);
         (0, import_react3.useEffect)(() => {
           var _a;
           (_a = document.getElementById("top-layout-edit")) == null ? void 0 : _a.classList.toggle("active", editing && desktop);
+          const editButton = document.getElementById("dashboard-edit-toggle");
+          if (editButton) {
+            editButton.classList.toggle("active", editing && desktop);
+            editButton.textContent = editing && desktop ? "Desativar editor de layout" : "Ativar editor de layout";
+          }
         }, [editing, desktop]);
         const cards = (0, import_react3.useMemo)(() => CARD_IDS.map((id) => {
           const Card = CARD_RENDERERS[id];
