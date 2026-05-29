@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinanCasa</title>
-  <link rel="stylesheet" href="assets/dashboard-layout.css?v=20260529-1">
+  <link rel="stylesheet" href="assets/dashboard-layout.css?v=20260529-2">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     :root{
@@ -643,11 +643,6 @@
             <label for="dashboard-month">Mês do dashboard</label>
             <input type="month" id="dashboard-month" onchange="setDashboardMonth(this.value)">
           </div>
-          <div class="dashboard-layout-actions">
-            <button class="btn" id="dashboard-edit-toggle" onclick="window.toggleDashboardLayoutEdit?.()">Ativar editor de layout</button>
-            <button class="btn btn-green" onclick="window.saveDashboardLayout?.()">Salvar layout</button>
-            <button class="btn btn-ghost" onclick="window.resetDashboardLayout?.()">Restaurar padrão</button>
-          </div>
         </div>
         <div id="dashboard-layout-root" class="dashboard-layout-root">
           <div class="dashboard-fallback-grid">
@@ -707,6 +702,10 @@
             <div class="card span-3">
               <div class="card-head"><div><div class="card-title">Alertas</div><div class="caption">Próximos riscos</div></div></div>
               <div class="alert-list" id="dash-alerts"></div>
+            </div>
+            <div class="card span-4">
+              <div class="card-head"><div><div class="card-title">Faturas dos Cartões</div><div class="caption" id="dash-card-invoices-caption">Mês selecionado</div></div><button class="btn btn-ghost" onclick="navTo('cartoes')">Ver</button></div>
+              <div class="invoice-list" id="dash-card-invoices"></div>
             </div>
             <div class="card span-3">
               <div class="card-head"><div class="card-title">Metas</div><button class="btn btn-ghost" onclick="navTo('metas')">Ver todas</button></div>
@@ -863,7 +862,7 @@
 
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/dashboard-layout.js?v=20260529-1"></script>
+  <script src="assets/dashboard-layout.js?v=20260529-2"></script>
   <script>
     const DEFAULT_CATS_DESPESA=['Aluguel','Alimentação','Transporte','Saúde','Lazer','Educação','Roupas','Contas','Outros'];
     const DEFAULT_CATS_RECEITA=['Salário','Freelance','Investimentos','Outras Receitas'];
@@ -1521,6 +1520,7 @@
       renderBarChart(mes);
       renderExecutiveMetrics(mes);
       renderAlerts(mes);
+      renderDashboardCardInvoices(mes);
       renderBudgetSummary(mes);
       renderRecentList();
       renderCategoryDonut(mes);
@@ -1623,6 +1623,31 @@
       if(!el)return;
       const alerts=getAlerts(mes);
       el.innerHTML=alerts.map(alert=>`<div class="alert-item ${alert.type}">${escapeHtml(alert.text)}</div>`).join('')||'<div class="empty">Nenhum alerta crítico.</div>';
+    }
+    function renderDashboardCardInvoices(mes=getDashboardMonth()){
+      const list=document.getElementById('dash-card-invoices');
+      if(!list)return;
+      const invoices=getCreditCardInvoicesForMonth(mes);
+      const total=invoices.reduce((sum,invoice)=>sum+(Number(invoice.valor)||0),0);
+      setText('dash-card-invoices-caption',`${formatMonth(mes)} · ${fmtBRL(total)}`);
+      const rows=state.cartoes.map(card=>{
+        const cardInvoices=invoices.filter(invoice=>String(invoice.cartao_id)===String(card.id));
+        const cardTotal=cardInvoices.reduce((sum,invoice)=>sum+(Number(invoice.valor)||0),0);
+        if(!cardTotal)return null;
+        const paid=cardInvoices.filter(invoice=>invoice.status==='pago').reduce((sum,invoice)=>sum+(Number(invoice.valor)||0),0);
+        const planned=cardTotal-paid;
+        return `<div class="invoice-row">
+          <div>
+            <div class="account-name">${escapeHtml(card.nome)}</div>
+            <div class="account-sub">${escapeHtml(card.banco||'Banco não informado')} ${card.final4?`· final ${escapeHtml(card.final4)}`:''}</div>
+          </div>
+          <div style="text-align:right">
+            <strong>${fmtBRL(cardTotal)}</strong>
+            <div class="account-sub">${planned?`${fmtBRL(planned)} previsto`:''}${paid&&planned?' · ':''}${paid?`${fmtBRL(paid)} pago`:''}</div>
+          </div>
+        </div>`;
+      }).filter(Boolean);
+      list.innerHTML=rows.join('')||'<div class="empty">Sem faturas para este mês.</div>';
     }
     function renderRecentList(){
       const txs=state.transacoes.slice().sort((a,b)=>getTransactionDate(b).localeCompare(getTransactionDate(a))).slice(0,6);

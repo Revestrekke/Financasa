@@ -27034,6 +27034,7 @@
         "visao-mes",
         "orcamento",
         "alertas",
+        "faturas-cartao",
         "metas",
         "contas-carteiras",
         "gastos-categoria",
@@ -27055,7 +27056,8 @@
         { i: "acoes-rapidas", x: 0, y: 17, w: 4, h: 6, minW: 3, minH: 3 },
         { i: "ultimas-transacoes", x: 4, y: 17, w: 4, h: 6, minW: 2, minH: 3 },
         { i: "metas", x: 8, y: 17, w: 4, h: 6, minW: 2, minH: 3 },
-        { i: "contas-carteiras", x: 0, y: 23, w: 12, h: 5, minW: 2, minH: 3 }
+        { i: "contas-carteiras", x: 0, y: 23, w: 8, h: 6, minW: 2, minH: 3 },
+        { i: "faturas-cartao", x: 8, y: 23, w: 4, h: 6, minW: 3, minH: 3 }
       ];
       function cloneLayout2(layout) {
         return layout.map((item) => ({ ...item }));
@@ -27287,6 +27289,21 @@
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "alert-list", id: "dash-alerts" })
         ] });
       }
+      function CreditCardInvoicesCard() {
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card-head", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Faturas dos Cart\xF5es" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "caption", id: "dash-card-invoices-caption", children: "M\xEAs selecionado" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "btn btn-ghost dashboard-card-action", onClick: () => {
+              var _a;
+              return (_a = window.navTo) == null ? void 0 : _a.call(window, "cartoes");
+            }, children: "Ver" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "invoice-list", id: "dash-card-invoices" })
+        ] });
+      }
       function GoalsCard() {
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card-head", children: [
@@ -27422,6 +27439,7 @@
         "indicadores-executivos": ExecutiveMetricsCard,
         orcamento: BudgetCard,
         alertas: AlertsCard,
+        "faturas-cartao": CreditCardInvoicesCard,
         metas: GoalsCard,
         "contas-carteiras": AccountsCard,
         "gastos-categoria": CategoryTotalCard,
@@ -27468,28 +27486,36 @@
         (0, import_react3.useEffect)(() => {
           var _a;
           (_a = document.getElementById("top-layout-edit")) == null ? void 0 : _a.classList.toggle("active", editing && desktop);
-          const editButton = document.getElementById("dashboard-edit-toggle");
-          if (editButton) {
-            editButton.classList.toggle("active", editing && desktop);
-            editButton.textContent = editing && desktop ? "Desativar editor de layout" : "Ativar editor de layout";
-          }
         }, [editing, desktop]);
+        const editable = editing && desktop;
+        const activeLayouts = (0, import_react3.useMemo)(() => {
+          const normalized = normalizeLayouts(layouts);
+          return Object.fromEntries(Object.entries(normalized).map(([breakpoint, items]) => [
+            breakpoint,
+            items.map((item) => ({
+              ...item,
+              static: !editable,
+              isDraggable: editable,
+              isResizable: editable
+            }))
+          ]));
+        }, [layouts, editable]);
         const cards = (0, import_react3.useMemo)(() => CARD_IDS.map((id) => {
           const Card = CARD_RENDERERS[id];
-          return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: `dashboard-layout-card ${editing && desktop ? "is-editing" : ""}`, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(DragHandle, { editing: editing && desktop }),
+          return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: `dashboard-layout-card ${editable ? "is-editing" : ""}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(DragHandle, { editing: editable }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Card, {})
           ] }, id);
-        }), [editing, desktop]);
+        }), [editable]);
         function handleLayoutChange(_layout, allLayouts) {
-          if (!editing || !desktop) return;
+          if (!editable) return;
           const nextLayouts = normalizeLayouts(allLayouts);
           setLayouts(nextLayouts);
           saveLayouts(userId, nextLayouts);
         }
         function preventLockedInteraction(_layout, _oldItem, _newItem, _placeholder, event) {
           var _a, _b;
-          if (editing && desktop) return true;
+          if (editable) return true;
           (_a = event == null ? void 0 : event.preventDefault) == null ? void 0 : _a.call(event);
           (_b = event == null ? void 0 : event.stopPropagation) == null ? void 0 : _b.call(event);
           return false;
@@ -27497,8 +27523,8 @@
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_jsx_runtime2.Fragment, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { ref: containerRef, children: mounted && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
           ResponsiveGridLayout,
           {
-            className: `dashboard-editable-grid ${editing && desktop ? "is-editing" : "is-locked"}`,
-            layouts,
+            className: `dashboard-editable-grid ${editable ? "is-editing" : "is-locked"}`,
+            layouts: activeLayouts,
             breakpoints: BREAKPOINTS,
             cols: COLS,
             width,
@@ -27509,11 +27535,11 @@
             preventCollision: false,
             isBounded: true,
             useCSSTransforms: true,
-            draggableHandle: editing && desktop ? ".dashboard-drag-handle" : ".dashboard-drag-disabled",
-            draggableCancel: editing && desktop ? ".dashboard-card-action, input, select, button, textarea, canvas, a" : ".dashboard-layout-card, .card, .kpi-card, input, select, button, textarea, canvas, a",
-            isDraggable: editing && desktop,
-            isResizable: editing && desktop,
-            resizeHandles: editing && desktop ? ["s", "e", "se"] : [],
+            draggableHandle: editable ? ".dashboard-drag-handle" : ".dashboard-drag-disabled",
+            draggableCancel: editable ? ".dashboard-card-action, input, select, button, textarea, canvas, a" : ".dashboard-layout-card, .card, .kpi-card, input, select, button, textarea, canvas, a",
+            isDraggable: editable,
+            isResizable: editable,
+            resizeHandles: editable ? ["s", "e", "se"] : [],
             onLayoutChange: handleLayoutChange,
             onDragStart: preventLockedInteraction,
             onResizeStart: preventLockedInteraction,

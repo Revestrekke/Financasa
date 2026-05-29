@@ -11,6 +11,7 @@ const CARD_IDS = [
   'visao-mes',
   'orcamento',
   'alertas',
+  'faturas-cartao',
   'metas',
   'contas-carteiras',
   'gastos-categoria',
@@ -34,7 +35,8 @@ const DEFAULT_LG_LAYOUT = [
   { i: 'acoes-rapidas', x: 0, y: 17, w: 4, h: 6, minW: 3, minH: 3 },
   { i: 'ultimas-transacoes', x: 4, y: 17, w: 4, h: 6, minW: 2, minH: 3 },
   { i: 'metas', x: 8, y: 17, w: 4, h: 6, minW: 2, minH: 3 },
-  { i: 'contas-carteiras', x: 0, y: 23, w: 12, h: 5, minW: 2, minH: 3 }
+  { i: 'contas-carteiras', x: 0, y: 23, w: 8, h: 6, minW: 2, minH: 3 },
+  { i: 'faturas-cartao', x: 8, y: 23, w: 4, h: 6, minW: 3, minH: 3 }
 ];
 
 function cloneLayout(layout) {
@@ -246,6 +248,15 @@ function AlertsCard() {
   );
 }
 
+function CreditCardInvoicesCard() {
+  return (
+    <div className="card">
+      <div className="card-head"><div><div className="card-title">Faturas dos Cartões</div><div className="caption" id="dash-card-invoices-caption">Mês selecionado</div></div><button className="btn btn-ghost dashboard-card-action" onClick={() => window.navTo?.('cartoes')}>Ver</button></div>
+      <div className="invoice-list" id="dash-card-invoices"></div>
+    </div>
+  );
+}
+
 function GoalsCard() {
   return (
     <div className="card">
@@ -313,6 +324,7 @@ const CARD_RENDERERS = {
   'indicadores-executivos': ExecutiveMetricsCard,
   orcamento: BudgetCard,
   alertas: AlertsCard,
+  'faturas-cartao': CreditCardInvoicesCard,
   metas: GoalsCard,
   'contas-carteiras': AccountsCard,
   'gastos-categoria': CategoryTotalCard,
@@ -361,32 +373,42 @@ function DashboardLayoutApp({ userId }) {
 
   useEffect(() => {
     document.getElementById('top-layout-edit')?.classList.toggle('active', editing && desktop);
-    const editButton = document.getElementById('dashboard-edit-toggle');
-    if (editButton) {
-      editButton.classList.toggle('active', editing && desktop);
-      editButton.textContent = editing && desktop ? 'Desativar editor de layout' : 'Ativar editor de layout';
-    }
   }, [editing, desktop]);
+
+  const editable = editing && desktop;
+
+  const activeLayouts = useMemo(() => {
+    const normalized = normalizeLayouts(layouts);
+    return Object.fromEntries(Object.entries(normalized).map(([breakpoint, items]) => [
+      breakpoint,
+      items.map((item) => ({
+        ...item,
+        static: !editable,
+        isDraggable: editable,
+        isResizable: editable
+      }))
+    ]));
+  }, [layouts, editable]);
 
   const cards = useMemo(() => CARD_IDS.map((id) => {
     const Card = CARD_RENDERERS[id];
     return (
-      <div key={id} className={`dashboard-layout-card ${editing && desktop ? 'is-editing' : ''}`}>
-        <DragHandle editing={editing && desktop} />
+      <div key={id} className={`dashboard-layout-card ${editable ? 'is-editing' : ''}`}>
+        <DragHandle editing={editable} />
         <Card />
       </div>
     );
-  }), [editing, desktop]);
+  }), [editable]);
 
   function handleLayoutChange(_layout, allLayouts) {
-    if (!editing || !desktop) return;
+    if (!editable) return;
     const nextLayouts = normalizeLayouts(allLayouts);
     setLayouts(nextLayouts);
     saveLayouts(userId, nextLayouts);
   }
 
   function preventLockedInteraction(_layout, _oldItem, _newItem, _placeholder, event) {
-    if (editing && desktop) return true;
+    if (editable) return true;
     event?.preventDefault?.();
     event?.stopPropagation?.();
     return false;
@@ -397,8 +419,8 @@ function DashboardLayoutApp({ userId }) {
       <div ref={containerRef}>
         {mounted && (
           <Responsive
-            className={`dashboard-editable-grid ${editing && desktop ? 'is-editing' : 'is-locked'}`}
-            layouts={layouts}
+            className={`dashboard-editable-grid ${editable ? 'is-editing' : 'is-locked'}`}
+            layouts={activeLayouts}
             breakpoints={BREAKPOINTS}
             cols={COLS}
             width={width}
@@ -409,11 +431,11 @@ function DashboardLayoutApp({ userId }) {
             preventCollision={false}
             isBounded
             useCSSTransforms
-            draggableHandle={editing && desktop ? '.dashboard-drag-handle' : '.dashboard-drag-disabled'}
-            draggableCancel={editing && desktop ? '.dashboard-card-action, input, select, button, textarea, canvas, a' : '.dashboard-layout-card, .card, .kpi-card, input, select, button, textarea, canvas, a'}
-            isDraggable={editing && desktop}
-            isResizable={editing && desktop}
-            resizeHandles={editing && desktop ? ['s', 'e', 'se'] : []}
+            draggableHandle={editable ? '.dashboard-drag-handle' : '.dashboard-drag-disabled'}
+            draggableCancel={editable ? '.dashboard-card-action, input, select, button, textarea, canvas, a' : '.dashboard-layout-card, .card, .kpi-card, input, select, button, textarea, canvas, a'}
+            isDraggable={editable}
+            isResizable={editable}
+            resizeHandles={editable ? ['s', 'e', 'se'] : []}
             onLayoutChange={handleLayoutChange}
             onDragStart={preventLockedInteraction}
             onResizeStart={preventLockedInteraction}
