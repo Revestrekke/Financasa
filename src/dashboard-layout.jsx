@@ -199,8 +199,8 @@ function RevenueExpenseChart() {
       <div className="card-head">
         <div>
           <div className="card-title">Receitas vs Despesas</div>
+          <div className="caption">Últimos 6 meses</div>
         </div>
-        <select id="range-chart" className="dashboard-card-action" onChange={() => window.renderDashboard?.()}><option value="6">Últimos 6 meses</option><option value="12">Últimos 12 meses</option></select>
       </div>
       <div className="chart-box"><canvas id="bar-chart"></canvas></div>
     </div>

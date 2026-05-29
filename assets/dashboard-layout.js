@@ -27230,13 +27230,9 @@
       function RevenueExpenseChart() {
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card-head", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Receitas vs Despesas" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("select", { id: "range-chart", className: "dashboard-card-action", onChange: () => {
-              var _a;
-              return (_a = window.renderDashboard) == null ? void 0 : _a.call(window);
-            }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { value: "6", children: "\xDAltimos 6 meses" }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { value: "12", children: "\xDAltimos 12 meses" })
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card-title", children: "Receitas vs Despesas" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "caption", children: "\xDAltimos 6 meses" })
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "chart-box", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("canvas", { id: "bar-chart" }) })

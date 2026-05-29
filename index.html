@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinanCasa</title>
+  <meta name="theme-color" content="#030914">
+  <link rel="icon" href="assets/icone_financasa.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icone_financasa-192.png">
+  <link rel="apple-touch-icon" href="assets/icone_financasa-192.png">
+  <link rel="manifest" href="site.webmanifest">
   <link rel="stylesheet" href="assets/dashboard-layout.css?v=20260529-2">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -685,8 +690,8 @@
               <div class="card-head">
                 <div>
                   <div class="card-title">Receitas vs Despesas</div>
+                  <div class="caption">Últimos 6 meses</div>
                 </div>
-                <select id="range-chart" onchange="renderDashboard()"><option value="6">Últimos 6 meses</option><option value="12">Últimos 12 meses</option></select>
               </div>
               <div class="chart-box"><canvas id="bar-chart"></canvas></div>
             </div>
@@ -1599,7 +1604,7 @@
     function mountCurrentDashboardLayout(){window.mountDashboardLayout?.(getDashboardLayoutUserId())}
 
     function renderBarChart(anchorMonth=getDashboardMonth()){
-      const count=Number(document.getElementById('range-chart')?.value||6);
+      const count=6;
       const labels=[],recs=[],deps=[];
       const [anchorYear,anchorIndex]=String(anchorMonth||currentMonth()).split('-').map(Number);
       const now=new Date(anchorYear,anchorIndex-1,1);
@@ -2606,12 +2611,20 @@
       })));
     }
     function drawBars(id,labels,datasets){
-      const c=document.getElementById(id);if(!c)return;const ctx=prepCanvas(c),w=c.clientWidth,h=c.clientHeight,pad={l:56,r:12,t:16,b:34};
+      const c=document.getElementById(id);if(!c)return;
+      const w=c.clientWidth,h=c.clientHeight;
+      if(w<120||h<120){
+        c.__drawBarsRetry=(c.__drawBarsRetry||0)+1;
+        if(c.offsetParent!==null&&c.__drawBarsRetry<8)requestAnimationFrame(()=>drawBars(id,labels,datasets));
+        return;
+      }
+      c.__drawBarsRetry=0;
+      const ctx=prepCanvas(c),pad={l:Math.min(60,Math.max(42,w*.15)),r:14,t:18,b:34};
       ctx.clearRect(0,0,w,h);const max=Math.max(1,...datasets.flatMap(d=>d.data))*1.15;ctx.strokeStyle='rgba(120,145,184,.16)';ctx.fillStyle='#000000';ctx.font='12px Segoe UI';
       for(let i=0;i<5;i++){const y=pad.t+i*(h-pad.t-pad.b)/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText('R$ '+Math.round(max-(max*i/4)).toLocaleString('pt-BR'),8,y+4)}
-      const groupW=(w-pad.l-pad.r)/labels.length,barW=Math.min(24,(groupW-18)/datasets.length);
+      const groupW=(w-pad.l-pad.r)/Math.max(labels.length,1),gap=Math.min(5,Math.max(2,groupW*.06)),barW=Math.max(5,Math.min(24,(Math.max(12,groupW-18)-gap*(datasets.length-1))/datasets.length));
       const tooltipItems=[];
-      labels.forEach((lab,i)=>{ctx.fillStyle='#000000';ctx.fillText(lab,pad.l+i*groupW+groupW/2-12,h-10);datasets.forEach((ds,j)=>{const bh=(ds.data[i]/max)*(h-pad.t-pad.b);const x=pad.l+i*groupW+groupW/2-(barW*datasets.length)/2+j*barW+j*5;const y=h-pad.b-bh;roundRect(ctx,x,y,barW,bh,4,ds.color);tooltipItems.push({x,y,w:barW,h:Math.max(bh,4),label:`${ds.name} em ${lab}: ${fmtBRL(ds.data[i])}`})})});
+      labels.forEach((lab,i)=>{ctx.fillStyle='#000000';ctx.fillText(lab,pad.l+i*groupW+groupW/2-12,h-10);datasets.forEach((ds,j)=>{const bh=(ds.data[i]/max)*(h-pad.t-pad.b);const x=pad.l+i*groupW+groupW/2-(barW*datasets.length+gap*(datasets.length-1))/2+j*(barW+gap);const y=h-pad.b-bh;roundRect(ctx,x,y,barW,bh,4,ds.color);tooltipItems.push({x,y,w:barW,h:Math.max(bh,4),label:`${ds.name} em ${lab}: ${fmtBRL(ds.data[i])}`})})});
       registerChartTooltip(c,tooltipItems);
     }
     function drawHorizontalBars(id,labels,values,colors){
