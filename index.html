@@ -527,16 +527,16 @@
     .status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 10px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800}
     .credit-card-page{display:flex;flex-direction:column;gap:18px;max-width:760px}
     .credit-card-grid{display:flex;flex-direction:column;gap:10px}
-    .credit-card-item{display:flex;flex-direction:column;gap:12px;border:1px solid #dbe5f0;border-radius:8px;padding:14px 18px;background:#ffffff;box-shadow:0 8px 20px rgba(15,23,42,.04);cursor:pointer;text-align:left;font:inherit;color:inherit}
-    .credit-card-item:hover,.credit-card-item.active{border-color:#bfdbfe;box-shadow:0 10px 24px rgba(37,99,235,.10)}
+    .credit-card-item{--card-accent:#2563eb;--card-accent-soft:#eff6ff;--card-accent-shadow:rgba(37,99,235,.14);display:flex;flex-direction:column;gap:12px;border:1px solid #dbe5f0;border-left:6px solid var(--card-accent);border-radius:8px;padding:14px 18px;background:linear-gradient(90deg,var(--card-accent-soft),#ffffff 44%);box-shadow:0 8px 20px rgba(15,23,42,.04);cursor:pointer;text-align:left;font:inherit;color:inherit}
+    .credit-card-item:hover,.credit-card-item.active{border-color:var(--card-accent);border-left-color:var(--card-accent);box-shadow:0 10px 24px var(--card-accent-shadow)}
     .credit-card-panel{border:1px solid #dbe5f0;border-radius:8px;padding:18px;background:#ffffff;box-shadow:0 8px 20px rgba(15,23,42,.04);margin:4px 0 8px}
     .credit-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
     .credit-card-title-wrap{display:flex;align-items:flex-start;gap:12px;min-width:0}
     .credit-card-title-wrap>div:last-child{min-width:0}
-    .credit-card-icon{width:52px;height:52px;border-radius:8px;display:grid;place-items:center;background:#eff6ff;color:#1d4ed8;font-size:24px;flex:0 0 auto}
+    .credit-card-icon{width:52px;height:52px;border-radius:8px;display:grid;place-items:center;background:var(--card-accent-soft);color:var(--card-accent);font-size:24px;flex:0 0 auto}
     .credit-card-brand{font-size:22px;font-weight:900;color:#000000;line-height:1.1;overflow-wrap:anywhere}
     .credit-card-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
-    .mini-pill{display:flex;align-items:center;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:14px;font-weight:900;padding:6px 12px}
+    .mini-pill{display:flex;align-items:center;border-radius:999px;background:var(--card-accent-soft);color:var(--card-accent);border:1px solid var(--card-accent-shadow);font-size:14px;font-weight:900;padding:6px 12px}
     .invoice-manager-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
     .invoice-stat{border:1px solid #e6edf4;border-radius:8px;padding:12px;background:#f8fafc}
     .invoice-stat span{display:block;color:#65758a;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
@@ -918,6 +918,16 @@
     const DEFAULT_CATS_RECEITA=['Salário','Freelance','Investimentos','Outras Receitas'];
     const QUICK=['Café R$8','Almoço R$35','Gasolina R$120','Mercado R$200','Farmácia R$50'];
     const COLORS=['#2563eb','#38bdf8','#ff3f57','#a78bfa','#f59e0b','#e946a4','#0f4c81','#64748b'];
+    const CREDIT_CARD_ACCENTS=[
+      {color:'#2563eb',soft:'#eff6ff',shadow:'rgba(37,99,235,.16)'},
+      {color:'#0891b2',soft:'#ecfeff',shadow:'rgba(8,145,178,.16)'},
+      {color:'#7c3aed',soft:'#f5f3ff',shadow:'rgba(124,58,237,.16)'},
+      {color:'#be185d',soft:'#fdf2f8',shadow:'rgba(190,24,93,.16)'},
+      {color:'#d97706',soft:'#fffbeb',shadow:'rgba(217,119,6,.18)'},
+      {color:'#0f766e',soft:'#f0fdfa',shadow:'rgba(15,118,110,.16)'},
+      {color:'#4f46e5',soft:'#eef2ff',shadow:'rgba(79,70,229,.16)'},
+      {color:'#b4232f',soft:'#fff1f2',shadow:'rgba(180,35,47,.16)'}
+    ];
     const SUPABASE_URL=window.FINANCASA_CONFIG?.SUPABASE_URL||'https://fzozyfzihfltgebmufsp.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY=window.FINANCASA_CONFIG?.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2';
     const SYSTEM_ADMIN_EMAILS=['david@financasa.com.br'];
@@ -1306,6 +1316,12 @@
       const purchases=Array.isArray(invoice?.compras)?invoice.compras:[];
       if(purchases.length)return purchases.reduce((sum,purchase)=>sum+(Number(purchase.valor)||0),0);
       return Number(invoice?.valor)||0;
+    }
+    function getCreditCardAccent(card,index=0){
+      const key=String(card?.id||'')+String(card?.nome||'')+String(card?.final4||'');
+      let hash=0;
+      for(let i=0;i<key.length;i++)hash=(hash*31+key.charCodeAt(i))|0;
+      return CREDIT_CARD_ACCENTS[Math.abs(hash+index)%CREDIT_CARD_ACCENTS.length];
     }
     function syncCreditCardInvoiceTotal(invoice){
       if(!invoice)return 0;
@@ -2201,9 +2217,10 @@
     }
     function renderCreditCards(selectedMonth,categoryOptions,accountOptions){
       if(!state.cartoes.length)return'<div class="empty">Nenhum cartão cadastrado.</div>';
-      return state.cartoes.map(card=>{
+      return state.cartoes.map((card,index)=>{
         const debitAccount=getCreditCardDebitAccount(card);
-        return `<button type="button" class="credit-card-item ${String(selectedCartaoId)===String(card.id)?'active':''}" onclick="selectCartao('${escapeHtml(card.id)}')">
+        const accent=getCreditCardAccent(card,index);
+        return `<button type="button" class="credit-card-item ${String(selectedCartaoId)===String(card.id)?'active':''}" style="--card-accent:${accent.color};--card-accent-soft:${accent.soft};--card-accent-shadow:${accent.shadow}" onclick="selectCartao('${escapeHtml(card.id)}')">
           <div class="credit-card-top">
             <div class="credit-card-title-wrap"><div class="credit-card-icon">💳</div><div><div class="credit-card-brand">${escapeHtml(card.nome)}</div><div class="caption">${escapeHtml(debitAccount?.nome||'Conta de débito não definida')} ${card.final4?`· final ${escapeHtml(card.final4)}`:''}</div></div></div>
           </div>
@@ -2292,7 +2309,12 @@
         const card=getCreditCardById(invoice.cartao_id);
         const account=getAccountById(invoice.conta_id)||getCreditCardDebitAccount(card);
         const canPay=invoice.status==='previsto';
+        const canCancel=invoice.status==='previsto';
+        const canReactivate=invoice.status==='cancelado';
         const statusClass=invoice.status==='pago'?'in':invoice.status==='cancelado'?'out':'';
+        const cancelAction=canReactivate
+          ? `<button class="btn btn-green" onclick="reativarFaturaCartao('${escapeHtml(invoice.id)}')">Reativar</button>`
+          : `<button class="btn btn-danger" onclick="cancelarFaturaCartao('${escapeHtml(invoice.id)}')" ${canCancel?'':'disabled'}>Cancelar</button>`;
         const purchases=Array.isArray(invoice.compras)?invoice.compras:[];
         return `<div class="invoice-card">
           <div class="invoice-card-head">
@@ -2307,7 +2329,7 @@
             <div class="invoice-detail"><span>Conta de pagamento</span><strong>${escapeHtml(account?.nome||'conta não definida')}</strong></div>
             <div class="invoice-detail"><span>Cartão</span><strong>${escapeHtml(card?.final4?`${card.nome} final ${card.final4}`:(card?.nome||'Cartão removido'))}</strong></div>
           </div>
-          <div class="inline-actions invoice-actions"><button class="btn btn-ghost" onclick="editFaturaCartao('${escapeHtml(invoice.id)}')">Editar</button><button class="btn btn-green" onclick="pagarFaturaCartao('${escapeHtml(invoice.id)}')" ${canPay?'':'disabled'}>Marcar pago</button><button class="btn btn-danger" onclick="cancelarFaturaCartao('${escapeHtml(invoice.id)}')" ${canPay?'':'disabled'}>Cancelar</button></div>
+          <div class="inline-actions invoice-actions"><button class="btn btn-ghost" onclick="editFaturaCartao('${escapeHtml(invoice.id)}')">Editar</button><button class="btn btn-green" onclick="pagarFaturaCartao('${escapeHtml(invoice.id)}')" ${canPay?'':'disabled'}>Marcar pago</button>${cancelAction}</div>
         </div>`;
       }).join('');
     }
@@ -2522,6 +2544,21 @@
       invoice.updated_at=new Date().toISOString();
       addAuditLog('cancelamento','fatura_cartao',id,old,invoice);
       save();renderCartoes();renderDashboard();renderTransacoes();toast('Fatura cancelada','success');
+    }
+    function reativarFaturaCartao(id){
+      const invoice=state.faturas_cartao.find(f=>String(f.id)===String(id));if(!invoice)return;
+      if(invoice.status!=='cancelado'){toast('Apenas faturas canceladas podem ser reativadas.','error');return}
+      const card=getCreditCardById(invoice.cartao_id);
+      const account=getAccountById(invoice.conta_id)||getCreditCardDebitAccount(card);
+      if(!account){toast('Edite o cartão e selecione uma conta cadastrada para reativar a fatura.','error');return}
+      const old={...invoice};
+      invoice.status='previsto';
+      invoice.conta_id=account.id;
+      invoice.data_pagamento=null;
+      syncInvoiceTransaction(invoice,account,'previsto');
+      invoice.updated_at=new Date().toISOString();
+      addAuditLog('reativação','fatura_cartao',id,old,invoice);
+      save();renderCartoes();renderDashboard();renderTransacoes();toast('Fatura reativada como pendente','success');
     }
 
     function renderRelatorios(){
