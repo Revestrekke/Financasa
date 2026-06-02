@@ -580,6 +580,8 @@
     .payment-toggle button{width:32px;height:32px;border-radius:8px;padding:0;display:grid;place-items:center;font-size:15px}
     .payment-toggle button.active-paid{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
     .payment-toggle button.active-pending{background:#fff1f2;border-color:#fecdd3;color:#dc3545}
+    .launch-status-toggle{display:flex;gap:8px;flex-wrap:wrap}
+    .launch-status-toggle .btn{min-width:148px;justify-content:center}
     .status-aberta{color:#1d4ed8}
     .status-previsto{color:#d97706}
     .status-pago{color:#2563eb}
@@ -828,6 +830,10 @@
               <div class="form-group"><label>Conta</label><select id="f-conta"></select></div>
               <div class="form-group full"><label>Descrição</label><input id="f-desc" placeholder="Ex: Supermercado"></div>
               <div class="form-group full"><label>Tags</label><input id="f-tags" placeholder="pessoal, fixo"></div>
+              <div class="form-group full"><label>Status</label><div class="launch-status-toggle payment-toggle">
+                <button type="button" class="btn btn-ghost" id="launch-paid-yes" onclick="setLaunchStatus(true)" title="Salvar já confirmado">👍 Confirmado</button>
+                <button type="button" class="btn btn-ghost active-pending" id="launch-paid-no" onclick="setLaunchStatus(false)" title="Salvar pendente">👎 Pendente</button>
+              </div></div>
             </div>
             <div style="display:flex;gap:10px;margin-top:18px"><button class="btn btn-green" id="lanc-save-btn" style="flex:1" onclick="salvar()">Salvar Lançamento</button><button class="btn" onclick="limparForm()">Limpar</button></div>
           </div>
@@ -841,6 +847,7 @@
           <button class="filter-btn active" data-filter="todas" onclick="setFiltro('todas',this)">Todas</button>
           <button class="filter-btn" data-filter="receita" onclick="setFiltro('receita',this)">Receitas</button>
           <button class="filter-btn" data-filter="despesa" onclick="setFiltro('despesa',this)">Despesas</button>
+          <button class="filter-btn" data-filter="transferencias" onclick="setFiltro('transferencias',this)">Transferências</button>
           <select id="filter-mes" onchange="renderTransacoes()"><option value="">Todos os meses</option></select>
           <select id="filter-cat" onchange="renderTransacoes()"><option value="">Todas as categorias</option></select>
         </div>
@@ -1862,14 +1869,15 @@
       list.innerHTML=rows.join('')||'<div class="empty">Nenhum cartão cadastrado.</div>';
     }
     function renderRecentList(){
-      const txs=state.transacoes.slice().sort((a,b)=>{
-        const dateOrder=getTransactionDate(b).localeCompare(getTransactionDate(a));
-        if(dateOrder)return dateOrder;
-        const createdOrder=String(b.updated_at||b.created_at||'').localeCompare(String(a.updated_at||a.created_at||''));
-        if(createdOrder)return createdOrder;
-        return String(b.id||'').localeCompare(String(a.id||''));
-      }).slice(0,6);
+      const txs=state.transacoes.slice().sort(compareTransactionsDesc).slice(0,6);
       document.getElementById('recent-list').innerHTML=txs.map(t=>txRow(t)).join('')||'<div class="empty">Sem transações</div>';
+    }
+    function compareTransactionsDesc(a,b){
+      const dateOrder=getTransactionDate(b).localeCompare(getTransactionDate(a));
+      if(dateOrder)return dateOrder;
+      const createdOrder=String(b.updated_at||b.created_at||'').localeCompare(String(a.updated_at||a.created_at||''));
+      if(createdOrder)return createdOrder;
+      return String(b.id||'').localeCompare(String(a.id||''));
     }
     function txRow(t){
       const ico=t.tipo==='receita'?'💼':t.tipo?.startsWith('transferencia')?'⇄':categoryIcon(t.categoria);
@@ -1925,6 +1933,7 @@
       }).join('')||'<div class="empty">Nenhuma meta criada.</div>';
     }
     let editingTxId=null;
+    let launchStatus='previsto';
     let editingContaId=null;
 
     function renderAccounts(elId='contas-list',limit=999){
@@ -1946,12 +1955,25 @@
         ? `<option value="">Selecione uma conta</option>${state.contas.map(c=>`<option value="${escapeHtml(c.nome)}">${escapeHtml(c.nome)}</option>`).join('')}`
         : '<option value="">Cadastre uma conta primeiro</option>';
       updateLaunchCardTheme();
+      updateLaunchStatusButtons();
       document.getElementById('quick-btns').innerHTML=QUICK.map(q=>`<button class="btn" onclick="quickAdd('${q}')">${q}</button>`).join('');
     }
     function updateLaunchCardTheme(){
       const card=document.getElementById('launch-card');if(!card)return;
       card.classList.toggle('launch-expense',state.tipoLanc==='despesa');
       card.classList.toggle('launch-income',state.tipoLanc==='receita');
+    }
+    function setLaunchStatus(confirmed){
+      launchStatus=confirmed?'confirmado':'previsto';
+      updateLaunchStatusButtons();
+    }
+    function updateLaunchStatusButtons(){
+      const yes=document.getElementById('launch-paid-yes');
+      const no=document.getElementById('launch-paid-no');
+      if(!yes||!no)return;
+      const confirmed=launchStatus==='confirmado';
+      yes.classList.toggle('active-paid',confirmed);
+      no.classList.toggle('active-pending',!confirmed);
     }
     function setTipo(t){
       state.tipoLanc=t;
@@ -1974,7 +1996,7 @@
       const account=state.contas.find(x=>x.nome===conta);
       const oldTx=editingTxId?state.transacoes.find(t=>String(t.id)===String(editingTxId)):null;
       const txDate=document.getElementById('f-data').value||new Date().toISOString().slice(0,10);
-      const tx={id:editingTxId||Date.now(),conta_id:account?.id||'',tipo,valor,categoria,categoria_id:categoria,conta,descricao:document.getElementById('f-desc').value||'',desc:document.getElementById('f-desc').value||'',tags:document.getElementById('f-tags').value||'',data_movimento:txDate,data:txDate,status:oldTx?.status||'previsto',created_at:oldTx?.created_at||new Date().toISOString(),updated_at:new Date().toISOString(),created_by:oldTx?.created_by||currentUser?.id||null};
+      const tx={id:editingTxId||Date.now(),conta_id:account?.id||'',tipo,valor,categoria,categoria_id:categoria,conta,descricao:document.getElementById('f-desc').value||'',desc:document.getElementById('f-desc').value||'',tags:document.getElementById('f-tags').value||'',data_movimento:txDate,data:txDate,status:launchStatus,created_at:oldTx?.created_at||new Date().toISOString(),updated_at:new Date().toISOString(),created_by:oldTx?.created_by||currentUser?.id||null};
       if(editingTxId){
         state.transacoes=state.transacoes.map(t=>String(t.id)===String(editingTxId)?tx:t);
         addAuditLog('edição','transacao',editingTxId,oldTx,tx);
@@ -2016,6 +2038,7 @@
     function limparForm(){
       editingTxId=null;
       ['f-valor','f-data','f-categoria','f-conta','f-desc','f-tags'].forEach(id=>document.getElementById(id).value='');
+      setLaunchStatus(false);
       setText('lanc-save-btn','Salvar Lançamento');
     }
     function showSaveDialog(msg,tipo,valor){
@@ -2028,8 +2051,8 @@
       const search=(document.getElementById('global-search')?.value||'').toLowerCase();
       const mes=document.getElementById('filter-mes').value;
       const cat=document.getElementById('filter-cat').value;
-      let txs=state.transacoes.slice().sort((a,b)=>getTransactionDate(b).localeCompare(getTransactionDate(a)));
-      if(state.filtroTx!=='todas')txs=txs.filter(t=>t.tipo===state.filtroTx);
+      let txs=state.transacoes.slice().sort(compareTransactionsDesc);
+      if(state.filtroTx!=='todas')txs=txs.filter(matchesTransactionFilter);
       if(mes)txs=txs.filter(t=>getTransactionDate(t).startsWith(mes));
       if(cat)txs=txs.filter(t=>t.categoria===cat);
       if(search)txs=txs.filter(t=>[getTransactionDescription(t),t.categoria,getTransactionAccount(t)?.nome||t.conta,t.tags,t.status].some(v=>String(v||'').toLowerCase().includes(search)));
@@ -2050,6 +2073,10 @@
       const cats=[...new Set([...getCategorias('despesa'),...getCategorias('receita'),...state.transacoes.map(t=>t.categoria)])].filter(Boolean).sort();
       const selCat=document.getElementById('filter-cat'),curCat=selCat.value;
       selCat.innerHTML='<option value="">Todas as categorias</option>'+cats.map(c=>`<option${c===curCat?' selected':''}>${escapeHtml(c)}</option>`).join('');
+    }
+    function matchesTransactionFilter(t){
+      if(state.filtroTx==='transferencias')return ['transferencia_saida','transferencia_entrada'].includes(t.tipo);
+      return t.tipo===state.filtroTx;
     }
     function setFiltro(f,el){state.filtroTx=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el?.classList.add('active');renderTransacoes()}
     function setTxPaid(id,paid){
@@ -2083,6 +2110,7 @@
       document.getElementById('f-conta').value=getTransactionAccount(tx)?.nome||tx.conta||'';
       document.getElementById('f-desc').value=getTransactionDescription(tx)||'';
       document.getElementById('f-tags').value=tx.tags||'';
+      setLaunchStatus(tx.status==='confirmado');
       setText('lanc-save-btn','Salvar Alterações');
       document.getElementById('f-valor').focus();
     }
