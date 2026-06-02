@@ -1337,6 +1337,23 @@
       if(purchases.length)return purchases.reduce((sum,purchase)=>sum+(Number(purchase.valor)||0),0);
       return Number(invoice?.valor)||0;
     }
+    const MANUAL_INVOICE_PURCHASE_ID='__manual_invoice_value__';
+    function createManualInvoicePurchase(invoice){
+      return{
+        id:MANUAL_INVOICE_PURCHASE_ID,
+        descricao:invoice?.descricao||'Fatura avulsa',
+        valor:Number(invoice?.valor)||0,
+        categoria:getInvoiceCategory(invoice),
+        categoria_id:getInvoiceCategory(invoice),
+        data:invoice?.data_compra||`${invoice?.mes_competencia||currentMonth()}-01`,
+        manual:true
+      };
+    }
+    function getCreditCardInvoicePurchases(invoice){
+      const purchases=Array.isArray(invoice?.compras)?invoice.compras:[];
+      if(purchases.length)return purchases;
+      return getCreditCardInvoiceTotal(invoice)>0?[createManualInvoicePurchase(invoice)]:[];
+    }
     function getCreditCardAccent(card,index=0){
       const key=String(card?.id||'')+String(card?.nome||'')+String(card?.final4||'');
       let hash=0;
@@ -2296,7 +2313,7 @@
       const card=getCreditCardById(cardId);
       const invoice=card?getOpenCreditCardInvoice(cardId,month,false):null;
       const total=getCreditCardInvoiceTotal(invoice);
-      const purchases=Array.isArray(invoice?.compras)?invoice.compras:[];
+      const purchases=getCreditCardInvoicePurchases(invoice);
       const defaultAccount=card?.conta_debito_id||'';
       const selectedAccount=invoice?.conta_id||defaultAccount;
       const closeAccountOptions=state.contas.filter(c=>c.ativo!==false).map(c=>`<option value="${escapeHtml(c.id)}" ${String(c.id)===String(selectedAccount)?'selected':''}>${escapeHtml(c.nome)}</option>`).join('')||accountOptions;
@@ -2318,7 +2335,7 @@
           <div class="form-group"><label>Conta de pagamento</label><select id="close-conta">${closeAccountOptions||'<option value="">Cadastre uma conta</option>'}</select></div>
           <div class="form-group full"><label>Descrição da fatura</label><input id="close-desc" value="${escapeHtml(invoice?.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(month)}`)}"></div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-green" onclick="fecharFaturaCartao('${escapeHtml(invoice?.id||'')}')" ${purchases.length?'':'disabled'}>Fechar fatura</button></div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-green" onclick="fecharFaturaCartao('${escapeHtml(invoice?.id||'')}')" ${total>0?'':'disabled'}>Fechar fatura</button></div>
       </div>`;
     }
     function renderInvoiceList(){
@@ -2464,6 +2481,7 @@
       };
       const old={...invoice,compras:[...(invoice.compras||[])]};
       invoice.compras=Array.isArray(invoice.compras)?invoice.compras:[];
+      if(!invoice.compras.length&&Number(invoice.valor)>0)invoice.compras.push(createManualInvoicePurchase(invoice));
       invoice.compras.push(purchase);
       invoice.conta_id=invoice.conta_id||card.conta_debito_id||'';
       invoice.mes_pagamento=invoice.mes_pagamento||addMonths(mes_competencia,1);
@@ -2475,7 +2493,14 @@
     function deleteCompraFatura(invoiceId,purchaseId){
       const invoice=state.faturas_cartao.find(f=>String(f.id)===String(invoiceId));if(!invoice||invoice.status!=='aberta')return;
       const old={...invoice,compras:[...(invoice.compras||[])]};
-      invoice.compras=(invoice.compras||[]).filter(purchase=>String(purchase.id)!==String(purchaseId));
+      const isManualPurchase=String(purchaseId)===MANUAL_INVOICE_PURCHASE_ID;
+      const hasRealPurchases=Array.isArray(invoice.compras)&&invoice.compras.length>0;
+      if(isManualPurchase&&!hasRealPurchases){
+        invoice.valor=0;
+        invoice.compras=[];
+      }else{
+        invoice.compras=(invoice.compras||[]).filter(purchase=>String(purchase.id)!==String(purchaseId));
+      }
       syncCreditCardInvoiceTotal(invoice);
       invoice.updated_at=new Date().toISOString();
       if(!invoice.compras.length)state.faturas_cartao=state.faturas_cartao.filter(f=>String(f.id)!==String(invoice.id));
