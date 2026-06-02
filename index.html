@@ -315,6 +315,12 @@
     .segmented button{flex:1;border:0;border-radius:7px;background:transparent;color:var(--muted);padding:10px}
     .segmented button.active.in{background:rgba(37,99,235,.14);color:var(--green);font-weight:800}
     .segmented button.active.out{background:rgba(255,63,87,.18);color:var(--red);font-weight:800}
+    .launch-card{transition:background .2s ease,border-color .2s ease,box-shadow .2s ease}
+    .launch-card.launch-expense{background:#fff1f2;border-color:#fecdd3;box-shadow:0 12px 30px rgba(220,53,69,.08)}
+    .launch-card.launch-income{background:#eff6ff;border-color:#bfdbfe;box-shadow:0 12px 30px rgba(37,99,235,.08)}
+    .launch-card input,.launch-card select{background:#ffffff}
+    .launch-card.launch-expense .btn-green{background:#dc3545;border-color:#dc3545}
+    .launch-card.launch-income .btn-green{background:#2563eb;border-color:#2563eb}
     .table-wrap{overflow:auto}
     table{width:100%;border-collapse:collapse;min-width:760px}
     th{color:#90a1bf;font-size:11px;text-align:left;text-transform:uppercase;letter-spacing:.8px;padding:12px;border-bottom:1px solid rgba(82,104,143,.22)}
@@ -338,6 +344,10 @@
     .app-dialog-backdrop{position:fixed;inset:0;z-index:80;display:none;place-items:center;background:rgba(15,23,42,.38);padding:18px}
     .app-dialog-backdrop.active{display:grid}
     .app-dialog-card{width:min(560px,100%);background:#ffffff;border:1px solid #dce5ee;border-radius:8px;box-shadow:0 22px 70px rgba(15,23,42,.26);padding:24px;color:#000000}
+    .app-dialog-card.success{border-color:#93c5fd;box-shadow:0 24px 72px rgba(37,99,235,.24)}
+    .app-dialog-card.success .app-dialog-title{color:#1d4ed8}
+    .app-dialog-card.error{border-color:#fecdd3;box-shadow:0 24px 72px rgba(220,53,69,.2)}
+    .app-dialog-card.error .app-dialog-title{color:#b4232f}
     .app-dialog-title{font-size:20px;font-weight:900;margin-bottom:14px;color:#000000}
     .app-dialog-message{font-size:16px;line-height:1.5;color:#172033;white-space:pre-wrap}
     .app-dialog-input{display:none;margin-top:16px;background:#ffffff;color:#000000;border-color:#cbd8e6}
@@ -806,7 +816,7 @@
       <section class="page" id="page-lancamentos">
         <div class="page-header"><div><h2>Novo Lançamento</h2><p class="caption">Registre receitas e despesas.</p></div></div>
         <div class="content-grid">
-          <div class="card">
+          <div class="card launch-card launch-expense" id="launch-card">
             <div class="segmented" style="margin-bottom:16px">
               <button id="btn-despesa" class="active out" onclick="setTipo('despesa')">Despesa</button>
               <button id="btn-receita" onclick="setTipo('receita')">Receita</button>
@@ -1930,12 +1940,18 @@
     }
 
     function renderLancamentos(){
-      document.getElementById('f-data').value=new Date().toISOString().slice(0,10);
-      document.getElementById('f-categoria').innerHTML=getCategorias(state.tipoLanc).map(c=>`<option>${escapeHtml(c)}</option>`).join('');
+      const categoryOptions=getCategorias(state.tipoLanc).map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      document.getElementById('f-categoria').innerHTML=`<option value="">Selecione uma categoria</option>${categoryOptions}`;
       document.getElementById('f-conta').innerHTML=state.contas.length
-        ? state.contas.map(c=>`<option>${escapeHtml(c.nome)}</option>`).join('')
+        ? `<option value="">Selecione uma conta</option>${state.contas.map(c=>`<option value="${escapeHtml(c.nome)}">${escapeHtml(c.nome)}</option>`).join('')}`
         : '<option value="">Cadastre uma conta primeiro</option>';
+      updateLaunchCardTheme();
       document.getElementById('quick-btns').innerHTML=QUICK.map(q=>`<button class="btn" onclick="quickAdd('${q}')">${q}</button>`).join('');
+    }
+    function updateLaunchCardTheme(){
+      const card=document.getElementById('launch-card');if(!card)return;
+      card.classList.toggle('launch-expense',state.tipoLanc==='despesa');
+      card.classList.toggle('launch-income',state.tipoLanc==='receita');
     }
     function setTipo(t){
       state.tipoLanc=t;
@@ -1951,11 +1967,14 @@
       const valor=parseFloat(document.getElementById('f-valor').value);
       if(!valor||valor<=0){toast('Valor inválido','error');return}
       const conta=document.getElementById('f-conta').value;
-      if(!conta){toast('Cadastre uma conta antes de lançar transações.','error');return}
+      if(!conta){toast(state.contas.length?'Selecione uma conta':'Cadastre uma conta antes de lançar transações.','error');return}
+      const categoria=document.getElementById('f-categoria').value;
+      if(!categoria){toast('Selecione uma categoria','error');return}
       const tipo=state.tipoLanc;
       const account=state.contas.find(x=>x.nome===conta);
       const oldTx=editingTxId?state.transacoes.find(t=>String(t.id)===String(editingTxId)):null;
-      const tx={id:editingTxId||Date.now(),conta_id:account?.id||'',tipo,valor,categoria:document.getElementById('f-categoria').value,categoria_id:document.getElementById('f-categoria').value,conta,descricao:document.getElementById('f-desc').value||'',desc:document.getElementById('f-desc').value||'',tags:document.getElementById('f-tags').value||'',data_movimento:document.getElementById('f-data').value||new Date().toISOString().slice(0,10),data:document.getElementById('f-data').value||new Date().toISOString().slice(0,10),status:oldTx?.status||'previsto',created_at:oldTx?.created_at||new Date().toISOString(),updated_at:new Date().toISOString(),created_by:oldTx?.created_by||currentUser?.id||null};
+      const txDate=document.getElementById('f-data').value||new Date().toISOString().slice(0,10);
+      const tx={id:editingTxId||Date.now(),conta_id:account?.id||'',tipo,valor,categoria,categoria_id:categoria,conta,descricao:document.getElementById('f-desc').value||'',desc:document.getElementById('f-desc').value||'',tags:document.getElementById('f-tags').value||'',data_movimento:txDate,data:txDate,status:oldTx?.status||'previsto',created_at:oldTx?.created_at||new Date().toISOString(),updated_at:new Date().toISOString(),created_by:oldTx?.created_by||currentUser?.id||null};
       if(editingTxId){
         state.transacoes=state.transacoes.map(t=>String(t.id)===String(editingTxId)?tx:t);
         addAuditLog('edição','transacao',editingTxId,oldTx,tx);
@@ -1964,7 +1983,7 @@
         addAuditLog('criação','transacao',tx.id,null,tx);
       }
       const msg=editingTxId?'Lançamento atualizado':'Lançamento salvo';
-      save();limparForm();toast(msg,'success');renderDashboard();
+      save();limparForm();showSaveDialog(msg,tipo,valor);renderDashboard();
     }
     function openTransferModal(){
       if(state.contas.filter(c=>c.ativo!==false).length<2){toast('Cadastre pelo menos duas contas para transferir.','error');return}
@@ -1996,8 +2015,12 @@
     }
     function limparForm(){
       editingTxId=null;
-      ['f-valor','f-desc','f-tags'].forEach(id=>document.getElementById(id).value='');
+      ['f-valor','f-data','f-categoria','f-conta','f-desc','f-tags'].forEach(id=>document.getElementById(id).value='');
       setText('lanc-save-btn','Salvar Lançamento');
+    }
+    function showSaveDialog(msg,tipo,valor){
+      const label=tipo==='receita'?'receita':'despesa';
+      showAppDialog(`${msg}.\n${label.charAt(0).toUpperCase()+label.slice(1)} de ${fmtBRL(valor)} registrada com sucesso.`,{type:'success',confirmText:'OK'});
     }
 
     function renderTransacoes(){
@@ -2983,6 +3006,7 @@
       if(activeDialog||!dialogQueue.length)return;
       activeDialog=dialogQueue.shift();
       const dialog=document.getElementById('app-dialog');
+      const card=dialog.querySelector('.app-dialog-card');
       document.getElementById('app-dialog-title').textContent=getDialogTitle(activeDialog.type,activeDialog.needsChoice);
       document.getElementById('app-dialog-message').textContent=activeDialog.message;
       const ok=document.getElementById('app-dialog-ok');
@@ -2994,6 +3018,8 @@
       input.value=activeDialog.defaultValue||'';
       input.placeholder=activeDialog.placeholder||'';
       input.classList.toggle('active',Boolean(activeDialog.needsInput));
+      card.classList.toggle('success',activeDialog.type==='success');
+      card.classList.toggle('error',activeDialog.type==='error');
       dialog.classList.add('active');
       setTimeout(()=>activeDialog.needsInput?input.focus():ok.focus(),0);
     }
@@ -3005,6 +3031,7 @@
       activeDialog=null;
       dialog.classList.remove('active');
       input.classList.remove('active');
+      dialog.querySelector('.app-dialog-card').classList.remove('success','error');
       current.resolve(current.needsInput?(result?input.value:null):Boolean(result));
       renderNextDialog();
     }
