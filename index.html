@@ -2174,11 +2174,13 @@
 
     let editingCartaoId=null;
     let selectedCartaoId=null;
+    let selectedCartaoMonth=null;
     function renderCartoes(){
       const accountOptions=state.contas.filter(c=>c.ativo!==false).map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.nome)}</option>`).join('');
       const categoryOptions=getCategorias('despesa').map(cat=>`<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
       const selectedCardId=state.cartoes.some(c=>String(c.id)===String(selectedCartaoId))?selectedCartaoId:'';
-      const selectedMonth=document.getElementById('compra-competencia')?.value||getDashboardMonth();
+      const selectedMonth=document.getElementById('compra-competencia')?.value||selectedCartaoMonth||getDashboardMonth();
+      selectedCartaoMonth=selectedMonth;
       document.getElementById('page-cartoes').innerHTML=`<div class="page-header"><div><h2>Cartões de Crédito</h2><p class="caption">Registre compras na fatura aberta; o total já entra como gasto previsto e aumenta automaticamente.</p></div><button class="btn btn-green" onclick="showAddCartao()">Novo Cartão</button></div>
       <div id="cartao-form-wrap" class="card" style="display:none;margin-bottom:18px;max-width:820px">
         <div class="card-title" id="cartao-form-title">Novo Cartão</div>
@@ -2214,8 +2216,22 @@
         ${String(selectedCartaoId)===String(card.id)?renderSelectedCardInvoicePanel(card.id,selectedMonth,categoryOptions,accountOptions):''}`;
       }).join('');
     }
+    function getLatestOpenInvoiceForCard(cardId){
+      return state.faturas_cartao
+        .filter(invoice=>String(invoice.cartao_id)===String(cardId)&&invoice.status==='aberta')
+        .sort((a,b)=>String(b.mes_competencia).localeCompare(String(a.mes_competencia)))[0]||null;
+    }
+    function setCartaoMonth(month){
+      selectedCartaoMonth=month||getDashboardMonth();
+      renderCartoes();
+    }
     function selectCartao(id){
-      selectedCartaoId=String(selectedCartaoId)===String(id)?null:id;
+      if(String(selectedCartaoId)===String(id)){
+        selectedCartaoId=null;
+      }else{
+        selectedCartaoId=id;
+        selectedCartaoMonth=getLatestOpenInvoiceForCard(id)?.mes_competencia||selectedCartaoMonth||getDashboardMonth();
+      }
       renderCartoes();
     }
     function closeCartaoPanel(){
@@ -2229,7 +2245,7 @@
           <div class="card-head"><div><div class="card-title">Gerenciamento da fatura</div><div class="caption">${escapeHtml(card.nome)}</div></div><div class="inline-actions"><button class="btn btn-ghost" onclick="closeCartaoPanel()">Fechar</button><button class="btn btn-ghost" onclick="editCartao('${escapeHtml(card.id)}')">Editar</button><button class="btn btn-danger" onclick="deleteCartao('${escapeHtml(card.id)}')">Remover</button></div></div>
           <input type="hidden" id="compra-cartao" value="${escapeHtml(card.id)}">
           <div class="form-grid" style="margin-top:14px">
-            <div class="form-group"><label>Mês da fatura</label><input type="month" id="compra-competencia" value="${escapeHtml(selectedMonth)}" onchange="renderCartoes()"></div>
+            <div class="form-group"><label>Mês da fatura</label><input type="month" id="compra-competencia" value="${escapeHtml(selectedMonth)}" onchange="setCartaoMonth(this.value)"></div>
             <div class="form-group"><label>Data da compra</label><input type="date" id="compra-data" value="${new Date().toISOString().slice(0,10)}"></div>
             <div class="form-group"><label>Valor da compra</label><input type="number" id="compra-valor" min="0" step="0.01"></div>
             <div class="form-group"><label>Categoria</label><select id="compra-categoria" required>${categoryOptions}</select></div>
@@ -2314,6 +2330,8 @@
       invoice.transaction_id=null;
       invoice.data_pagamento=null;
       invoice.updated_at=new Date().toISOString();
+      selectedCartaoId=invoice.cartao_id;
+      selectedCartaoMonth=invoice.mes_competencia||selectedCartaoMonth||getDashboardMonth();
       addAuditLog('reabertura','fatura_cartao',invoice.id,old,invoice);
       save();renderCartoes();renderDashboard();renderTransacoes();toast('Fatura reaberta','success');
     }
