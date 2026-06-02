@@ -335,6 +335,15 @@
     }
     .toast.success{border-color:rgba(9,217,143,.5);color:var(--green)}
     .toast.error{border-color:rgba(255,63,87,.5);color:#ff7b8d}
+    .app-dialog-backdrop{position:fixed;inset:0;z-index:80;display:none;place-items:center;background:rgba(15,23,42,.38);padding:18px}
+    .app-dialog-backdrop.active{display:grid}
+    .app-dialog-card{width:min(560px,100%);background:#ffffff;border:1px solid #dce5ee;border-radius:8px;box-shadow:0 22px 70px rgba(15,23,42,.26);padding:24px;color:#000000}
+    .app-dialog-title{font-size:20px;font-weight:900;margin-bottom:14px;color:#000000}
+    .app-dialog-message{font-size:16px;line-height:1.5;color:#172033;white-space:pre-wrap}
+    .app-dialog-input{display:none;margin-top:16px;background:#ffffff;color:#000000;border-color:#cbd8e6}
+    .app-dialog-input.active{display:block}
+    .app-dialog-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:26px}
+    .app-dialog-actions .btn{min-width:104px;justify-content:center}
     .modal-backdrop{position:fixed;inset:0;z-index:40;display:none;place-items:center;background:rgba(15,23,42,.36);padding:18px}
     .modal-backdrop.active{display:grid}
     .modal-card{width:min(560px,100%);background:#ffffff;border:1px solid #dce5ee;border-radius:8px;box-shadow:0 22px 70px rgba(15,23,42,.22);padding:20px}
@@ -907,6 +916,17 @@
         <div class="form-group full"><label>Observação</label><input id="t-obs" placeholder="Ex: Reserva de emergência"></div>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px"><button class="btn" onclick="closeTransferModal()">Cancelar</button><button class="btn btn-green" onclick="salvarTransferencia()">Confirmar Transferência</button></div>
+    </div>
+  </div>
+  <div class="app-dialog-backdrop" id="app-dialog" role="dialog" aria-modal="true" aria-labelledby="app-dialog-title">
+    <div class="app-dialog-card">
+      <div class="app-dialog-title" id="app-dialog-title">FinanCasa</div>
+      <div class="app-dialog-message" id="app-dialog-message"></div>
+      <input class="app-dialog-input" id="app-dialog-input">
+      <div class="app-dialog-actions">
+        <button class="btn btn-green" id="app-dialog-ok" onclick="closeAppDialog(true)">OK</button>
+        <button class="btn" id="app-dialog-cancel" onclick="closeAppDialog(false)">Cancelar</button>
+      </div>
     </div>
   </div>
 
@@ -2026,9 +2046,9 @@
       setText('lanc-save-btn','Salvar Alterações');
       document.getElementById('f-valor').focus();
     }
-    function deleteTx(id){
+    async function deleteTx(id){
       const tx=state.transacoes.find(t=>String(t.id)===String(id));if(!tx)return;
-      if(!confirm(`Remover a transação "${tx.desc||tx.categoria}"?`))return;
+      if(!await confirmDialog(`Remover a transação "${tx.desc||tx.categoria}"?`))return;
       const removed=tx.transfer_id?state.transacoes.filter(t=>t.transfer_id===tx.transfer_id):[tx];
       removed.forEach(item=>{
         if(!item.fatura_cartao_id)return;
@@ -2059,16 +2079,16 @@
       if(getCategorias(tipo).some(c=>c.toLowerCase()===nome.toLowerCase())){toast('Categoria já cadastrada','error');return}
       state.categorias[tipo].push(nome);input.value='';save();renderCategorias();renderLancamentos();renderTransacoes();toast('Categoria adicionada','success');
     }
-    function deleteCategoria(tipo,index){
+    async function deleteCategoria(tipo,index){
       const cat=getCategorias(tipo)[index];if(!cat)return;
       if(state.transacoes.some(t=>t.tipo===tipo&&t.categoria===cat)){toast('Categoria em uso não pode ser removida','error');return}
-      if(!confirm(`Remover a categoria "${cat}"?`))return;
+      if(!await confirmDialog(`Remover a categoria "${cat}"?`))return;
       state.categorias[tipo]=getCategorias(tipo).filter((_,i)=>i!==index);if(tipo==='despesa')delete state.orcamento[cat];
       save();renderCategorias();renderOrcamento();toast('Categoria removida','success');
     }
-    function editCategoria(tipo,index){
+    async function editCategoria(tipo,index){
       const cat=getCategorias(tipo)[index];if(!cat)return;
-      const nome=(prompt('Novo nome da categoria:',cat)||'').trim();
+      const nome=(await promptDialog('Novo nome da categoria:',cat)||'').trim();
       if(!nome||nome===cat)return;
       if(getCategorias(tipo).some((c,i)=>i!==index&&c.toLowerCase()===nome.toLowerCase())){toast('Categoria já cadastrada','error');return}
       state.categorias[tipo]=getCategorias(tipo).map((c,i)=>i===index?nome:c);
@@ -2126,9 +2146,9 @@
       const msg=editingMetaId!==null?'Meta atualizada':'Meta adicionada';
       resetMetaForm();hide('meta-form-wrap');save();renderMetas();renderDashboard();toast(msg,'success');
     }
-    function deleteMeta(id){
+    async function deleteMeta(id){
       const meta=state.metas.find(m=>String(m.id)===String(id));if(!meta)return;
-      if(!confirm(`Remover a meta "${meta.nome}"?`))return;
+      if(!await confirmDialog(`Remover a meta "${meta.nome}"?`))return;
       state.metas=state.metas.filter(m=>String(m.id)!==String(id));
       if(editingMetaId===id)resetMetaForm();
       hide('meta-form-wrap');save();renderMetas();renderDashboard();toast('Meta removida','success');
@@ -2178,10 +2198,10 @@
       const msg=editingContaId!==null?'Conta atualizada':'Conta adicionada';
       resetContaForm();hide('conta-form-wrap');save();renderContas();renderDashboard();renderLancamentos();renderTransacoes();toast(msg,'success');
     }
-    function deleteConta(id){
+    async function deleteConta(id){
       const conta=state.contas.find(c=>String(c.id)===String(id));if(!conta)return;
       if(state.transacoes.some(t=>String(t.conta_id)===String(conta.id)||t.conta===conta.nome)){toast('Conta em uso não pode ser removida','error');return}
-      if(!confirm(`Remover a conta "${conta.nome}"?`))return;
+      if(!await confirmDialog(`Remover a conta "${conta.nome}"?`))return;
       state.contas=state.contas.filter(c=>String(c.id)!==String(id));
       addAuditLog('exclusão','conta',id,conta,null);
       if(editingContaId===id)cancelContaForm();
@@ -2329,7 +2349,7 @@
             <div class="invoice-detail"><span>Conta de pagamento</span><strong>${escapeHtml(account?.nome||'conta não definida')}</strong></div>
             <div class="invoice-detail"><span>Cartão</span><strong>${escapeHtml(card?.final4?`${card.nome} final ${card.final4}`:(card?.nome||'Cartão removido'))}</strong></div>
           </div>
-          <div class="inline-actions invoice-actions"><button class="btn btn-ghost" onclick="editFaturaCartao('${escapeHtml(invoice.id)}')">Editar</button><button class="btn btn-green" onclick="pagarFaturaCartao('${escapeHtml(invoice.id)}')" ${canPay?'':'disabled'}>Marcar pago</button>${cancelAction}</div>
+          <div class="inline-actions invoice-actions"><button class="btn btn-ghost" onclick="reabrirFaturaCartao('${escapeHtml(invoice.id)}')">Reabrir</button><button class="btn btn-green" onclick="pagarFaturaCartao('${escapeHtml(invoice.id)}')" ${canPay?'':'disabled'}>Marcar pago</button>${cancelAction}</div>
         </div>`;
       }).join('');
     }
@@ -2337,13 +2357,15 @@
       ['compra-valor','compra-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
       if(document.getElementById('compra-data'))document.getElementById('compra-data').value=new Date().toISOString().slice(0,10);
     }
-    function editFaturaCartao(id){
+    async function reabrirFaturaCartao(id){
       const invoice=state.faturas_cartao.find(f=>String(f.id)===String(id));if(!invoice)return;
-      if(invoice.status!=='previsto'){toast('Só é possível reabrir faturas previstas','error');return}
-      if(!confirm('Reabrir esta fatura? Ela deixará de contar como gasto previsto até ser fechada novamente.'))return;
+      if(invoice.status==='aberta'){toast('Esta fatura já está aberta.','success');return}
+      const linkedTx=invoice.transaction_id?state.transacoes.find(t=>String(t.id)===String(invoice.transaction_id)):state.transacoes.find(t=>String(t.fatura_cartao_id)===String(invoice.id));
+      const message=linkedTx&&linkedTx.status==='confirmado'
+        ? 'Reabrir esta fatura? O lançamento pago vinculado será removido e deixará de contabilizar até fechar/pagar novamente.'
+        : 'Reabrir esta fatura? Ela voltará para fatura aberta e permitirá novos lançamentos.';
+      if(!await confirmDialog(message))return;
       const old={...invoice,compras:[...(invoice.compras||[])]};
-      const linkedTx=invoice.transaction_id?state.transacoes.find(t=>String(t.id)===String(invoice.transaction_id)):null;
-      if(linkedTx&&linkedTx.status==='confirmado'){toast('Fatura paga não pode ser reaberta sem marcar o lançamento como pendente.','error');return}
       if(linkedTx){
         state.transacoes=state.transacoes.filter(t=>String(t.id)!==String(linkedTx.id));
         addAuditLog('exclusão','transacao',linkedTx.id,linkedTx,null);
@@ -2357,6 +2379,7 @@
       addAuditLog('reabertura','fatura_cartao',invoice.id,old,invoice);
       save();renderCartoes();renderDashboard();renderTransacoes();toast('Fatura reaberta','success');
     }
+    function editFaturaCartao(id){reabrirFaturaCartao(id)}
     function resetCartaoForm(){
       editingCartaoId=null;
       ['cc-nome','cc-final4','cc-limite'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
@@ -2411,10 +2434,10 @@
       const msg=editingCartaoId!==null?'Cartão atualizado':'Cartão adicionado';
       resetCartaoForm();hide('cartao-form-wrap');save();renderCartoes();renderDashboard();toast(msg,'success');
     }
-    function deleteCartao(id){
+    async function deleteCartao(id){
       const card=getCreditCardById(id);if(!card)return;
       if(state.faturas_cartao.some(invoice=>String(invoice.cartao_id)===String(id))){toast('Cartão com faturas não pode ser removido','error');return}
-      if(!confirm(`Remover o cartão "${card.nome}"?`))return;
+      if(!await confirmDialog(`Remover o cartão "${card.nome}"?`))return;
       state.cartoes=state.cartoes.filter(c=>String(c.id)!==String(id));
       if(String(selectedCartaoId)===String(id))selectedCartaoId=null;
       addAuditLog('exclusão','cartao_credito',id,card,null);
@@ -2630,9 +2653,9 @@
       const msg=editingRecorrenteId!==null?'Recorrente atualizado':'Recorrente adicionado';
       applyRecurrences();editingRecorrenteId=null;save();renderRecorrentes();renderDashboard();toast(msg,'success');
     }
-    function deleteRecorrente(id){
+    async function deleteRecorrente(id){
       const rec=state.recorrentes.find(r=>String(r.id)===String(id));if(!rec)return;
-      if(!confirm(`Remover o recorrente "${rec.desc}"?`))return;
+      if(!await confirmDialog(`Remover o recorrente "${rec.desc}"?`))return;
       state.recorrentes=state.recorrentes.filter(r=>String(r.id)!==String(id));
       state.transacoes=state.transacoes.filter(t=>String(t.recorrente_id)!==String(id)||t.status==='confirmado');
       addAuditLog('exclusão','recorrencia',id,rec,null);
@@ -2676,9 +2699,9 @@
       const msg=editingInvestimentoId!==null?'Investimento atualizado':'Investimento adicionado';
       editingInvestimentoId=null;save();renderInvestimentos();toast(msg,'success');
     }
-    function deleteInvestimento(id){
+    async function deleteInvestimento(id){
       const inv=state.investimentos.find(i=>i.id===id);if(!inv)return;
-      if(!confirm(`Remover o investimento "${inv.nome}"?`))return;
+      if(!await confirmDialog(`Remover o investimento "${inv.nome}"?`))return;
       state.investimentos=state.investimentos.filter(i=>i.id!==id);save();renderInvestimentos();toast('Investimento removido','success')
     }
     function renderUsuarios(){
@@ -2785,7 +2808,7 @@
     async function removeWorkspaceUser(userId){
       if(!canManageWorkspaceUsers())return;
       const member=normalizeMembers().find(m=>m.user_id===userId);
-      if(!confirm(`Remover o acesso de "${member?.name||'usuário'}"?`))return;
+      if(!await confirmDialog(`Remover o acesso de "${member?.name||'usuário'}"?`))return;
       const client=getBrowserSupabaseClient();
       const {error}=await client.from('financasa_workspace_members').delete().eq('workspace_id',currentWorkspace.id).eq('user_id',userId);
       if(error){toast(error.message,'error');return}
@@ -2917,7 +2940,67 @@
     function show(id){document.getElementById(id).style.display='block'}
     function hide(id){document.getElementById(id).style.display='none'}
     function toggleMenu(){document.getElementById('sidebar').classList.toggle('active')}
-    function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2800)}
+    const dialogQueue=[];
+    let activeDialog=null;
+    function getDialogTitle(type,needsChoice){
+      if(needsChoice)return'Confirmar ação';
+      if(type==='error')return'Aviso';
+      if(type==='success')return'Concluído';
+      return'FinanCasa';
+    }
+    function showAppDialog(message,{type='',needsChoice=false,needsInput=false,defaultValue='',placeholder='',confirmText='OK',cancelText='Cancelar'}={}){
+      return new Promise(resolve=>{
+        dialogQueue.push({message,type,needsChoice,needsInput,defaultValue,placeholder,confirmText,cancelText,resolve});
+        renderNextDialog();
+      });
+    }
+    function renderNextDialog(){
+      if(activeDialog||!dialogQueue.length)return;
+      activeDialog=dialogQueue.shift();
+      const dialog=document.getElementById('app-dialog');
+      document.getElementById('app-dialog-title').textContent=getDialogTitle(activeDialog.type,activeDialog.needsChoice);
+      document.getElementById('app-dialog-message').textContent=activeDialog.message;
+      const ok=document.getElementById('app-dialog-ok');
+      const cancel=document.getElementById('app-dialog-cancel');
+      const input=document.getElementById('app-dialog-input');
+      ok.textContent=activeDialog.confirmText||'OK';
+      cancel.textContent=activeDialog.cancelText||'Cancelar';
+      cancel.style.display=activeDialog.needsChoice?'inline-flex':'none';
+      input.value=activeDialog.defaultValue||'';
+      input.placeholder=activeDialog.placeholder||'';
+      input.classList.toggle('active',Boolean(activeDialog.needsInput));
+      dialog.classList.add('active');
+      setTimeout(()=>activeDialog.needsInput?input.focus():ok.focus(),0);
+    }
+    function closeAppDialog(result){
+      const dialog=document.getElementById('app-dialog');
+      if(!activeDialog)return;
+      const current=activeDialog;
+      const input=document.getElementById('app-dialog-input');
+      activeDialog=null;
+      dialog.classList.remove('active');
+      input.classList.remove('active');
+      current.resolve(current.needsInput?(result?input.value:null):Boolean(result));
+      renderNextDialog();
+    }
+    function confirmDialog(message,options={}){
+      return showAppDialog(message,{...options,type:options.type||'confirm',needsChoice:true});
+    }
+    function promptDialog(message,defaultValue='',options={}){
+      return showAppDialog(message,{...options,type:options.type||'prompt',needsChoice:true,needsInput:true,defaultValue});
+    }
+    function toast(msg,type=''){
+      showAppDialog(msg,{type,needsChoice:false,confirmText:'OK'});
+    }
+    document.addEventListener('keydown',event=>{
+      if(!activeDialog||event.key!=='Escape')return;
+      closeAppDialog(activeDialog.needsChoice?false:true);
+    });
+    document.getElementById('app-dialog-input').addEventListener('keydown',event=>{
+      if(event.key!=='Enter')return;
+      event.preventDefault();
+      closeAppDialog(true);
+    });
     window.addEventListener('resize',()=>renderDashboard());
     bootAuth();
   </script>
