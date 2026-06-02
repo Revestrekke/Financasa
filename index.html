@@ -203,6 +203,8 @@
     .kpi-card.balance-negative:after{background:linear-gradient(0deg,rgba(255,63,87,.18),transparent)}
     .kpi-card.balance-negative .kpi-icon{background:linear-gradient(135deg,#ff3f57,#b8203e)}
     .kpi-card.balance-negative .kpi-value{color:var(--red)}
+    .kpi-card.balance-positive .kpi-icon{background:linear-gradient(135deg,#2563eb,#1d4ed8)}
+    .kpi-card.balance-positive .kpi-value{color:var(--blue)}
     .kpi-head{display:flex;align-items:center;gap:14px;margin-bottom:10px}
     .kpi-icon{
       width:43px;height:43px;border-radius:10px;display:grid;place-items:center;
@@ -447,6 +449,14 @@
     .kpi-card:after{background:linear-gradient(0deg,rgba(37,99,235,.08),transparent)}
     .kpi-icon{background:#eff6ff;color:#2563eb}
     .kpi-icon.red{background:#fff1f2;color:#dc3545}
+    .kpi-card.balance-positive{border-color:#bfdbfe;box-shadow:0 12px 28px rgba(37,99,235,.08)}
+    .kpi-card.balance-positive:after{background:linear-gradient(0deg,rgba(37,99,235,.08),transparent)}
+    .kpi-card.balance-positive .kpi-icon{background:#eff6ff;color:#2563eb}
+    .kpi-card.balance-positive .kpi-value{color:#2563eb}
+    .kpi-card.balance-negative{border-color:#fecdd3;box-shadow:0 12px 28px rgba(220,53,69,.08)}
+    .kpi-card.balance-negative:after{background:linear-gradient(0deg,rgba(220,53,69,.08),transparent)}
+    .kpi-card.balance-negative .kpi-icon{background:#fff1f2;color:#dc3545}
+    .kpi-card.balance-negative .kpi-value{color:#dc3545}
     .kpi-label{color:#000000}
     .kpi-value{color:#000000}
     .trend.up{background:#eff6ff;color:#2563eb}
@@ -547,6 +557,10 @@
     .invoice-detail span{display:block;color:#65758a;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
     .invoice-detail strong{display:block;color:#000000;font-size:13px;line-height:1.25;overflow-wrap:anywhere}
     .invoice-actions{border-top:1px solid #e6edf4;padding-top:10px;justify-content:flex-start}
+    .payment-toggle{display:inline-flex;gap:4px;align-items:center}
+    .payment-toggle button{width:32px;height:32px;border-radius:8px;padding:0;display:grid;place-items:center;font-size:15px}
+    .payment-toggle button.active-paid{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
+    .payment-toggle button.active-pending{background:#fff1f2;border-color:#fecdd3;color:#dc3545}
     .status-aberta{color:#1d4ed8}
     .status-previsto{color:#d97706}
     .status-pago{color:#2563eb}
@@ -811,7 +825,7 @@
           <select id="filter-mes" onchange="renderTransacoes()"><option value="">Todos os meses</option></select>
           <select id="filter-cat" onchange="renderTransacoes()"><option value="">Todas as categorias</option></select>
         </div>
-        <div class="card"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Tags</th><th>Valor</th><th></th></tr></thead><tbody id="tx-tbody"></tbody></table></div><div id="tx-empty" class="empty" style="display:none">Nenhuma transação encontrada</div></div>
+        <div class="card"><div class="table-wrap"><table><thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Tags</th><th>Valor</th><th>Pago</th><th></th></tr></thead><tbody id="tx-tbody"></tbody></table></div><div id="tx-empty" class="empty" style="display:none">Nenhuma transação encontrada</div></div>
       </section>
 
       <section class="page" id="page-categorias">
@@ -1331,6 +1345,9 @@
     function formatInvoiceStatus(status){
       return {aberta:'Aberta',previsto:'Previsto',pago:'Pago',cancelado:'Cancelado'}[status]||status||'Previsto';
     }
+    function formatTransactionStatus(status){
+      return status==='confirmado'?'Pago':'Pendente';
+    }
     function getExpenseCategoryMap(mes=currentMonth()){
       const {txs,depTotal}=getMesSummary(mes);
       const catMap={};
@@ -1338,20 +1355,6 @@
         const cat=t.categoria||t.categoria_id||'Sem categoria';
         catMap[cat]=(catMap[cat]||0)+(Number(t.valor)||0);
       });
-      getCreditCardInvoicesForMonth(mes)
-        .filter(invoice=>['aberta','previsto'].includes(invoice.status))
-        .forEach(invoice=>{
-          const purchases=Array.isArray(invoice.compras)?invoice.compras:[];
-          if(purchases.length){
-            purchases.forEach(purchase=>{
-              const cat=purchase.categoria||purchase.categoria_id||getInvoiceCategory(invoice);
-              catMap[cat]=(catMap[cat]||0)+(Number(purchase.valor)||0);
-            });
-          }else{
-            const cat=getInvoiceCategory(invoice);
-            catMap[cat]=(catMap[cat]||0)+getCreditCardInvoiceTotal(invoice);
-          }
-        });
       return{catMap,depTotal};
     }
     function renderAccountIcon(value){
@@ -1446,7 +1449,7 @@
       const dep=txs.filter(t=>t.tipo==='despesa').reduce((s,t)=>s+(Number(t.valor)||0),0);
       const cardSummary=getCreditCardInvoiceSummary(mes);
       const depPrevista=cardSummary.previsto;
-      const depTotal=dep+depPrevista;
+      const depTotal=dep;
       return{txs,rec,dep,depPrevista,depTotal,cardSummary,saldo:rec-depTotal};
     }
     function monthKey(date){return date.toISOString().slice(0,7)}
@@ -1519,7 +1522,7 @@
         const diff=Math.ceil((new Date(d)-today)/86400000);
         if(diff>=0&&diff<=days)items.push({date:d,tipo:t.tipo,valor:Number(t.valor)||0,desc:getTransactionDescription(t)||t.categoria});
       });
-      state.faturas_cartao.filter(invoice=>['aberta','previsto'].includes(invoice.status)).forEach(invoice=>{
+      state.faturas_cartao.filter(invoice=>['aberta','previsto'].includes(invoice.status)&&!invoice.transaction_id).forEach(invoice=>{
         const d=getCreditCardPaymentDate(invoice);
         const diff=Math.ceil((new Date(d)-today)/86400000);
         const card=getCreditCardById(invoice.cartao_id);
@@ -1590,7 +1593,7 @@
       const min=Number(state.alert_config?.saldo_minimo)||0;
       if(min>0)state.contas.forEach(c=>{if(calculateAccountBalance(c)<=min)alerts.push({type:'danger',text:`${c.nome} está abaixo do saldo mínimo.`})});
       getProjectedCashflow(7).forEach(item=>alerts.push({type:'info',text:`${item.desc} previsto para ${fmtDate(item.date)}.`}));
-      getCreditCardInvoicesForMonth(mes).filter(invoice=>['aberta','previsto'].includes(invoice.status)).forEach(invoice=>{
+      getCreditCardInvoicesForMonth(mes).filter(invoice=>['aberta','previsto'].includes(invoice.status)&&!invoice.transaction_id).forEach(invoice=>{
         const card=getCreditCardById(invoice.cartao_id);
         alerts.push({type:'info',text:`Fatura ${card?.nome||'cartão'} prevista em ${formatMonth(invoice.mes_pagamento)}.`});
       });
@@ -1656,7 +1659,10 @@
       const sparkData=getMonthlySparkData(12,mes);
       setText('kpi-saldo',fmtSignedBRL(total));setText('kpi-receita',fmtBRL(rec));setText('kpi-despesa',fmtBRL(depTotal));
       const saldoCard=document.getElementById('kpi-saldo')?.closest('.kpi-card');
-      if(saldoCard)saldoCard.classList.toggle('balance-negative',total<0);
+      if(saldoCard){
+        saldoCard.classList.toggle('balance-negative',total<0);
+        saldoCard.classList.toggle('balance-positive',total>=0);
+      }
       setTrend('kpi-saldo-trend',0,total>=0);setTrend('kpi-receita-trend',recPct,recPct>=0);setTrend('kpi-despesa-trend',depPct,depPct<0);
       setDonutLabel('month-rate',saving+'%','Poupança');
       drawSpark('spark-saldo',sparkData.saldo,COLORS[0]);
@@ -1895,11 +1901,11 @@
       if(!conta){toast('Cadastre uma conta antes de lançar transações.','error');return}
       const tipo=state.tipoLanc;
       const account=state.contas.find(x=>x.nome===conta);
-      const tx={id:editingTxId||Date.now(),conta_id:account?.id||'',tipo,valor,categoria:document.getElementById('f-categoria').value,categoria_id:document.getElementById('f-categoria').value,conta,descricao:document.getElementById('f-desc').value||'',desc:document.getElementById('f-desc').value||'',tags:document.getElementById('f-tags').value||'',data_movimento:document.getElementById('f-data').value||new Date().toISOString().slice(0,10),data:document.getElementById('f-data').value||new Date().toISOString().slice(0,10),status:'confirmado',created_at:new Date().toISOString(),updated_at:new Date().toISOString(),created_by:currentUser?.id||null};
+      const oldTx=editingTxId?state.transacoes.find(t=>String(t.id)===String(editingTxId)):null;
+      const tx={id:editingTxId||Date.now(),conta_id:account?.id||'',tipo,valor,categoria:document.getElementById('f-categoria').value,categoria_id:document.getElementById('f-categoria').value,conta,descricao:document.getElementById('f-desc').value||'',desc:document.getElementById('f-desc').value||'',tags:document.getElementById('f-tags').value||'',data_movimento:document.getElementById('f-data').value||new Date().toISOString().slice(0,10),data:document.getElementById('f-data').value||new Date().toISOString().slice(0,10),status:oldTx?.status||'previsto',created_at:oldTx?.created_at||new Date().toISOString(),updated_at:new Date().toISOString(),created_by:oldTx?.created_by||currentUser?.id||null};
       if(editingTxId){
-        const old=state.transacoes.find(t=>String(t.id)===String(editingTxId));
         state.transacoes=state.transacoes.map(t=>String(t.id)===String(editingTxId)?tx:t);
-        addAuditLog('edição','transacao',editingTxId,old,tx);
+        addAuditLog('edição','transacao',editingTxId,oldTx,tx);
       }else{
         state.transacoes.push(tx);
         addAuditLog('criação','transacao',tx.id,null,tx);
@@ -1928,7 +1934,7 @@
       if(origem.id===destino.id){toast('Origem e destino devem ser diferentes.','error');return}
       if(!valor||valor<=0){toast('Valor inválido','error');return}
       const transferId=String(Date.now())+Math.random().toString(16).slice(2);
-      const base={valor,data_movimento:data,data,categoria:'Transferência',categoria_id:'Transferência',status:'confirmado',tags:'transferência',transfer_id:transferId,created_at:new Date().toISOString(),updated_at:new Date().toISOString(),created_by:currentUser?.id||null};
+      const base={valor,data_movimento:data,data,categoria:'Transferência',categoria_id:'Transferência',status:'previsto',tags:'transferência',transfer_id:transferId,created_at:new Date().toISOString(),updated_at:new Date().toISOString(),created_by:currentUser?.id||null};
       const outTx={...base,id:String(Date.now()),conta_id:origem.id,conta:origem.nome,tipo:'transferencia_saida',descricao:obs||`Transferência para ${destino.nome}`,desc:obs||`Transferência para ${destino.nome}`};
       const inTx={...base,id:String(Date.now()+1),conta_id:destino.id,conta:destino.nome,tipo:'transferencia_entrada',descricao:obs||`Transferência de ${origem.nome}`,desc:obs||`Transferência de ${origem.nome}`};
       state.transacoes.push(outTx,inTx);
@@ -1954,7 +1960,8 @@
       setText('tx-count-label',txs.length+' registros');
       document.getElementById('tx-tbody').innerHTML=txs.map(t=>{
         const positive=['receita','transferencia_entrada'].includes(t.tipo);
-        return `<tr><td>${fmtDate(getTransactionDate(t))}</td><td><span class="badge ${positive?'in':'out'}">${escapeHtml(t.tipo)}</span></td><td>${escapeHtml(getTransactionDescription(t)||'-')}</td><td>${escapeHtml(t.categoria||'-')}</td><td>${escapeHtml(getTransactionAccount(t)?.nome||t.conta||'-')}</td><td>${escapeHtml(t.tags||t.status||'-')}</td><td class="${positive?'positive':'negative'}">${positive?'+':'-'}${fmtBRL(t.valor)}</td><td><div class="inline-actions"><button class="btn btn-ghost" onclick="editTx('${escapeHtml(t.id)}')">Editar</button><button class="btn btn-danger" onclick="deleteTx('${escapeHtml(t.id)}')">Remover</button></div></td></tr>`;
+        const paid=t.status==='confirmado';
+        return `<tr><td>${fmtDate(getTransactionDate(t))}</td><td><span class="badge ${positive?'in':'out'}">${escapeHtml(t.tipo)}</span></td><td>${escapeHtml(getTransactionDescription(t)||'-')}</td><td>${escapeHtml(t.categoria||'-')}</td><td>${escapeHtml(getTransactionAccount(t)?.nome||t.conta||'-')}</td><td>${escapeHtml(t.tags||'-')} · ${formatTransactionStatus(t.status)}</td><td class="${positive?'positive':'negative'}">${positive?'+':'-'}${fmtBRL(t.valor)}</td><td><div class="payment-toggle"><button class="btn btn-ghost ${paid?'active-paid':''}" title="Marcar como pago" onclick="setTxPaid('${escapeHtml(t.id)}',true)">👍</button><button class="btn btn-ghost ${paid?'':'active-pending'}" title="Marcar como pendente" onclick="setTxPaid('${escapeHtml(t.id)}',false)">👎</button></div></td><td><div class="inline-actions"><button class="btn btn-ghost" onclick="editTx('${escapeHtml(t.id)}')">Editar</button><button class="btn btn-danger" onclick="deleteTx('${escapeHtml(t.id)}')">Remover</button></div></td></tr>`;
       }).join('');
       document.getElementById('tx-empty').style.display=txs.length?'none':'block';
       const meses=[...new Set([
@@ -1969,6 +1976,26 @@
       selCat.innerHTML='<option value="">Todas as categorias</option>'+cats.map(c=>`<option${c===curCat?' selected':''}>${escapeHtml(c)}</option>`).join('');
     }
     function setFiltro(f,el){state.filtroTx=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el?.classList.add('active');renderTransacoes()}
+    function setTxPaid(id,paid){
+      const tx=state.transacoes.find(t=>String(t.id)===String(id));if(!tx)return;
+      const affected=tx.transfer_id?state.transacoes.filter(t=>String(t.transfer_id)===String(tx.transfer_id)):[tx];
+      const old=affected.map(item=>({...item}));
+      affected.forEach(item=>{
+        item.status=paid?'confirmado':'previsto';
+        item.updated_at=new Date().toISOString();
+        if(item.fatura_cartao_id){
+          const invoice=state.faturas_cartao.find(f=>String(f.id)===String(item.fatura_cartao_id));
+          if(invoice){
+            invoice.status=paid?'pago':'previsto';
+            invoice.transaction_id=item.id;
+            invoice.data_pagamento=paid?getTransactionDate(item):null;
+            invoice.updated_at=new Date().toISOString();
+          }
+        }
+      });
+      addAuditLog(paid?'confirmação_pagamento':'pagamento_pendente','transacao',id,old,affected);
+      save();renderTransacoes();renderDashboard();renderCartoes();toast(paid?'Pagamento confirmado':'Pagamento marcado como pendente','success');
+    }
     function editTx(id){
       const tx=state.transacoes.find(t=>String(t.id)===String(id));if(!tx)return;
       navTo('lancamentos');
@@ -1987,6 +2014,15 @@
       const tx=state.transacoes.find(t=>String(t.id)===String(id));if(!tx)return;
       if(!confirm(`Remover a transação "${tx.desc||tx.categoria}"?`))return;
       const removed=tx.transfer_id?state.transacoes.filter(t=>t.transfer_id===tx.transfer_id):[tx];
+      removed.forEach(item=>{
+        if(!item.fatura_cartao_id)return;
+        const invoice=state.faturas_cartao.find(f=>String(f.id)===String(item.fatura_cartao_id));
+        if(!invoice)return;
+        invoice.status='previsto';
+        invoice.transaction_id=null;
+        invoice.data_pagamento=null;
+        invoice.updated_at=new Date().toISOString();
+      });
       state.transacoes=tx.transfer_id?state.transacoes.filter(t=>t.transfer_id!==tx.transfer_id):state.transacoes.filter(t=>String(t.id)!==String(id));
       addAuditLog('exclusão','transacao',id,removed,null);
       save();renderTransacoes();renderDashboard();toast('Transação removida','success');
@@ -2268,12 +2304,18 @@
       if(invoice.status!=='previsto'){toast('Só é possível reabrir faturas previstas','error');return}
       if(!confirm('Reabrir esta fatura? Ela deixará de contar como gasto previsto até ser fechada novamente.'))return;
       const old={...invoice,compras:[...(invoice.compras||[])]};
+      const linkedTx=invoice.transaction_id?state.transacoes.find(t=>String(t.id)===String(invoice.transaction_id)):null;
+      if(linkedTx&&linkedTx.status==='confirmado'){toast('Fatura paga não pode ser reaberta sem marcar o lançamento como pendente.','error');return}
+      if(linkedTx){
+        state.transacoes=state.transacoes.filter(t=>String(t.id)!==String(linkedTx.id));
+        addAuditLog('exclusão','transacao',linkedTx.id,linkedTx,null);
+      }
       invoice.status='aberta';
       invoice.transaction_id=null;
       invoice.data_pagamento=null;
       invoice.updated_at=new Date().toISOString();
       addAuditLog('reabertura','fatura_cartao',invoice.id,old,invoice);
-      save();renderCartoes();renderDashboard();toast('Fatura reaberta','success');
+      save();renderCartoes();renderDashboard();renderTransacoes();toast('Fatura reaberta','success');
     }
     function resetCartaoForm(){
       editingCartaoId=null;
@@ -2377,6 +2419,41 @@
       addAuditLog('remoção_compra','fatura_cartao',invoice.id,old,invoice.compras.length?invoice:null);
       save();renderCartoes();toast('Compra removida','success');
     }
+    function syncInvoiceTransaction(invoice,account,status='previsto'){
+      const card=getCreditCardById(invoice.cartao_id);
+      const dataPagamento=getCreditCardPaymentDate(invoice);
+      const categoria=getInvoiceCategory(invoice);
+      const existing=invoice.transaction_id?state.transacoes.find(t=>String(t.id)===String(invoice.transaction_id)):state.transacoes.find(t=>String(t.fatura_cartao_id)===String(invoice.id));
+      const payload={
+        conta_id:account.id,
+        conta:account.nome,
+        tipo:'despesa',
+        categoria,
+        categoria_id:categoria,
+        valor:getCreditCardInvoiceTotal(invoice),
+        data_movimento:dataPagamento,
+        data:dataPagamento,
+        descricao:invoice.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(invoice.mes_competencia)}`,
+        desc:invoice.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(invoice.mes_competencia)}`,
+        tags:'cartão de crédito',
+        status,
+        fatura_cartao_id:invoice.id,
+        updated_at:new Date().toISOString(),
+        created_by:currentUser?.id||null
+      };
+      if(existing){
+        const old={...existing};
+        Object.assign(existing,payload);
+        invoice.transaction_id=existing.id;
+        addAuditLog('edição','transacao',existing.id,old,existing);
+        return existing;
+      }
+      const tx={id:String(Date.now())+Math.random().toString(16).slice(2),...payload,created_at:new Date().toISOString()};
+      state.transacoes.push(tx);
+      invoice.transaction_id=tx.id;
+      addAuditLog('criação','transacao',tx.id,null,tx);
+      return tx;
+    }
     function fecharFaturaCartao(id){
       const invoice=state.faturas_cartao.find(f=>String(f.id)===String(id));if(!invoice)return;
       if(invoice.status!=='aberta'){toast('Esta fatura já foi fechada','error');return}
@@ -2392,57 +2469,41 @@
       invoice.descricao=(document.getElementById('close-desc')?.value||invoice.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(invoice.mes_competencia)}`).trim();
       invoice.categoria='Cartão de crédito';
       invoice.categoria_id='Cartão de crédito';
+      syncInvoiceTransaction(invoice,account,'previsto');
       invoice.updated_at=new Date().toISOString();
       addAuditLog('fechamento','fatura_cartao',invoice.id,old,invoice);
-      save();renderCartoes();renderDashboard();toast('Fatura fechada','success');
+      save();renderCartoes();renderDashboard();renderTransacoes();toast('Fatura fechada e lançada como despesa pendente','success');
     }
     function pagarFaturaCartao(id,silent=false){
       const invoice=state.faturas_cartao.find(f=>String(f.id)===String(id));if(!invoice)return;
       if(invoice.status==='aberta'){toast('Feche a fatura antes de marcar como paga','error');return}
-      if(invoice.transaction_id&&state.transacoes.some(t=>String(t.id)===String(invoice.transaction_id))){invoice.status='pago';save();renderCartoes();renderDashboard();if(!silent)toast('Fatura já estava paga','success');return}
       const card=getCreditCardById(invoice.cartao_id);
       const account=getAccountById(invoice.conta_id)||getCreditCardDebitAccount(card);
       if(!account){toast('Edite o cartão e selecione uma conta cadastrada para debitar a fatura','error');return}
-      const categoria=getInvoiceCategory(invoice);
-      const dataPagamento=getCreditCardPaymentDate(invoice);
-      const tx={
-        id:String(Date.now())+Math.random().toString(16).slice(2),
-        conta_id:account.id,
-        conta:account.nome,
-        tipo:'despesa',
-        categoria,
-        categoria_id:categoria,
-        valor:getCreditCardInvoiceTotal(invoice),
-        data_movimento:dataPagamento,
-        data:dataPagamento,
-        descricao:invoice.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(invoice.mes_competencia)}`,
-        desc:invoice.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(invoice.mes_competencia)}`,
-        tags:'cartão de crédito',
-        status:'confirmado',
-        fatura_cartao_id:invoice.id,
-        created_at:new Date().toISOString(),
-        updated_at:new Date().toISOString(),
-        created_by:currentUser?.id||null
-      };
       const old={...invoice};
-      state.transacoes.push(tx);
+      const tx=syncInvoiceTransaction(invoice,account,'confirmado');
       invoice.status='pago';
       invoice.conta_id=account.id;
       invoice.transaction_id=tx.id;
-      invoice.data_pagamento=dataPagamento;
+      invoice.data_pagamento=getTransactionDate(tx);
       invoice.updated_at=new Date().toISOString();
       addAuditLog('pagamento','fatura_cartao',invoice.id,old,invoice);
-      addAuditLog('criação','transacao',tx.id,null,tx);
       save();renderCartoes();renderDashboard();renderTransacoes();if(!silent)toast('Fatura paga e despesa registrada','success');
     }
     function cancelarFaturaCartao(id){
       const invoice=state.faturas_cartao.find(f=>String(f.id)===String(id));if(!invoice)return;
-      if(invoice.transaction_id){toast('Fatura paga não pode ser cancelada sem remover a transação vinculada','error');return}
+      const linkedTx=invoice.transaction_id?state.transacoes.find(t=>String(t.id)===String(invoice.transaction_id)):null;
+      if(linkedTx&&linkedTx.status==='confirmado'){toast('Fatura paga não pode ser cancelada sem marcar o lançamento como pendente.','error');return}
       const old={...invoice};
+      if(linkedTx){
+        state.transacoes=state.transacoes.filter(t=>String(t.id)!==String(linkedTx.id));
+        addAuditLog('exclusão','transacao',linkedTx.id,linkedTx,null);
+      }
       invoice.status='cancelado';
+      invoice.transaction_id=null;
       invoice.updated_at=new Date().toISOString();
       addAuditLog('cancelamento','fatura_cartao',id,old,invoice);
-      save();renderCartoes();renderDashboard();toast('Fatura cancelada','success');
+      save();renderCartoes();renderDashboard();renderTransacoes();toast('Fatura cancelada','success');
     }
 
     function renderRelatorios(){
@@ -2452,7 +2513,7 @@
       document.getElementById('rel-kpis').innerHTML=`
         <div class="kpi-card"><div class="kpi-label">Total Receitas</div><div class="kpi-value positive">${fmtBRL(totalRec)}</div><div class="kpi-sub">Desde o início</div></div>
         <div class="kpi-card"><div class="kpi-label">Total Despesas</div><div class="kpi-value negative">${fmtBRL(totalDep)}</div><div class="kpi-sub">Desde o início</div></div>
-        <div class="kpi-card"><div class="kpi-label">Patrimônio Líquido</div><div class="kpi-value ${m.netWorth>=0?'positive':'negative'}">${fmtBRL(m.netWorth)}</div><div class="kpi-sub">Saldo calculado</div></div>`;
+        <div class="kpi-card"><div class="kpi-label">Patrimônio Líquido</div><div class="kpi-value ${m.netWorth>=0?'positive':'negative'}">${fmtSignedBRL(m.netWorth)}</div><div class="kpi-sub">Saldo calculado</div></div>`;
       const cat={};state.transacoes.filter(t=>['receita','despesa'].includes(t.tipo)).forEach(t=>{cat[t.categoria]=cat[t.categoria]||{tipo:t.tipo,total:0,count:0};cat[t.categoria].total+=(Number(t.valor)||0);cat[t.categoria].count++});
       const sorted=Object.entries(cat).sort((a,b)=>b[1].total-a[1].total);
       document.getElementById('top-cats').innerHTML=sorted.slice(0,7).map(([c,d],i)=>`<div style="margin-bottom:14px"><div class="break-row"><strong>${escapeHtml(c)}</strong><span>${fmtBRL(d.total)}</span></div><div class="progress"><span style="width:${Math.min(100,d.total/(sorted[0]?.[1].total||1)*100)}%;background:${COLORS[i%COLORS.length]}"></span></div></div>`).join('');
