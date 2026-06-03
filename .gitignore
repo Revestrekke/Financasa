@@ -6,6 +6,7 @@ dist/
 build/
 out/
 web-dist/
+assets/modern/
 .codex-asar-work*/
 
 # Electron

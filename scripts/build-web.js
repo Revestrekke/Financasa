@@ -1,10 +1,25 @@
 const fs = require('fs/promises')
 const path = require('path')
+const { spawn } = require('child_process')
 const esbuild = require('esbuild')
 
 const root = path.join(__dirname, '..')
 const outDir = path.join(root, 'web-dist')
 const assetsDir = path.join(root, 'assets')
+
+function run(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { cwd: root, stdio: 'inherit', windowsHide: true })
+    child.on('error', reject)
+    child.on('exit', (code) => {
+      if (code === 0) {
+        resolve()
+        return
+      }
+      reject(new Error(`${command} ${args.join(' ')} exited with code ${code}`))
+    })
+  })
+}
 
 async function build() {
   await fs.mkdir(assetsDir, { recursive: true })
@@ -22,6 +37,7 @@ async function build() {
     fs.readFile(path.join(root, 'src', 'dashboard-layout-extra.css'), 'utf8')
   ])
   await fs.writeFile(path.join(assetsDir, 'dashboard-layout.css'), dashboardCss.join('\n'), 'utf8')
+  await run(process.execPath, [path.join(root, 'node_modules', 'vite', 'bin', 'vite.js'), 'build', '--config', path.join(root, 'vite.config.mjs')])
   await fs.rm(outDir, { recursive: true, force: true })
   await fs.mkdir(outDir, { recursive: true })
   await fs.copyFile(path.join(root, 'index.html'), path.join(outDir, 'index.html'))
