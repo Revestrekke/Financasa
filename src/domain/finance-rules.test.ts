@@ -107,6 +107,27 @@ describe('regras de faturas de cartão', () => {
     ]);
   });
 
+  it('permite reembolso negativo abatendo o total da fatura', () => {
+    const invoice: CreditCardInvoice = {
+      id: 'refund-invoice',
+      status: 'pago',
+      conta_id: 'bb',
+      mes_pagamento: '2026-06',
+      compras: [
+        { id: 'purchase', valor: 150, categoria: 'Mercado' },
+        { id: 'refund', valor: -40, categoria: 'Reembolso' }
+      ]
+    };
+    expect(getCreditCardInvoiceTotal(invoice)).toBe(110);
+    expect(getCreditCardInvoicePurchases(invoice).map((purchase) => purchase.valor)).toEqual([150, -40]);
+
+    const negativeInvoice: CreditCardInvoice = { id: 'negative-invoice', status: 'pago', conta_id: 'bb', mes_pagamento: '2026-06', valor: -25 };
+    expect(getCreditCardInvoicePurchases(negativeInvoice)).toEqual([
+      expect.objectContaining({ id: '__manual_invoice_value__', valor: -25, manual: true })
+    ]);
+    expect(transactionSignedAmount(createInvoiceExpenseTransaction(negativeInvoice))).toBe(25);
+  });
+
   it('resume abertas, previstas e pagas sem incluir canceladas', () => {
     const summary = getCreditCardInvoiceSummary(invoices, '2026-06');
     expect(summary.total).toBe(240);

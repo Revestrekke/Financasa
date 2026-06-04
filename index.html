@@ -1369,7 +1369,7 @@
     function getCreditCardInvoicePurchases(invoice){
       const purchases=Array.isArray(invoice?.compras)?invoice.compras:[];
       if(purchases.length)return purchases;
-      return getCreditCardInvoiceTotal(invoice)>0?[createManualInvoicePurchase(invoice)]:[];
+      return getCreditCardInvoiceTotal(invoice)!==0?[createManualInvoicePurchase(invoice)]:[];
     }
     function getCreditCardAccent(card,index=0){
       const key=String(card?.id||'')+String(card?.nome||'')+String(card?.final4||'');
@@ -1845,7 +1845,7 @@
       if(!list)return;
       const invoices=getCreditCardInvoicesForMonth(mes);
       const total=invoices.reduce((sum,invoice)=>sum+getCreditCardInvoiceTotal(invoice),0);
-      setText('dash-card-invoices-caption',`${formatMonth(mes)} · ${fmtBRL(total)}`);
+      setText('dash-card-invoices-caption',`${formatMonth(mes)} · ${fmtSignedBRL(total)}`);
       const rows=state.cartoes.filter(card=>card.ativo!==false).map(card=>{
         const cardInvoices=invoices.filter(invoice=>String(invoice.cartao_id)===String(card.id));
         const cardTotal=cardInvoices.reduce((sum,invoice)=>sum+getCreditCardInvoiceTotal(invoice),0);
@@ -1861,7 +1861,7 @@
             <div class="account-sub">${escapeHtml(debitAccount?.nome||'Conta de débito não definida')} ${card.final4?`· final ${escapeHtml(card.final4)}`:''}</div>
           </div>
           <div style="text-align:right">
-            <strong>${fmtBRL(cardTotal)}</strong>
+            <strong>${fmtSignedBRL(cardTotal)}</strong>
             <div class="account-sub">${statusText}</div>
           </div>
         </div>`;
@@ -2352,7 +2352,7 @@
           <div class="form-grid" style="margin-top:14px">
             <div class="form-group"><label>Mês da fatura</label><input type="month" id="compra-competencia" value="${escapeHtml(selectedMonth)}" onchange="setCartaoMonth(this.value)"></div>
             <div class="form-group"><label>Data da compra</label><input type="date" id="compra-data" value="${new Date().toISOString().slice(0,10)}"></div>
-            <div class="form-group"><label>Valor da compra</label><input type="number" id="compra-valor" min="0" step="0.01"></div>
+            <div class="form-group"><label>Valor da compra ou reembolso</label><input type="number" id="compra-valor" step="0.01" placeholder="Use negativo para reembolso"></div>
             <div class="form-group"><label>Categoria</label><select id="compra-categoria" required>${categoryOptions}</select></div>
             <div class="form-group full"><label>Descrição da compra</label><input id="compra-desc" placeholder="Ex: mercado, farmácia, assinatura"></div>
           </div>
@@ -2372,13 +2372,13 @@
         <div class="card-title">Fatura aberta</div>
         <div class="invoice-manager-summary">
           <div class="invoice-stat"><span>Compras</span><strong>${purchases.length}</strong></div>
-          <div class="invoice-stat"><span>Total acumulado</span><strong>${fmtBRL(total)}</strong></div>
+          <div class="invoice-stat"><span>Total acumulado</span><strong>${fmtSignedBRL(total)}</strong></div>
           <div class="invoice-stat"><span>Pagamento</span><strong>${escapeHtml(formatMonth(invoice?.mes_pagamento||addMonths(month,1)))}</strong></div>
         </div>
         <div class="purchase-list">
           ${purchases.length?purchases.map(purchase=>`<div class="purchase-row">
-            <div><div class="account-name">${escapeHtml(purchase.descricao||'Compra no cartão')}</div><div class="purchase-meta">${fmtDate(purchase.data)} · ${escapeHtml(purchase.categoria||'Sem categoria')}</div></div>
-            <div style="text-align:right"><strong>${fmtBRL(purchase.valor)}</strong><div class="inline-actions" style="margin-top:6px"><button class="btn btn-ghost" onclick="deleteCompraFatura('${escapeHtml(invoice.id)}','${escapeHtml(purchase.id)}')">Remover</button></div></div>
+            <div><div class="account-name">${Number(purchase.valor)<0?'Reembolso: ':''}${escapeHtml(purchase.descricao||'Compra no cartão')}</div><div class="purchase-meta">${fmtDate(purchase.data)} · ${escapeHtml(purchase.categoria||'Sem categoria')}</div></div>
+            <div style="text-align:right"><strong>${fmtSignedBRL(purchase.valor)}</strong><div class="inline-actions" style="margin-top:6px"><button class="btn btn-ghost" onclick="deleteCompraFatura('${escapeHtml(invoice.id)}','${escapeHtml(purchase.id)}')">Remover</button></div></div>
           </div>`).join(''):'<div class="empty">Nenhuma compra registrada nesta fatura aberta.</div>'}
         </div>
         <div class="form-grid" style="margin-top:14px">
@@ -2386,7 +2386,7 @@
           <div class="form-group"><label>Conta de pagamento</label><select id="close-conta">${closeAccountOptions||'<option value="">Cadastre uma conta</option>'}</select></div>
           <div class="form-group full"><label>Descrição da fatura</label><input id="close-desc" value="${escapeHtml(invoice?.descricao||`Fatura ${card?.nome||'cartão'} - ${formatMonth(month)}`)}"></div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-green" onclick="fecharFaturaCartao('${escapeHtml(invoice?.id||'')}')" ${total>0?'':'disabled'}>Fechar fatura</button></div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-green" onclick="fecharFaturaCartao('${escapeHtml(invoice?.id||'')}')" ${total!==0?'':'disabled'}>Fechar fatura</button></div>
       </div>`;
     }
     function renderInvoiceList(){
@@ -2407,7 +2407,7 @@
         return `<div class="invoice-card">
           <div class="invoice-card-head">
             <div><div class="invoice-title">${escapeHtml(invoice.descricao||`Fatura ${card?.nome||'cartão'}`)}</div><div class="caption">${escapeHtml(card?.nome||'Cartão removido')}</div></div>
-            <div class="invoice-amount status-${escapeHtml(invoice.status)}">${fmtBRL(getCreditCardInvoiceTotal(invoice))}</div>
+            <div class="invoice-amount status-${escapeHtml(invoice.status)}">${fmtSignedBRL(getCreditCardInvoiceTotal(invoice))}</div>
           </div>
           <div class="invoice-details">
             <div class="invoice-detail"><span>Compras</span><strong>${purchases.length||'Fatura avulsa'}</strong></div>
@@ -2516,7 +2516,7 @@
       const card=getCreditCardById(cartao_id);
       const valor=parseFloat(document.getElementById('compra-valor').value);
       if(!card){toast('Cadastre ou selecione um cartão','error');return}
-      if(!valor||valor<=0){toast('Valor da compra inválido','error');return}
+      if(!valor){toast('Informe um valor diferente de zero. Para reembolso, use valor negativo.','error');return}
       const categoria=document.getElementById('compra-categoria').value||'';
       if(!categoria){toast('Selecione a categoria do gasto','error');return}
       const mes_competencia=document.getElementById('compra-competencia').value||getDashboardMonth();
@@ -2532,14 +2532,14 @@
       };
       const old={...invoice,compras:[...(invoice.compras||[])]};
       invoice.compras=Array.isArray(invoice.compras)?invoice.compras:[];
-      if(!invoice.compras.length&&Number(invoice.valor)>0)invoice.compras.push(createManualInvoicePurchase(invoice));
+      if(!invoice.compras.length&&Number(invoice.valor)!==0)invoice.compras.push(createManualInvoicePurchase(invoice));
       invoice.compras.push(purchase);
       invoice.conta_id=invoice.conta_id||card.conta_debito_id||'';
       invoice.mes_pagamento=invoice.mes_pagamento||addMonths(mes_competencia,1);
       syncCreditCardInvoiceTotal(invoice);
       invoice.updated_at=new Date().toISOString();
       addAuditLog('compra','fatura_cartao',invoice.id,old,invoice);
-      resetCompraCartaoForm();save();renderCartoes();toast('Compra registrada na fatura','success');
+      resetCompraCartaoForm();save();renderCartoes();toast(valor<0?'Reembolso registrado na fatura':'Compra registrada na fatura','success');
     }
     function deleteCompraFatura(invoiceId,purchaseId){
       const invoice=state.faturas_cartao.find(f=>String(f.id)===String(invoiceId));if(!invoice||invoice.status!=='aberta')return;

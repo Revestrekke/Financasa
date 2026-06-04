@@ -41,6 +41,10 @@ function formatCurrency(value?: number | string) {
   return `R$ ${(Number(value) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 }
 
+function isReimbursement(value?: number | string) {
+  return (Number(value) || 0) < 0;
+}
+
 function paymentMonth(month: string) {
   if (!month) return '';
   const date = new Date(`${month}-02T00:00:00`);
@@ -92,7 +96,7 @@ export function CreditCardsPage({ accounts, cards, categories, invoices, onChang
     if (!selectedCard) return;
     const value = parseMoney(draft.valor);
     if (!draft.mes || !draft.data || !draft.categoria || !draft.descricao.trim() || !value) {
-      setError('Preencha mês, data, categoria, descrição e valor da compra.');
+      setError('Preencha mês, data, categoria, descrição e um valor diferente de zero.');
       return;
     }
 
@@ -189,7 +193,7 @@ export function CreditCardsPage({ accounts, cards, categories, invoices, onChang
                     <div className="modern-form-grid">
                       <Input label="Mês da fatura" onChange={(event) => setDraft({ ...draft, mes: event.target.value })} type="month" value={draft.mes} />
                       <Input label="Data da compra" onChange={(event) => setDraft({ ...draft, data: event.target.value })} type="date" value={draft.data} />
-                      <Input label="Valor da compra" onChange={(event) => setDraft({ ...draft, valor: event.target.value })} placeholder="0,00" value={draft.valor} />
+                      <Input label="Valor da compra ou reembolso" onChange={(event) => setDraft({ ...draft, valor: event.target.value })} placeholder="0,00 ou -100,00" value={draft.valor} />
                       <Select label="Categoria" onChange={(event) => setDraft({ ...draft, categoria: event.target.value })} value={draft.categoria}>
                         <option value="">Selecione uma categoria</option>
                         {categories.despesa.map((category) => <option key={category} value={category}>{category}</option>)}
@@ -213,7 +217,10 @@ export function CreditCardsPage({ accounts, cards, categories, invoices, onChang
                             <div className="modern-row-title">{purchase.descricao || purchase.desc || 'Compra'}</div>
                             <div className="modern-row-subtitle">{purchase.categoria || 'Sem categoria'} · {purchase.data || purchase.data_compra || 'Sem data'}</div>
                           </div>
-                          <Badge tone="expense">{formatCurrency(purchase.valor)}</Badge>
+                          <Badge tone={isReimbursement(purchase.valor) ? 'income' : 'expense'}>
+                            {isReimbursement(purchase.valor) ? 'Reembolso ' : ''}
+                            {formatCurrency(purchase.valor)}
+                          </Badge>
                         </div>
                       ))}
                       {!getCreditCardInvoicePurchases(selectedInvoice).length && (

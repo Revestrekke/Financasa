@@ -27,7 +27,7 @@ export function createManualInvoicePurchase(invoice: CreditCardInvoice): CreditC
 export function getCreditCardInvoicePurchases(invoice?: CreditCardInvoice | null): CreditCardPurchase[] {
   const purchases = Array.isArray(invoice?.compras) ? invoice.compras : [];
   if (purchases.length) return purchases;
-  return invoice && getCreditCardInvoiceTotal(invoice) > 0 ? [createManualInvoicePurchase(invoice)] : [];
+  return invoice && getCreditCardInvoiceTotal(invoice) !== 0 ? [createManualInvoicePurchase(invoice)] : [];
 }
 
 export function getCreditCardInvoicesForMonth(invoices: CreditCardInvoice[], month: string): CreditCardInvoice[] {
