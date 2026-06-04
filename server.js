@@ -64,7 +64,7 @@ http.createServer((req, res) => {
     return
   }
 
-  const relativePath = urlPath === '/' ? 'index.html' : urlPath.slice(1)
+  const relativePath = urlPath === '/' ? 'modern.html' : urlPath.slice(1)
   const requestedPath = path.resolve(rootDir, relativePath)
 
   if (!requestedPath.startsWith(rootDir)) {
@@ -79,7 +79,7 @@ http.createServer((req, res) => {
       return
     }
 
-    sendFile(res, path.join(rootDir, 'index.html'))
+    sendFile(res, path.join(rootDir, 'modern.html'))
   })
 }).listen(port, () => {
   console.log(`FinanCasa web server listening on port ${port}`)
