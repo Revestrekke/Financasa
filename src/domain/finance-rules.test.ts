@@ -3,14 +3,18 @@ import {
   calculateAccountBalance,
   compareTransactionsDesc,
   filterTransactions,
+  getCashFlowProjection,
+  createInvoiceExpenseTransaction,
   getBudgetSummary,
   getCreditCardInvoicePurchases,
   getCreditCardInvoiceSummary,
   getCreditCardInvoiceTotal,
   getMesSummary,
+  getMonthlyReportSeries,
   getSaldoTotal,
   getStrategicMetrics,
-  transactionSignedAmount
+  transactionSignedAmount,
+  updateInvoiceStatusWithTransaction
 } from './index';
 import type { Account, CreditCardInvoice, FinanceState, Transaction } from './types';
 
@@ -110,6 +114,34 @@ describe('regras de faturas de cartão', () => {
     expect(summary.pago).toBe(40);
     expect(summary.invoices.map((invoice) => invoice.id)).not.toContain('cancelled');
   });
+
+  it('fecha fatura como despesa pendente sem duplicar transação', () => {
+    const invoice: CreditCardInvoice = { ...invoices[1], id: 'invoice-close', conta_id: 'bb', status: 'previsto' };
+    const tx = createInvoiceExpenseTransaction(invoice);
+    expect(tx.tipo).toBe('despesa');
+    expect(tx.status).toBe('previsto');
+    expect(tx.fatura_cartao_id).toBe('invoice-close');
+    expect(tx.valor).toBe(100);
+
+    const first = updateInvoiceStatusWithTransaction([invoice], [], 'invoice-close', 'previsto');
+    const second = updateInvoiceStatusWithTransaction(first.invoices, first.transactions, 'invoice-close', 'previsto');
+    expect(first.transactions).toHaveLength(1);
+    expect(second.transactions).toHaveLength(1);
+  });
+
+  it('paga, reabre e cancela fatura atualizando a transação vinculada', () => {
+    const invoice: CreditCardInvoice = { ...invoices[0], id: 'invoice-status', conta_id: 'bb', status: 'previsto' };
+    const paid = updateInvoiceStatusWithTransaction([invoice], [], 'invoice-status', 'pago');
+    expect(paid.transactions[0].status).toBe('confirmado');
+
+    const reopened = updateInvoiceStatusWithTransaction(paid.invoices, paid.transactions, 'invoice-status', 'aberta');
+    expect(reopened.invoices[0].status).toBe('aberta');
+    expect(reopened.transactions).toHaveLength(0);
+
+    const cancelled = updateInvoiceStatusWithTransaction(paid.invoices, paid.transactions, 'invoice-status', 'cancelado');
+    expect(cancelled.invoices[0].status).toBe('cancelado');
+    expect(cancelled.transactions).toHaveLength(0);
+  });
 });
 
 describe('resumos, orçamento e indicadores', () => {
@@ -142,9 +174,37 @@ describe('resumos, orçamento e indicadores', () => {
     expect(budget.items.find((item) => item.category === 'Mercado')?.spent).toBe(120);
   });
 
+  it('ignora limites zerados e evidencia orçamento estourado', () => {
+    const budget = getBudgetSummary({ Mercado: 100, Lazer: 0 }, state.transacoes, '2026-06');
+    expect(budget.items.map((item) => item.category)).toEqual(['Mercado']);
+    expect(budget.totalSpent).toBe(120);
+    expect(budget.available).toBe(-20);
+    expect(budget.pct).toBe(100);
+  });
+
   it('mantém patrimônio líquido considerando saldo negativo', () => {
     const metrics = getStrategicMetrics(state, '2026-06');
     expect(metrics.netWorth).toBe(1180);
     expect(metrics.netWorth).toBe(getSaldoTotal(state.contas, state.transacoes));
+  });
+
+  it('gera série mensal separando realizado e faturas previstas', () => {
+    const series = getMonthlyReportSeries(state, '2026-06', 2);
+    expect(series[0]).toEqual(expect.objectContaining({
+      month: '2026-06',
+      receitas: 500,
+      despesas: 120,
+      faturasPrevistas: 90,
+      saldo: 380
+    }));
+    expect(series[1].month).toBe('2026-07');
+  });
+
+  it('projeta fluxo de caixa mantendo faturas previstas separadas do realizado', () => {
+    const projection = getCashFlowProjection(state, '2026-06', 1);
+    expect(projection[0].receitasConfirmadas).toBe(500);
+    expect(projection[0].despesasConfirmadas).toBe(120);
+    expect(projection[0].faturasPrevistas).toBe(90);
+    expect(projection[0].saldoProjetado).toBe(1090);
   });
 });

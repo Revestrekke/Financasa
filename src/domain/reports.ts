@@ -58,3 +58,46 @@ export function getStrategicMetrics(state: FinanceState, month: string) {
 export function summarizeInvoices(invoices: CreditCardInvoice[], month: string) {
   return getCreditCardInvoiceSummary(invoices, month);
 }
+
+export function addMonths(month: string, offset: number): string {
+  const [year, monthNumber] = month.split('-').map(Number);
+  const date = new Date(year, (monthNumber || 1) - 1 + offset, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+export function getMonthlyReportSeries(state: FinanceState, startMonth: string, length: number) {
+  return Array.from({ length }, (_, index) => {
+    const month = addMonths(startMonth, index);
+    const summary = getMesSummary(state, month);
+    const budget = getExpenseCategoryMap(state.transacoes, month);
+    return {
+      month,
+      receitas: summary.rec,
+      despesas: summary.depTotal,
+      faturasPrevistas: summary.depPrevista,
+      saldo: summary.saldo,
+      categorias: budget.catMap
+    };
+  });
+}
+
+export function getCashFlowProjection(state: FinanceState, startMonth: string, length: number) {
+  let runningBalance = getSaldoTotal(state.contas, state.transacoes);
+  return Array.from({ length }, (_, index) => {
+    const month = addMonths(startMonth, index);
+    const summary = getMesSummary(state, month);
+    const plannedInvoices = summary.cardSummary.previsto;
+    const netConfirmed = summary.rec - summary.depTotal;
+    const projectedChange = netConfirmed - plannedInvoices;
+    runningBalance += index === 0 ? -plannedInvoices : projectedChange;
+
+    return {
+      month,
+      receitasConfirmadas: summary.rec,
+      despesasConfirmadas: summary.depTotal,
+      faturasPrevistas: plannedInvoices,
+      variacaoProjetada: projectedChange,
+      saldoProjetado: runningBalance
+    };
+  });
+}

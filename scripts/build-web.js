@@ -41,6 +41,7 @@ async function build() {
   await fs.rm(outDir, { recursive: true, force: true })
   await fs.mkdir(outDir, { recursive: true })
   await fs.copyFile(path.join(root, 'index.html'), path.join(outDir, 'index.html'))
+  await fs.copyFile(path.join(root, 'modern.html'), path.join(outDir, 'modern.html'))
   await fs.copyFile(path.join(root, 'site.webmanifest'), path.join(outDir, 'site.webmanifest'))
   await fs.cp(assetsDir, path.join(outDir, 'assets'), { recursive: true })
   await fs.writeFile(

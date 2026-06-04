@@ -1,4 +1,4 @@
-import type { Account, RecurringTransaction, Transaction } from '../../domain/types';
+import type { Account, CreditCardInvoice, RecurringTransaction, Transaction } from '../../domain/types';
 
 export interface CategoryState {
   despesa: string[];
@@ -22,6 +22,18 @@ export interface InvestmentState {
   valor: number;
 }
 
+export interface CreditCardState {
+  banco: string;
+  cor: string;
+  conta_id: string;
+  fecha_dia: number;
+  final: string;
+  id: string;
+  limite: number;
+  nome: string;
+  vence_dia: number;
+}
+
 export interface ModernRecurringTransaction extends RecurringTransaction {
   conta_id: string;
   desc: string;
@@ -33,42 +45,68 @@ export interface ModernRecurringTransaction extends RecurringTransaction {
 }
 
 export interface ModernFinanceState {
+  alert_config?: Record<string, unknown>;
+  audit_logs?: unknown[];
   categorias: CategoryState;
   contas: Account[];
+  cartoes: CreditCardState[];
+  dashboardMes?: string;
+  faturas_cartao: CreditCardInvoice[];
+  filtroTx?: string;
   investimentos: InvestmentState[];
   metas: GoalState[];
+  orcamento: Record<string, number>;
   recorrentes: ModernRecurringTransaction[];
+  tipoLanc?: string;
   transacoes: Transaction[];
 }
 
 export function createModernInitialState(): ModernFinanceState {
   return {
+    alert_config: { saldo_minimo: 0 },
+    audit_logs: [],
     categorias: {
       despesa: ['Aluguel', 'Alimentação', 'Transporte', 'Saúde', 'Lazer', 'Educação', 'Contas', 'Outros'],
       receita: ['Salário', 'Freelance', 'Investimentos', 'Outras Receitas']
     },
-    contas: [
-      { id: 'bb', nome: 'Banco do Brasil', tipo: 'Conta corrente', saldo_inicial: 1200, ativo: true },
-      { id: 'caixa', nome: 'Caixa', tipo: 'Conta corrente', saldo_inicial: -150, ativo: true }
-    ],
-    investimentos: [
-      { id: 'tesouro', nome: 'Tesouro Selic', tipo: 'Renda fixa', valor: 2500, rent: 1.2 }
-    ],
-    metas: [
-      { id: 'reserva', nome: 'Reserva de emergência', atual: 1800, alvo: 6000, prazo: '2026-12-31', icone: '◎' }
-    ],
-    recorrentes: [
-      { id: 'aluguel', desc: 'Aluguel', valor: 1200, tipo: 'despesa', categoria: 'Aluguel', conta_id: 'bb', frequencia: 'mensal', dia: 5 }
-    ],
-    transacoes: [
-      { id: 'tx-salario', tipo: 'receita', categoria: 'Salário', valor: 4500, status: 'confirmado', conta_id: 'bb', data: '2026-06-03', created_at: '2026-06-03T09:00:00Z' },
-      { id: 'tx-transfer-out', tipo: 'transferencia_saida', categoria: 'Transferência', valor: 200, status: 'confirmado', conta_id: 'bb', data: '2026-06-03', created_at: '2026-06-03T10:00:00Z', transfer_id: 'transfer-bb-caixa', descricao: 'Transferência para Caixa' },
-      { id: 'tx-transfer-in', tipo: 'transferencia_entrada', categoria: 'Transferência', valor: 200, status: 'confirmado', conta_id: 'caixa', data: '2026-06-03', created_at: '2026-06-03T10:00:01Z', transfer_id: 'transfer-bb-caixa', descricao: 'Transferência recebida' },
-      { id: 'tx-mercado', tipo: 'despesa', categoria: 'Alimentação', valor: 120, status: 'confirmado', conta_id: 'bb', data: '2026-06-02', created_at: '2026-06-02T12:00:00Z' }
-    ]
+    contas: [],
+    cartoes: [],
+    dashboardMes: new Date().toISOString().slice(0, 7),
+    faturas_cartao: [],
+    filtroTx: 'todas',
+    investimentos: [],
+    metas: [],
+    orcamento: {},
+    recorrentes: [],
+    tipoLanc: 'despesa',
+    transacoes: []
   };
 }
 
 export function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+export function hydrateModernFinanceState(raw?: Partial<ModernFinanceState> | null): ModernFinanceState {
+  const initial = createModernInitialState();
+  if (!raw || typeof raw !== 'object') return initial;
+
+  return {
+    ...initial,
+    ...raw,
+    alert_config: raw.alert_config || initial.alert_config,
+    audit_logs: Array.isArray(raw.audit_logs) ? raw.audit_logs : initial.audit_logs,
+    categorias: {
+      despesa: Array.isArray(raw.categorias?.despesa) ? raw.categorias.despesa : initial.categorias.despesa,
+      receita: Array.isArray(raw.categorias?.receita) ? raw.categorias.receita : initial.categorias.receita
+    },
+    contas: Array.isArray(raw.contas) ? raw.contas : initial.contas,
+    cartoes: Array.isArray(raw.cartoes) ? raw.cartoes : initial.cartoes,
+    faturas_cartao: Array.isArray(raw.faturas_cartao) ? raw.faturas_cartao : initial.faturas_cartao,
+    investimentos: Array.isArray(raw.investimentos) ? raw.investimentos : initial.investimentos,
+    metas: Array.isArray(raw.metas) ? raw.metas : initial.metas,
+    orcamento: raw.orcamento && typeof raw.orcamento === 'object' ? raw.orcamento : initial.orcamento,
+    recorrentes: Array.isArray(raw.recorrentes) ? raw.recorrentes : initial.recorrentes,
+    transacoes: Array.isArray(raw.transacoes) ? raw.transacoes : initial.transacoes
+  };
 }

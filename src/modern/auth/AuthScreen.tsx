@@ -57,9 +57,9 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           <span>Gestão financeira familiar com áreas compartilhadas, Supabase e controle por status.</span>
         </div>
         <div className="modern-auth-points">
-          <Card title="Multiusuário" subtitle="Compartilhe sua área financeira com usuários convidados." />
+          <Card title="Acesso familiar" subtitle="Compartilhe sua área financeira com usuários convidados." />
           <Card title="Controle real" subtitle="Receitas, despesas e faturas só contabilizam quando confirmadas." />
-          <Card title="Migração gradual" subtitle="Nova estrutura React preservando as regras atuais." />
+          <Card title="Dados online" subtitle="Sua área financeira sincronizada com segurança." />
         </div>
       </section>
 

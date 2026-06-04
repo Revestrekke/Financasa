@@ -1,4 +1,4 @@
-import type { CreditCardInvoice, CreditCardPurchase } from './types';
+import type { CreditCardInvoice, CreditCardPurchase, Transaction } from './types';
 
 export const MANUAL_INVOICE_PURCHASE_ID = '__manual_invoice_value__';
 
@@ -45,5 +45,65 @@ export function getCreditCardInvoiceSummary(invoices: CreditCardInvoice[], month
     total: monthInvoices.reduce((sum, invoice) => sum + getCreditCardInvoiceTotal(invoice), 0),
     previsto: predicted.reduce((sum, invoice) => sum + getCreditCardInvoiceTotal(invoice), 0),
     pago: paid.reduce((sum, invoice) => sum + getCreditCardInvoiceTotal(invoice), 0)
+  };
+}
+
+export function getInvoiceTransactionId(invoice: CreditCardInvoice): string {
+  return String(invoice.transaction_id || `fatura-${invoice.id}`);
+}
+
+export function createInvoiceExpenseTransaction(invoice: CreditCardInvoice): Transaction {
+  const transactionId = getInvoiceTransactionId(invoice);
+  return {
+    id: transactionId,
+    categoria: 'Cartão de crédito',
+    conta_id: invoice.conta_id,
+    data: invoice.mes_pagamento ? `${invoice.mes_pagamento}-01` : '',
+    data_movimento: invoice.mes_pagamento ? `${invoice.mes_pagamento}-01` : '',
+    descricao: invoice.descricao || 'Fatura de cartão',
+    desc: invoice.descricao || 'Fatura de cartão',
+    fatura_cartao_id: invoice.id,
+    status: invoice.status === 'pago' ? 'confirmado' : 'previsto',
+    tipo: 'despesa',
+    valor: getCreditCardInvoiceTotal(invoice)
+  };
+}
+
+export function upsertInvoiceExpenseTransaction(transactions: Transaction[], invoice: CreditCardInvoice): Transaction[] {
+  if (invoice.status === 'aberta' || invoice.status === 'cancelado') {
+    return transactions.filter((tx) => String(tx.fatura_cartao_id || '') !== String(invoice.id));
+  }
+
+  const invoiceTransaction = createInvoiceExpenseTransaction(invoice);
+  const found = transactions.some((tx) => String(tx.fatura_cartao_id || '') === String(invoice.id));
+  if (!found) return [...transactions, invoiceTransaction];
+
+  return transactions.map((tx) => (
+    String(tx.fatura_cartao_id || '') === String(invoice.id)
+      ? { ...tx, ...invoiceTransaction, id: tx.id || invoiceTransaction.id }
+      : tx
+  ));
+}
+
+export function updateInvoiceStatusWithTransaction(
+  invoices: CreditCardInvoice[],
+  transactions: Transaction[],
+  invoiceId: string | number,
+  status: 'aberta' | 'previsto' | 'pago' | 'cancelado'
+) {
+  const updatedInvoices = invoices.map((invoice) => (
+    String(invoice.id) === String(invoiceId)
+      ? {
+          ...invoice,
+          status,
+          data_pagamento: status === 'pago' ? new Date().toISOString().slice(0, 10) : null,
+          transaction_id: status === 'aberta' || status === 'cancelado' ? null : getInvoiceTransactionId(invoice)
+        }
+      : invoice
+  ));
+  const updatedInvoice = updatedInvoices.find((invoice) => String(invoice.id) === String(invoiceId));
+  return {
+    invoices: updatedInvoices,
+    transactions: updatedInvoice ? upsertInvoiceExpenseTransaction(transactions, updatedInvoice) : transactions
   };
 }

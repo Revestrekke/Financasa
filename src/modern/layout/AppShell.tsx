@@ -4,9 +4,11 @@ import { NAV_ITEMS, SECTION_LABELS, type NavItem, type PageId } from '../navigat
 
 interface AppShellProps {
   activePage: PageId;
+  canEdit?: boolean;
   children?: ReactNode;
   onNavigate: (page: PageId) => void;
   onSignOut?: () => void;
+  syncStatus?: string;
   userInitials?: string;
   userName?: string;
 }
@@ -15,7 +17,23 @@ function groupedItems(section: NavItem['section']) {
   return NAV_ITEMS.filter((item) => item.section === section);
 }
 
-export function AppShell({ activePage, children, onNavigate, onSignOut, userInitials = 'FC', userName = 'FinanCasa' }: AppShellProps) {
+function syncTone(status?: string) {
+  const normalized = String(status || '').toLowerCase();
+  if (normalized.includes('erro') || normalized.includes('ausente')) return 'danger';
+  if (normalized.includes('salvo') || normalized.includes('carregado')) return 'success';
+  return 'warning';
+}
+
+export function AppShell({
+  activePage,
+  canEdit = true,
+  children,
+  onNavigate,
+  onSignOut,
+  syncStatus = 'online',
+  userInitials = 'FC',
+  userName = 'FinanCasa'
+}: AppShellProps) {
   const activeItem = NAV_ITEMS.find((item) => item.id === activePage) || NAV_ITEMS[0];
 
   return (
@@ -35,12 +53,13 @@ export function AppShell({ activePage, children, onNavigate, onSignOut, userInit
             <div className="modern-nav-title">{SECTION_LABELS[section]}</div>
             {groupedItems(section).map((item) => (
               <button
+                aria-current={activePage === item.id ? 'page' : undefined}
                 className={['modern-nav-item', activePage === item.id ? 'is-active' : ''].filter(Boolean).join(' ')}
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
                 type="button"
               >
-                <span>{item.icon}</span>
+                <span className="modern-nav-icon">{item.icon}</span>
                 {item.label}
               </button>
             ))}
@@ -52,19 +71,20 @@ export function AppShell({ activePage, children, onNavigate, onSignOut, userInit
         <header className="modern-topbar">
           <div className="modern-app-title">
             <strong>{activeItem.label}</strong>
-            <span>Shell React preparado para receber esta tela na migração gradual.</span>
+            <span>{activeItem.summary}</span>
           </div>
           <div className="modern-topbar-actions">
-            <Badge tone="success">React shell</Badge>
+            <Badge tone={syncTone(syncStatus)}>{syncStatus}</Badge>
+            <Badge tone={canEdit ? 'success' : 'warning'}>{canEdit ? 'Edição liberada' : 'Somente leitura'}</Badge>
             {onSignOut && <Button onClick={onSignOut}>Sair</Button>}
           </div>
         </header>
 
         {children || (
-          <Card title={activeItem.label} subtitle="Esta tela ainda está preservada no app legado.">
+          <Card title={activeItem.label} subtitle="Não foi possível carregar esta seção.">
             <EmptyState
-              text="Nas próximas etapas, cada funcionalidade será migrada para React mantendo o comportamento atual."
-              title="Tela aguardando migração"
+              text="Selecione outra opção do menu ou atualize a página."
+              title="Seção indisponível"
             />
           </Card>
         )}
