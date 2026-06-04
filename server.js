@@ -26,8 +26,18 @@ function sendConfig(res) {
     SUPABASE_PUBLISHABLE_KEY: process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_AsxuXAWSH1_6a8KHgqi7sw_7OjYbBC2'
   }
 
-  res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' })
+  res.writeHead(200, {
+    'content-type': 'text/javascript; charset=utf-8',
+    'cache-control': 'no-store, max-age=0'
+  })
   res.end(`window.FINANCASA_CONFIG = ${JSON.stringify(config, null, 2)};\n`)
+}
+
+function cacheControlFor(filePath) {
+  const ext = path.extname(filePath)
+  if (ext === '.html') return 'no-store, max-age=0'
+  if (ext === '.js' || ext === '.css') return 'no-cache, max-age=0, must-revalidate'
+  return 'public, max-age=86400'
 }
 
 function sendFile(res, filePath) {
@@ -39,7 +49,8 @@ function sendFile(res, filePath) {
     }
 
     res.writeHead(200, {
-      'content-type': contentTypes[path.extname(filePath)] || 'application/octet-stream'
+      'content-type': contentTypes[path.extname(filePath)] || 'application/octet-stream',
+      'cache-control': cacheControlFor(filePath)
     })
     res.end(data)
   })
