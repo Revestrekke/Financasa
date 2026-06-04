@@ -418,6 +418,47 @@
   gap: 16px;
 }
 
+.modern-dashboard-toolbar {
+  align-items: center;
+  background: var(--fc-color-surface);
+  border: 1px solid #dce6f1;
+  border-radius: var(--fc-radius);
+  box-shadow: var(--fc-shadow);
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 12px 14px;
+}
+
+.modern-dashboard-toolbar > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.modern-dashboard-toolbar strong {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.modern-dashboard-toolbar span,
+.modern-hidden-card-tray > span {
+  color: var(--fc-color-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.modern-hidden-card-tray {
+  align-items: center;
+  background: #f8fbff;
+  border: 1px dashed #bfdbfe;
+  border-radius: var(--fc-radius);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+}
+
 .modern-dashboard-kpis {
   display: grid;
   gap: 14px;
@@ -436,10 +477,26 @@
   grid-template-columns: repeat(3, minmax(260px, 1fr));
 }
 
-.modern-dashboard-grid .fc-card:first-child,
-.modern-dashboard-grid .fc-card:nth-child(2),
-.modern-dashboard-grid .fc-card:last-child {
+.modern-dashboard-card--wide {
   grid-column: span 2;
+}
+
+.modern-dashboard-card.is-editing {
+  outline: 2px dashed rgba(37, 99, 235, 0.28);
+  outline-offset: 3px;
+}
+
+.modern-card-edit-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.modern-card-edit-actions .fc-button {
+  min-height: 32px;
+  padding: 6px 9px;
 }
 
 .modern-metric-grid {
@@ -1355,9 +1412,7 @@
     grid-template-columns: 1fr;
   }
 
-  .modern-dashboard-grid .fc-card:first-child,
-  .modern-dashboard-grid .fc-card:nth-child(2),
-  .modern-dashboard-grid .fc-card:last-child {
+  .modern-dashboard-card--wide {
     grid-column: auto;
   }
 

@@ -292,7 +292,7 @@ function renderModernPage(
   runtime: ModernRuntime
 ) {
   if (activePage === 'dashboard') {
-    return <DashboardPage financeState={financeState} onNavigate={onNavigate} />;
+    return <DashboardPage canEdit={runtime.canEdit} financeState={financeState} onNavigate={onNavigate} />;
   }
 
   if (activePage === 'categorias') {
