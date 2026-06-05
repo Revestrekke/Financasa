@@ -31,6 +31,14 @@ create table if not exists public.financasa_state (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.dashboard_layouts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  layout_json jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now(),
+  unique (user_id)
+);
+
 create table if not exists public.financasa_accounts (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.financasa_workspaces(id) on delete cascade,
@@ -87,6 +95,7 @@ alter table public.financasa_profiles enable row level security;
 alter table public.financasa_workspaces enable row level security;
 alter table public.financasa_workspace_members enable row level security;
 alter table public.financasa_state enable row level security;
+alter table public.dashboard_layouts enable row level security;
 alter table public.financasa_accounts enable row level security;
 alter table public.financasa_categories enable row level security;
 alter table public.financasa_transactions enable row level security;
@@ -97,6 +106,7 @@ create index if not exists financasa_categories_workspace_tipo_idx on public.fin
 create index if not exists financasa_transactions_workspace_date_idx on public.financasa_transactions(workspace_id, data_movimento);
 create index if not exists financasa_transactions_account_date_idx on public.financasa_transactions(conta_id, data_movimento);
 create index if not exists audit_logs_workspace_created_idx on public.audit_logs(workspace_id, created_at desc);
+create index if not exists dashboard_layouts_user_updated_idx on public.dashboard_layouts(user_id, updated_at desc);
 
 create or replace function public.is_financasa_workspace_owner(workspace_uuid uuid)
 returns boolean
@@ -252,6 +262,51 @@ for delete
 to authenticated
 using (
   public.can_manage_financasa_workspace(workspace_id)
+);
+
+drop policy if exists "dashboard_layouts_select_self" on public.dashboard_layouts;
+drop policy if exists "dashboard_layouts_insert_self" on public.dashboard_layouts;
+drop policy if exists "dashboard_layouts_update_self" on public.dashboard_layouts;
+drop policy if exists "dashboard_layouts_delete_self" on public.dashboard_layouts;
+
+create policy "dashboard_layouts_select_self"
+on public.dashboard_layouts
+for select
+to authenticated
+using (
+  user_id = auth.uid()
+  or public.is_financasa_system_admin()
+);
+
+create policy "dashboard_layouts_insert_self"
+on public.dashboard_layouts
+for insert
+to authenticated
+with check (
+  user_id = auth.uid()
+  or public.is_financasa_system_admin()
+);
+
+create policy "dashboard_layouts_update_self"
+on public.dashboard_layouts
+for update
+to authenticated
+using (
+  user_id = auth.uid()
+  or public.is_financasa_system_admin()
+)
+with check (
+  user_id = auth.uid()
+  or public.is_financasa_system_admin()
+);
+
+create policy "dashboard_layouts_delete_self"
+on public.dashboard_layouts
+for delete
+to authenticated
+using (
+  user_id = auth.uid()
+  or public.is_financasa_system_admin()
 );
 
 drop policy if exists "accounts_select_member" on public.financasa_accounts;

@@ -430,6 +430,11 @@
   padding: 12px 14px;
 }
 
+.modern-dashboard-toolbar--premium {
+  border-color: #d2deeb;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
+}
+
 .modern-dashboard-toolbar > div:first-child {
   display: grid;
   gap: 3px;
@@ -447,9 +452,32 @@
   text-transform: uppercase;
 }
 
+.modern-dashboard-editor-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modern-layout-save-status {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 7px 10px;
+  text-transform: none;
+}
+
 .modern-kpi-value {
   font-size: 28px;
   font-weight: 900;
+}
+
+.modern-dashboard-layout-shell {
+  min-width: 0;
 }
 
 .modern-dashboard-layout-grid {
@@ -457,7 +485,7 @@
 }
 
 .modern-dashboard-layout-grid .react-grid-item {
-  transition: transform 180ms ease, width 180ms ease, height 180ms ease, box-shadow 160ms ease;
+  transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
 }
 
 .modern-dashboard-layout-grid.is-editing .react-grid-item {
@@ -469,9 +497,181 @@
   z-index: 8;
 }
 
+.modern-dashboard-layout-grid.is-editing .react-grid-item.react-draggable-dragging .modern-dashboard-card,
+.modern-dashboard-layout-grid.is-editing .react-grid-item.resizing .modern-dashboard-card {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  transform: scale(1.02);
+}
+
+.modern-dashboard-layout-grid .react-grid-placeholder {
+  background: rgba(37, 99, 235, 0.11);
+  border: 2px dashed rgba(37, 99, 235, 0.66);
+  border-radius: var(--fc-radius);
+  opacity: 1;
+  z-index: 2;
+}
+
+.modern-dashboard-layout-grid .react-grid-placeholder::after {
+  align-items: center;
+  color: var(--fc-color-primary);
+  content: "Novo local";
+  display: flex;
+  font-size: 12px;
+  font-weight: 900;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  text-transform: uppercase;
+}
+
 .modern-dashboard-layout-item {
   height: 100%;
   min-height: 0;
+}
+
+.modern-dashboard-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  position: relative;
+}
+
+.modern-dashboard-widget-bar {
+  align-items: center;
+  background: rgba(248, 251, 255, 0.96);
+  border: 1px solid #cfe0f3;
+  border-radius: var(--fc-radius);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.09);
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  left: 8px;
+  opacity: 0;
+  padding: 6px;
+  pointer-events: none;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  transform: translateY(-4px);
+  transition: opacity 140ms ease, transform 140ms ease;
+  z-index: 5;
+}
+
+.modern-dashboard-layout-grid.is-editing .modern-dashboard-widget:hover .modern-dashboard-widget-bar,
+.modern-dashboard-layout-grid.is-editing .react-draggable-dragging .modern-dashboard-widget-bar,
+.modern-dashboard-layout-grid.is-editing .resizing .modern-dashboard-widget-bar {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.modern-dashboard-drag-handle,
+.modern-widget-menu-button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #c8d6e7;
+  border-radius: 7px;
+  color: #24364f;
+  cursor: grab;
+  display: inline-flex;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  gap: 6px;
+  min-height: 30px;
+  padding: 6px 9px;
+}
+
+.modern-dashboard-drag-handle:active {
+  cursor: grabbing;
+}
+
+.modern-dashboard-drag-handle span {
+  color: var(--fc-color-primary);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.modern-dashboard-widget-menu-wrap {
+  position: relative;
+}
+
+.modern-widget-menu-button {
+  cursor: pointer;
+}
+
+.modern-widget-menu {
+  background: #ffffff;
+  border: 1px solid #d6e2ef;
+  border-radius: var(--fc-radius);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.17);
+  display: grid;
+  gap: 4px;
+  min-width: 190px;
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+}
+
+.modern-widget-menu strong {
+  color: var(--fc-color-text);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.modern-widget-menu span {
+  color: var(--fc-color-muted);
+  font-size: 11px;
+  font-weight: 900;
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.modern-widget-menu button {
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: #17243a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 8px;
+  text-align: left;
+}
+
+.modern-widget-menu button:hover {
+  background: var(--fc-color-primary-soft);
+  color: var(--fc-color-primary);
+}
+
+.modern-widget-manager {
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
+}
+
+.modern-widget-manager-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.modern-widget-manager-row {
+  align-items: center;
+  background: var(--fc-color-surface-soft);
+  border: 1px solid #dfe8f3;
+  border-radius: var(--fc-radius);
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.modern-widget-manager-row span {
+  color: var(--fc-color-text);
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .modern-dashboard-card {
@@ -497,45 +697,52 @@
 }
 
 .modern-dashboard-card.is-editing {
-  cursor: move;
-  outline: 2px dashed rgba(37, 99, 235, 0.32);
-  outline-offset: 3px;
+  cursor: default;
+  outline: 1px solid rgba(37, 99, 235, 0.18);
   user-select: none;
 }
 
-.modern-dashboard-card.is-editing:active {
-  cursor: grabbing;
-}
-
 .modern-dashboard-layout-grid .react-resizable-handle {
+  background: none;
+  border-radius: 7px;
+  height: 28px;
   opacity: 0;
-  transition: opacity 120ms ease;
+  width: 28px;
+  transition: opacity 120ms ease, background 120ms ease;
 }
 
 .modern-dashboard-layout-grid.is-editing .react-resizable-handle {
   opacity: 1;
 }
 
-.modern-dashboard-layout-grid.is-editing .react-resizable-handle::after {
-  border-color: rgba(37, 99, 235, 0.72);
+.modern-dashboard-layout-grid .react-resizable-handle::after {
+  display: none;
 }
 
-.modern-dashboard-layout-grid.is-editing .react-resizable-handle-e {
-  cursor: ew-resize;
-  height: 44px;
-  margin-top: -22px;
-  right: 0;
-  top: 50%;
-  width: 16px;
+.modern-dashboard-layout-grid .react-resizable-handle-se {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #b9d2f5;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+  color: var(--fc-color-primary);
+  cursor: se-resize;
+  display: flex;
+  font-size: 18px;
+  font-weight: 900;
+  justify-content: center;
+  padding: 0;
+  right: 8px;
+  bottom: 8px;
 }
 
-.modern-dashboard-layout-grid.is-editing .react-resizable-handle-s {
-  bottom: 0;
-  cursor: ns-resize;
-  height: 16px;
-  left: 50%;
-  margin-left: -22px;
-  width: 44px;
+.modern-dashboard-layout-grid .react-resizable-handle-se::before {
+  content: "↘";
+  line-height: 1;
+}
+
+.modern-dashboard-layout-grid .react-resizable-handle-se:hover {
+  background: var(--fc-color-primary);
+  color: #ffffff;
 }
 
 .modern-metric-grid {
@@ -1524,8 +1731,6 @@
   .modern-transactions-filters,
   .modern-credit-card-grid,
   .modern-invoice-summary,
-  .modern-dashboard-kpis,
-  .modern-dashboard-grid,
   .modern-metric-grid,
   .modern-action-grid,
   .modern-report-grid,
@@ -1534,12 +1739,6 @@
   .modern-indicator-split,
   .modern-flow-controls {
     grid-template-columns: 1fr;
-  }
-
-  .modern-dashboard-card--small,
-  .modern-dashboard-card--medium,
-  .modern-dashboard-card--large {
-    grid-column: auto;
   }
 
   .modern-inline-form,
@@ -1569,6 +1768,26 @@
 
   .modern-row-actions {
     justify-content: flex-start;
+  }
+
+  .modern-dashboard-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .modern-dashboard-editor-actions {
+    justify-content: flex-start;
+  }
+
+  .modern-dashboard-widget-bar {
+    left: 6px;
+    right: 6px;
+    top: 6px;
+  }
+
+  .modern-widget-menu {
+    left: 0;
+    right: auto;
   }
 
   .modern-auth-screen,

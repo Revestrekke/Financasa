@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ResponsiveGridLayout,
-  noCompactor,
   useContainerWidth,
   type Layout,
   type LayoutItem,
@@ -54,18 +53,35 @@ interface DashboardCardConfig {
   title: string;
 }
 
+interface DashboardWidget {
+  cardId: DashboardCardId;
+  hidden?: boolean;
+  id: string;
+  title?: string;
+}
+
 interface StoredDashboardGridLayout {
   layouts: Layouts;
-  version: 2;
+  updatedAt?: string;
+  version: 3;
+  widgets: DashboardWidget[];
 }
 
 type Layouts = ResponsiveLayouts<string>;
+type SizePresetId = 'small' | 'medium' | 'large' | 'xlarge';
 
 const DASHBOARD_LAYOUT_STORAGE_KEY = 'financasa-modern-dashboard-grid';
-const DASHBOARD_BREAKPOINTS = { lg: 1200, md: 980, sm: 760, xs: 480, xxs: 0 };
-const DASHBOARD_COLS = { lg: 12, md: 10, sm: 6, xs: 2, xxs: 1 };
-const DASHBOARD_GRID_MARGIN: [number, number] = [16, 16];
-const DASHBOARD_ROW_HEIGHT = 30;
+const DASHBOARD_BREAKPOINTS = { lg: 1200, md: 980, sm: 760, xs: 0 };
+const DASHBOARD_COLS = { lg: 12, md: 12, sm: 6, xs: 1 };
+const DASHBOARD_GRID_MARGIN: [number, number] = [14, 14];
+const DASHBOARD_ROW_HEIGHT = 36;
+
+const SIZE_PRESETS: Record<SizePresetId, { h: number; label: string; w: number }> = {
+  small: { label: 'Pequeno', w: 3, h: 2 },
+  medium: { label: 'Médio', w: 4, h: 3 },
+  large: { label: 'Grande', w: 6, h: 4 },
+  xlarge: { label: 'Extra grande', w: 12, h: 6 }
+};
 
 const DASHBOARD_CARDS: DashboardCardConfig[] = [
   { id: 'saldo-total', title: 'Saldo Total' },
@@ -85,23 +101,28 @@ const DASHBOARD_CARDS: DashboardCardConfig[] = [
 ];
 
 const DASHBOARD_CARD_IDS = DASHBOARD_CARDS.map((card) => card.id);
+const DASHBOARD_CARD_MAP = Object.fromEntries(DASHBOARD_CARDS.map((card) => [card.id, card])) as Record<DashboardCardId, DashboardCardConfig>;
 
 const DEFAULT_LG_LAYOUT: LayoutItem[] = [
-  { i: 'saldo-total', x: 0, y: 0, w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'receitas', x: 3, y: 0, w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'despesas', x: 6, y: 0, w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'faturas-kpi', x: 9, y: 0, w: 3, h: 4, minW: 2, minH: 3 },
-  { i: 'indicadores', x: 0, y: 4, w: 6, h: 6, minW: 3, minH: 4 },
-  { i: 'visao-mes', x: 6, y: 4, w: 3, h: 6, minW: 2, minH: 4 },
-  { i: 'faturas', x: 9, y: 4, w: 3, h: 5, minW: 2, minH: 3 },
-  { i: 'orcamento', x: 0, y: 10, w: 4, h: 8, minW: 3, minH: 5 },
-  { i: 'categorias', x: 4, y: 10, w: 4, h: 6, minW: 3, minH: 4 },
-  { i: 'alertas', x: 8, y: 9, w: 4, h: 7, minW: 3, minH: 4 },
-  { i: 'metas', x: 0, y: 18, w: 4, h: 6, minW: 2, minH: 4 },
-  { i: 'contas', x: 4, y: 16, w: 4, h: 6, minW: 2, minH: 4 },
-  { i: 'acoes', x: 8, y: 16, w: 4, h: 5, minW: 2, minH: 4 },
-  { i: 'transacoes', x: 0, y: 24, w: 8, h: 8, minW: 3, minH: 5 }
+  { i: 'saldo-total', x: 0, y: 0, w: 3, h: 3, minW: 2, minH: 2 },
+  { i: 'receitas', x: 3, y: 0, w: 3, h: 3, minW: 2, minH: 2 },
+  { i: 'despesas', x: 6, y: 0, w: 3, h: 3, minW: 2, minH: 2 },
+  { i: 'faturas-kpi', x: 9, y: 0, w: 3, h: 3, minW: 2, minH: 2 },
+  { i: 'indicadores', x: 0, y: 3, w: 6, h: 4, minW: 3, minH: 3 },
+  { i: 'visao-mes', x: 6, y: 3, w: 3, h: 4, minW: 2, minH: 3 },
+  { i: 'faturas', x: 9, y: 3, w: 3, h: 4, minW: 2, minH: 3 },
+  { i: 'orcamento', x: 0, y: 7, w: 4, h: 6, minW: 3, minH: 4 },
+  { i: 'categorias', x: 4, y: 7, w: 4, h: 5, minW: 3, minH: 3 },
+  { i: 'alertas', x: 8, y: 7, w: 4, h: 5, minW: 3, minH: 3 },
+  { i: 'metas', x: 0, y: 13, w: 4, h: 5, minW: 2, minH: 3 },
+  { i: 'contas', x: 4, y: 12, w: 4, h: 5, minW: 2, minH: 3 },
+  { i: 'acoes', x: 8, y: 12, w: 4, h: 4, minW: 2, minH: 3 },
+  { i: 'transacoes', x: 0, y: 18, w: 8, h: 6, minW: 3, minH: 4 }
 ];
+
+function defaultWidgets(): DashboardWidget[] {
+  return DASHBOARD_CARDS.map((card) => ({ cardId: card.id, id: card.id }));
+}
 
 function cloneLayout(layout: Layout): LayoutItem[] {
   return layout.map((item) => ({ ...item }));
@@ -111,31 +132,31 @@ function fitItemToCols(item: LayoutItem, cols: number, index: number): LayoutIte
   const width = Math.max(1, Math.min(cols, item.w));
   return {
     ...item,
-    minW: Math.min(cols, item.minW || 1),
+    minW: Math.max(1, Math.min(cols, item.minW || 1)),
     w: width,
     x: Math.max(0, Math.min(cols - width, item.x)),
-    y: Number.isFinite(item.y) ? item.y : index * 4
+    y: Number.isFinite(item.y) ? item.y : index * 3
   };
 }
 
-function oneColumnLayout(layout: Layout, cols: number): LayoutItem[] {
+function oneColumnLayout(layout: Layout, widgets: DashboardWidget[]) {
   let y = 0;
-  return layout.map((item) => {
-    const height = Math.max(item.minH || 3, Math.min(item.h, item.i === 'transacoes' ? 8 : 7));
-    const next = { ...item, x: 0, y, w: cols, h: height, minW: 1 };
-    y += height + 1;
-    return next;
+  return widgets.map((widget, index) => {
+    const fallback = layout.find((item) => item.i === widget.cardId) || layout[0]!;
+    const height = Math.max(fallback.minH || 2, Math.min(fallback.h, widget.cardId === 'transacoes' ? 6 : 5));
+    const next = { ...fallback, i: widget.id, x: 0, y, w: 1, h: height, minW: 1 };
+    y += height;
+    return fitItemToCols(next, 1, index);
   });
 }
 
-function defaultLayouts(): Layouts {
+function defaultBreakpointLayouts() {
   const lg = cloneLayout(DEFAULT_LG_LAYOUT);
   return {
     lg,
-    md: lg.map((item, index) => fitItemToCols({ ...item, x: Math.round((item.x / 12) * 10), w: Math.max(2, Math.round((item.w / 12) * 10)) }, 10, index)),
+    md: cloneLayout(lg),
     sm: lg.map((item, index) => fitItemToCols({ ...item, x: Math.round((item.x / 12) * 6), w: Math.max(2, Math.round((item.w / 12) * 6)) }, 6, index)),
-    xs: oneColumnLayout(lg, 2),
-    xxs: oneColumnLayout(lg, 1)
+    xs: oneColumnLayout(lg, defaultWidgets())
   };
 }
 
@@ -143,16 +164,48 @@ function isDashboardCardId(value: string): value is DashboardCardId {
   return DASHBOARD_CARD_IDS.includes(value as DashboardCardId);
 }
 
-function normalizeLayoutItems(items: unknown, fallback: Layout, cols: number): LayoutItem[] {
+function normalizeWidgets(input: unknown): DashboardWidget[] {
+  const rawWidgets = Array.isArray(input) ? input : [];
+  const widgets = rawWidgets.flatMap((item): DashboardWidget[] => {
+    if (!item || typeof item !== 'object') return [];
+    const candidate = item as Partial<DashboardWidget>;
+    if (!candidate.id || !candidate.cardId || !isDashboardCardId(candidate.cardId)) return [];
+    return [{
+      cardId: candidate.cardId,
+      hidden: Boolean(candidate.hidden),
+      id: String(candidate.id),
+      title: typeof candidate.title === 'string' ? candidate.title : undefined
+    }];
+  });
+
+  const withDefaults = [...widgets];
+  DASHBOARD_CARDS.forEach((card) => {
+    if (!withDefaults.some((widget) => widget.id === card.id)) {
+      withDefaults.push({ cardId: card.id, id: card.id });
+    }
+  });
+
+  const unique = new Map<string, DashboardWidget>();
+  withDefaults.forEach((widget) => unique.set(widget.id, widget));
+  return Array.from(unique.values());
+}
+
+function fallbackItemForWidget(widget: DashboardWidget, fallback: Layout, cols: number, index: number): LayoutItem {
+  const base = fallback.find((item) => item.i === widget.cardId) || fallback[0]!;
+  return fitItemToCols({ ...base, i: widget.id, y: base.y + Math.floor(index / DASHBOARD_CARDS.length) }, cols, index);
+}
+
+function normalizeLayoutItems(items: unknown, fallback: Layout, widgets: DashboardWidget[], cols: number): LayoutItem[] {
+  const visibleWidgets = widgets.filter((widget) => !widget.hidden);
   const byId = new Map<string, LayoutItem>();
   const rawItems = Array.isArray(items) ? items : [];
 
   rawItems.forEach((item, index) => {
     if (!item || typeof item !== 'object') return;
     const candidate = item as Partial<LayoutItem>;
-    if (!candidate.i || !isDashboardCardId(candidate.i)) return;
-    const fallbackItem = fallback.find((entry) => entry.i === candidate.i);
-    if (!fallbackItem) return;
+    if (!candidate.i || !visibleWidgets.some((widget) => widget.id === candidate.i)) return;
+    const widget = visibleWidgets.find((entry) => entry.id === candidate.i)!;
+    const fallbackItem = fallbackItemForWidget(widget, fallback, cols, index);
 
     byId.set(candidate.i, fitItemToCols({
       ...fallbackItem,
@@ -163,23 +216,24 @@ function normalizeLayoutItems(items: unknown, fallback: Layout, cols: number): L
     }, cols, index));
   });
 
-  return fallback.map((fallbackItem, index) => byId.get(fallbackItem.i) || fitItemToCols(fallbackItem, cols, index));
+  return visibleWidgets.map((widget, index) => byId.get(widget.id) || fallbackItemForWidget(widget, fallback, cols, index));
 }
 
 function normalizeGridLayout(layout?: unknown): StoredDashboardGridLayout {
-  const defaults = defaultLayouts();
-  const source = layout && typeof layout === 'object' && 'layouts' in layout
-    ? ((layout as { layouts?: Partial<Layouts> }).layouts || {})
-    : {};
+  const defaults = defaultBreakpointLayouts();
+  const source = layout && typeof layout === 'object' ? layout as { layouts?: Partial<Layouts>; updatedAt?: string; widgets?: unknown } : {};
+  const legacyWidgets = !source.widgets ? defaultWidgets() : normalizeWidgets(source.widgets);
+  const widgets = normalizeWidgets(legacyWidgets);
 
   return {
-    version: 2,
+    updatedAt: typeof source.updatedAt === 'string' ? source.updatedAt : undefined,
+    version: 3,
+    widgets,
     layouts: {
-      lg: normalizeLayoutItems(source.lg, defaults.lg!, DASHBOARD_COLS.lg),
-      md: normalizeLayoutItems(source.md, defaults.md!, DASHBOARD_COLS.md),
-      sm: normalizeLayoutItems(source.sm, defaults.sm!, DASHBOARD_COLS.sm),
-      xs: normalizeLayoutItems(source.xs, defaults.xs!, DASHBOARD_COLS.xs),
-      xxs: normalizeLayoutItems(source.xxs, defaults.xxs!, DASHBOARD_COLS.xxs)
+      lg: normalizeLayoutItems(source.layouts?.lg, defaults.lg, widgets, DASHBOARD_COLS.lg),
+      md: normalizeLayoutItems(source.layouts?.md, defaults.md, widgets, DASHBOARD_COLS.md),
+      sm: normalizeLayoutItems(source.layouts?.sm, defaults.sm, widgets, DASHBOARD_COLS.sm),
+      xs: normalizeLayoutItems(source.layouts?.xs, defaults.xs, widgets, DASHBOARD_COLS.xs)
     }
   };
 }
@@ -193,7 +247,7 @@ function loadGridLayout(): StoredDashboardGridLayout {
 }
 
 function saveGridLayout(layout: StoredDashboardGridLayout) {
-  window.localStorage.setItem(DASHBOARD_LAYOUT_STORAGE_KEY, JSON.stringify(normalizeGridLayout(layout as unknown as Record<string, unknown>)));
+  window.localStorage.setItem(DASHBOARD_LAYOUT_STORAGE_KEY, JSON.stringify(normalizeGridLayout(layout)));
 }
 
 function formatCurrency(value?: number | string) {
@@ -221,6 +275,23 @@ function transactionTone(tipo?: string) {
   return tipo === 'receita' ? 'income' : 'expense';
 }
 
+function layoutWithPreset(layouts: Layouts, widgetId: string, preset: SizePresetId): Layouts {
+  const size = SIZE_PRESETS[preset];
+  return {
+    lg: resizeLayoutItems(layouts.lg || [], widgetId, size.w, size.h, DASHBOARD_COLS.lg),
+    md: resizeLayoutItems(layouts.md || [], widgetId, size.w, size.h, DASHBOARD_COLS.md),
+    sm: resizeLayoutItems(layouts.sm || [], widgetId, Math.min(6, size.w), size.h, DASHBOARD_COLS.sm),
+    xs: resizeLayoutItems(layouts.xs || [], widgetId, 1, Math.max(2, Math.min(size.h, 5)), DASHBOARD_COLS.xs)
+  };
+}
+
+function resizeLayoutItems(items: Layout, widgetId: string, width: number, height: number, cols: number): LayoutItem[] {
+  return items.map((item, index) => item.i === widgetId
+    ? fitItemToCols({ ...item, w: width, h: height }, cols, index)
+    : { ...item }
+  );
+}
+
 export function DashboardPage({
   canEdit = true,
   dashboardLayout,
@@ -231,7 +302,12 @@ export function DashboardPage({
 }: DashboardPageProps) {
   const [gridLayout, setGridLayout] = useState<StoredDashboardGridLayout>(() => normalizeGridLayout(dashboardLayout || loadGridLayout()));
   const [editingCards, setEditingCards] = useState(false);
+  const [layoutMessage, setLayoutMessage] = useState('');
+  const [openWidgetMenu, setOpenWidgetMenu] = useState<string | null>(null);
+  const [widgetsPanelOpen, setWidgetsPanelOpen] = useState(false);
   const { containerRef, mounted, width } = useContainerWidth({ initialWidth: 1200 });
+  const visibleWidgets = gridLayout.widgets.filter((widget) => !widget.hidden);
+  const hiddenWidgets = gridLayout.widgets.filter((widget) => widget.hidden);
   const stateForDomain = {
     contas: financeState.contas,
     faturas_cartao: financeState.faturas_cartao,
@@ -260,8 +336,9 @@ export function DashboardPage({
   ].filter(Boolean);
 
   useEffect(() => {
-    saveGridLayout(gridLayout);
-    onDashboardLayoutChange?.(gridLayout as unknown as Record<string, unknown>);
+    const normalized = normalizeGridLayout(gridLayout);
+    saveGridLayout(normalized);
+    onDashboardLayoutChange?.(normalized as unknown as Record<string, unknown>);
   }, [gridLayout]);
 
   useEffect(() => {
@@ -271,22 +348,131 @@ export function DashboardPage({
     ));
   }, [dashboardLayout]);
 
-  function resetCards() {
+  function updateGridLayout(updater: (current: StoredDashboardGridLayout) => StoredDashboardGridLayout, message = '') {
     if (!canEdit) return;
-    setGridLayout(normalizeGridLayout());
+    setGridLayout((current) => normalizeGridLayout(updater(normalizeGridLayout(current))));
+    if (message) {
+      setLayoutMessage(message);
+      window.setTimeout(() => setLayoutMessage(''), 1800);
+    }
+  }
+
+  function resetCards() {
+    updateGridLayout(() => normalizeGridLayout(), 'Layout padrão restaurado');
+    setOpenWidgetMenu(null);
+  }
+
+  function saveLayoutNow() {
+    const normalized = normalizeGridLayout({ ...gridLayout, updatedAt: new Date().toISOString() });
+    setGridLayout(normalized);
+    saveGridLayout(normalized);
+    onDashboardLayoutChange?.(normalized as unknown as Record<string, unknown>);
+    setLayoutMessage('Layout salvo');
+    window.setTimeout(() => setLayoutMessage(''), 1800);
   }
 
   function handleGridLayoutChange(_currentLayout: Layout, allLayouts: Layouts) {
     if (!editingCards || !canEdit) return;
-    setGridLayout(normalizeGridLayout({ version: 2, layouts: allLayouts } as unknown as Record<string, unknown>));
+    setGridLayout((current) => normalizeGridLayout({ ...current, layouts: allLayouts }));
+  }
+
+  function applySizePreset(widgetId: string, preset: SizePresetId) {
+    updateGridLayout((current) => ({
+      ...current,
+      layouts: layoutWithPreset(current.layouts, widgetId, preset)
+    }), `${SIZE_PRESETS[preset].label} aplicado`);
+    setOpenWidgetMenu(null);
+  }
+
+  function duplicateWidget(widget: DashboardWidget) {
+    updateGridLayout((current) => {
+      const nextWidget: DashboardWidget = {
+        cardId: widget.cardId,
+        id: `${widget.cardId}-copy-${Date.now()}`,
+        title: `${DASHBOARD_CARD_MAP[widget.cardId].title} duplicado`
+      };
+      const layouts = Object.fromEntries(Object.entries(current.layouts).map(([breakpoint, items]) => {
+        const cols = DASHBOARD_COLS[breakpoint as keyof typeof DASHBOARD_COLS] || DASHBOARD_COLS.lg;
+        const source = (items || []).find((item) => item.i === widget.id) || fallbackItemForWidget(widget, defaultBreakpointLayouts()[breakpoint as keyof ReturnType<typeof defaultBreakpointLayouts>] || defaultBreakpointLayouts().lg, cols, 0);
+        const duplicated = fitItemToCols({ ...source, i: nextWidget.id, x: source.x + 1, y: source.y + 1 }, cols, items?.length || 0);
+        return [breakpoint, [...(items || []).map((item) => ({ ...item })), duplicated]];
+      })) as Layouts;
+
+      return { ...current, widgets: [...current.widgets, nextWidget], layouts };
+    }, 'Card duplicado');
+    setOpenWidgetMenu(null);
+  }
+
+  function hideWidget(widget: DashboardWidget) {
+    updateGridLayout((current) => ({
+      ...current,
+      widgets: current.widgets.map((item) => item.id === widget.id ? { ...item, hidden: true } : item)
+    }), 'Card ocultado');
+    setOpenWidgetMenu(null);
+  }
+
+  function restoreWidget(widgetId: string) {
+    updateGridLayout((current) => ({
+      ...current,
+      widgets: current.widgets.map((item) => item.id === widgetId ? { ...item, hidden: false } : item)
+    }), 'Card restaurado');
+  }
+
+  function restoreAllWidgets() {
+    updateGridLayout((current) => ({
+      ...current,
+      widgets: current.widgets.map((item) => ({ ...item, hidden: false }))
+    }), 'Widgets restaurados');
   }
 
   function cardClass() {
     return ['modern-dashboard-card', editingCards ? 'is-editing' : ''].filter(Boolean).join(' ');
   }
 
-  function renderDashboardCard(card: DashboardCardConfig) {
-    if (card.id === 'saldo-total') {
+  function widgetTitle(widget: DashboardWidget) {
+    return widget.title || DASHBOARD_CARD_MAP[widget.cardId].title;
+  }
+
+  function renderWidgetChrome(widget: DashboardWidget) {
+    if (!editingCards || !canEdit) return null;
+
+    return (
+      <div className="modern-dashboard-widget-bar">
+        <button className="modern-dashboard-drag-handle" type="button" title="Arrastar card">
+          <span>⋮⋮</span>
+          Arrastar
+        </button>
+        <div className="modern-dashboard-widget-menu-wrap">
+          <button
+            className="modern-widget-menu-button"
+            onClick={() => setOpenWidgetMenu((current) => current === widget.id ? null : widget.id)}
+            type="button"
+          >
+            Menu
+          </button>
+          {openWidgetMenu === widget.id && (
+            <div className="modern-widget-menu">
+              <strong>{widgetTitle(widget)}</strong>
+              <span>Tamanho</span>
+              {(Object.keys(SIZE_PRESETS) as SizePresetId[]).map((preset) => (
+                <button key={preset} onClick={() => applySizePreset(widget.id, preset)} type="button">
+                  {SIZE_PRESETS[preset].label}
+                </button>
+              ))}
+              <span>Ações</span>
+              <button onClick={() => duplicateWidget(widget)} type="button">Duplicar</button>
+              <button onClick={() => hideWidget(widget)} type="button">Ocultar</button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function renderDashboardCard(widget: DashboardWidget) {
+    const cardId = widget.cardId;
+
+    if (cardId === 'saldo-total') {
       return (
         <Card className={cardClass()} subtitle="Todas as contas" title="Saldo Total">
           <div className={totalBalance >= 0 ? 'modern-kpi-value modern-value-income' : 'modern-kpi-value modern-value-expense'}>{formatCurrency(totalBalance)}</div>
@@ -294,7 +480,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'receitas') {
+    if (cardId === 'receitas') {
       return (
         <Card className={cardClass()} subtitle={monthLabel(month)} title="Receitas" tone="income">
           <div className="modern-kpi-value modern-value-income">{formatCurrency(summary.rec)}</div>
@@ -302,7 +488,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'despesas') {
+    if (cardId === 'despesas') {
       return (
         <Card className={cardClass()} subtitle="Confirmadas no mês" title="Despesas" tone="expense">
           <div className="modern-kpi-value modern-value-expense">{formatCurrency(summary.depTotal)}</div>
@@ -310,7 +496,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'faturas-kpi') {
+    if (cardId === 'faturas-kpi') {
       return (
         <Card className={cardClass()} subtitle="Previstas no mês" title="Faturas">
           <div className="modern-kpi-value modern-value-transfer">{formatCurrency(invoices.previsto)}</div>
@@ -318,7 +504,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'indicadores') {
+    if (cardId === 'indicadores') {
       return (
         <Card className={cardClass()} subtitle="Cálculos consolidados do mês" title="Indicadores Estratégicos">
           <div className="modern-metric-grid">
@@ -331,7 +517,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'visao-mes') {
+    if (cardId === 'visao-mes') {
       return (
         <Card className={cardClass()} subtitle={`${summary.txs.length} lançamentos confirmados`} title="Visão do Mês">
           <div className="modern-month-balance">
@@ -346,7 +532,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'orcamento') {
+    if (cardId === 'orcamento') {
       return (
         <Card className={cardClass()} subtitle={`${budget.pct}% utilizado`} title="Orçamento">
           <div className="modern-budget-total">
@@ -367,7 +553,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'alertas') {
+    if (cardId === 'alertas') {
       return (
         <Card className={cardClass()} subtitle="Pontos que pedem atenção" title="Alertas">
           <div className="modern-list">
@@ -378,7 +564,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'faturas') {
+    if (cardId === 'faturas') {
       return (
         <Card className={cardClass()} subtitle={`${invoices.invoices.length} fatura(s) no mês`} title="Faturas dos Cartões">
           <div className="modern-list">
@@ -394,7 +580,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'metas') {
+    if (cardId === 'metas') {
       return (
         <Card className={cardClass()} subtitle={`${financeState.metas.length} meta(s)`} title="Metas">
           <div className="modern-list">
@@ -413,7 +599,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'contas') {
+    if (cardId === 'contas') {
       return (
         <Card className={cardClass()} subtitle="Saldos atuais" title="Contas e Carteiras">
           <div className="modern-list">
@@ -431,7 +617,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'categorias') {
+    if (cardId === 'categorias') {
       return (
         <Card className={cardClass()} subtitle="Despesas confirmadas" title="Gastos por Categoria">
           <div className="modern-list">
@@ -447,7 +633,7 @@ export function DashboardPage({
       );
     }
 
-    if (card.id === 'acoes') {
+    if (cardId === 'acoes') {
       return (
         <Card className={cardClass()} subtitle="Atalhos principais" title="Ações Rápidas">
           <div className="modern-action-grid">
@@ -484,18 +670,40 @@ export function DashboardPage({
 
   return (
     <div className="modern-dashboard">
-      <div className="modern-dashboard-toolbar">
+      <div className="modern-dashboard-toolbar modern-dashboard-toolbar--premium">
         <div>
           <strong>Dashboard</strong>
-          <span>{editingCards ? 'Arraste ou redimensione os cards livremente' : monthLabel(month)}</span>
+          <span>{editingCards ? 'Editor premium ativo' : monthLabel(month)}</span>
         </div>
-        <div className="modern-row-actions">
+        <div className="modern-dashboard-editor-actions">
+          {layoutMessage && <span className="modern-layout-save-status">{layoutMessage}</span>}
+          {editingCards && <Button onClick={() => setWidgetsPanelOpen((current) => !current)} type="button" variant="ghost">Gerenciar widgets</Button>}
           {editingCards && <Button onClick={resetCards} type="button" variant="ghost">Restaurar padrão</Button>}
+          {editingCards && <Button onClick={saveLayoutNow} type="button">Salvar Layout</Button>}
           <Button disabled={!canEdit} onClick={() => setEditingCards((current) => !current)} type="button" variant={editingCards ? 'primary' : 'default'}>
             {editingCards ? 'Concluir edição' : 'Editar cards'}
           </Button>
         </div>
       </div>
+
+      {editingCards && widgetsPanelOpen && (
+        <Card className="modern-widget-manager" title="Gerenciar widgets" subtitle={`${hiddenWidgets.length} oculto(s)`}>
+          <div className="modern-widget-manager-grid">
+            {hiddenWidgets.map((widget) => (
+              <div className="modern-widget-manager-row" key={widget.id}>
+                <span>{widgetTitle(widget)}</span>
+                <Button onClick={() => restoreWidget(widget.id)} type="button" variant="ghost">Restaurar</Button>
+              </div>
+            ))}
+            {!hiddenWidgets.length && <EmptyState title="Nenhum card oculto" text="Os cards ocultados aparecerão aqui para restauração." />}
+          </div>
+          {hiddenWidgets.length > 0 && (
+            <div className="modern-form-actions">
+              <Button onClick={restoreAllWidgets} type="button" variant="primary">Restaurar cards ocultos</Button>
+            </div>
+          )}
+        </Card>
+      )}
 
       <div className="modern-dashboard-layout-shell" ref={containerRef}>
         {mounted && (
@@ -503,12 +711,12 @@ export function DashboardPage({
             breakpoints={DASHBOARD_BREAKPOINTS}
             className={['modern-dashboard-layout-grid', editingCards ? 'is-editing' : ''].filter(Boolean).join(' ')}
             cols={DASHBOARD_COLS}
-            compactor={noCompactor}
             containerPadding={[0, 0]}
             dragConfig={{
               bounded: false,
-              cancel: 'button, input, select, textarea, a, .fc-button',
+              cancel: 'button:not(.modern-dashboard-drag-handle), input, select, textarea, a, .fc-button',
               enabled: editingCards && canEdit,
+              handle: '.modern-dashboard-drag-handle',
               threshold: 2
             }}
             layouts={gridLayout.layouts}
@@ -516,14 +724,17 @@ export function DashboardPage({
             onLayoutChange={handleGridLayoutChange}
             resizeConfig={{
               enabled: editingCards && canEdit,
-              handles: ['se', 'e', 's']
+              handles: ['se']
             }}
             rowHeight={DASHBOARD_ROW_HEIGHT}
             width={width}
           >
-            {DASHBOARD_CARDS.map((card) => (
-              <div className="modern-dashboard-layout-item" key={card.id}>
-                {renderDashboardCard(card)}
+            {visibleWidgets.map((widget) => (
+              <div className="modern-dashboard-layout-item" key={widget.id}>
+                <div className="modern-dashboard-widget">
+                  {renderWidgetChrome(widget)}
+                  {renderDashboardCard(widget)}
+                </div>
               </div>
             ))}
           </ResponsiveGridLayout>

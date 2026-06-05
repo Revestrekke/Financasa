@@ -56,7 +56,17 @@ export function isMissingWorkspaceSchema(error: unknown) {
   return typed?.code === '42P01'
     || msg.includes('financasa_workspaces')
     || msg.includes('financasa_profiles')
-    || msg.includes('financasa_workspace_members');
+    || msg.includes('financasa_workspace_members')
+    || msg.includes('dashboard_layouts');
+}
+
+function isMissingDashboardLayoutSchema(error: unknown) {
+  const typed = error as { code?: string; message?: string } | null;
+  const msg = String(typed?.message || '').toLowerCase();
+  return typed?.code === '42P01'
+    || typed?.code === 'PGRST205'
+    || msg.includes('dashboard_layouts')
+    || msg.includes('could not find the table');
 }
 
 export function normalizeMembers(rows: WorkspaceMemberRow[], user?: User | null, workspace?: FinanceWorkspace | null): WorkspaceMember[] {
@@ -175,9 +185,17 @@ export async function loadRemoteWorkspace(user: User): Promise<RemoteWorkspaceBu
 
   await ensureSystemAdminMembership(workspace.id, user);
   const members = await loadWorkspaceMembers(workspace.id, user, workspace);
+  const financeState = hydrateModernFinanceState(workspace.state);
+  const dashboardLayout = await loadRemoteDashboardLayout(user.id).catch((error) => {
+    if (!isMissingDashboardLayoutSchema(error)) console.warn('Não foi possível carregar layout do dashboard:', error);
+    return null;
+  });
 
   return {
-    financeState: hydrateModernFinanceState(workspace.state),
+    financeState: {
+      ...financeState,
+      dashboard_layout: dashboardLayout || financeState.dashboard_layout
+    },
     members,
     workspace
   };
@@ -190,6 +208,37 @@ export async function saveRemoteFinanceState(workspaceId: string, financeState: 
     .eq('id', workspaceId);
 
   if (error) throw error;
+}
+
+export async function loadRemoteDashboardLayout(userId: string) {
+  const { data, error } = await getBrowserSupabaseClient()
+    .from('dashboard_layouts')
+    .select('layout_json')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.layout_json && typeof data.layout_json === 'object'
+    ? data.layout_json as Record<string, unknown>
+    : null;
+}
+
+export async function saveRemoteDashboardLayout(userId: string, layout: Record<string, unknown>) {
+  const now = new Date().toISOString();
+  const { error } = await getBrowserSupabaseClient()
+    .from('dashboard_layouts')
+    .upsert(
+      { user_id: userId, layout_json: layout, updated_at: now },
+      { onConflict: 'user_id' }
+    );
+
+  if (error) {
+    if (isMissingDashboardLayoutSchema(error)) {
+      console.warn('Tabela dashboard_layouts ausente; usando fallback no estado do workspace.');
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function updateRemoteProfileName(user: User, name: string) {

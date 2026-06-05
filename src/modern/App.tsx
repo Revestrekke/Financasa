@@ -32,6 +32,7 @@ import {
   loadRemoteWorkspace,
   loadWorkspaceMembers,
   removeWorkspaceMember,
+  saveRemoteDashboardLayout,
   saveRemoteFinanceState,
   updateRemoteProfileName,
   updateRemoteWorkspaceName,
@@ -68,6 +69,7 @@ export function App() {
   const [remoteStatus, setRemoteStatus] = useState('iniciando...');
   const [startupError, setStartupError] = useState('');
   const [workspace, setWorkspace] = useState<FinanceWorkspace | null>(null);
+  const lastSavedDashboardLayoutJson = useRef('');
   const lastSavedJson = useRef('');
 
   async function loadRemoteForUser(user: User) {
@@ -81,6 +83,7 @@ export function App() {
       setWorkspace(bundle.workspace);
       setMembers(bundle.members);
       setFinanceState(bundle.financeState);
+      lastSavedDashboardLayoutJson.current = JSON.stringify(bundle.financeState.dashboard_layout || {});
       lastSavedJson.current = JSON.stringify(bundle.financeState);
       setRemoteStatus('carregado do Supabase');
       setPreview('shell');
@@ -145,6 +148,28 @@ export function App() {
     return () => window.clearTimeout(timer);
   }, [authUser, booting, financeState, members, workspace]);
 
+  useEffect(() => {
+    if (!authUser || !workspace || booting) return;
+    if (!canEditWorkspace(authUser, workspace, members)) return;
+
+    const dashboardLayout = financeState.dashboard_layout || {};
+    const snapshot = JSON.stringify(dashboardLayout);
+    if (snapshot === lastSavedDashboardLayoutJson.current) return;
+
+    const timer = window.setTimeout(async () => {
+      try {
+        await saveRemoteDashboardLayout(authUser.id, dashboardLayout);
+        lastSavedDashboardLayoutJson.current = snapshot;
+        setRemoteStatus('layout salvo no Supabase');
+      } catch (error) {
+        setRemoteStatus('erro ao salvar layout');
+        console.error(error);
+      }
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [authUser, booting, financeState.dashboard_layout, members, workspace]);
+
   function updateFinance<Key extends keyof ModernFinanceState>(key: Key, value: ModernFinanceState[Key]) {
     if (!canEditWorkspace(authUser, workspace, members)) {
       setRemoteStatus('somente leitura');
@@ -174,6 +199,7 @@ export function App() {
     setWorkspace(null);
     setMembers([]);
     setFinanceState(createModernInitialState());
+    lastSavedDashboardLayoutJson.current = '';
     lastSavedJson.current = '';
     setRemoteStatus('sessão encerrada');
     setPreview('auth');
