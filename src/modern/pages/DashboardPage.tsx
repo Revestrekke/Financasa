@@ -1,4 +1,14 @@
-import { useEffect, useMemo, useState, type DragEvent, type PointerEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ResponsiveGridLayout,
+  noCompactor,
+  useContainerWidth,
+  type Layout,
+  type LayoutItem,
+  type ResponsiveLayouts
+} from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 import { Badge, Button, Card, EmptyState } from '../components';
 import {
   compareTransactionsDesc,
@@ -23,9 +33,11 @@ interface DashboardPageProps {
   onNavigate: (page: PageId) => void;
 }
 
-type DashboardCardSize = 'small' | 'medium' | 'large';
-
 type DashboardCardId =
+  | 'saldo-total'
+  | 'receitas'
+  | 'despesas'
+  | 'faturas-kpi'
   | 'indicadores'
   | 'visao-mes'
   | 'orcamento'
@@ -38,65 +50,150 @@ type DashboardCardId =
   | 'transacoes';
 
 interface DashboardCardConfig {
-  defaultSize: DashboardCardSize;
   id: DashboardCardId;
   title: string;
 }
 
+interface StoredDashboardGridLayout {
+  layouts: Layouts;
+  version: 2;
+}
+
+type Layouts = ResponsiveLayouts<string>;
+
+const DASHBOARD_LAYOUT_STORAGE_KEY = 'financasa-modern-dashboard-grid';
+const DASHBOARD_BREAKPOINTS = { lg: 1200, md: 980, sm: 760, xs: 480, xxs: 0 };
+const DASHBOARD_COLS = { lg: 12, md: 10, sm: 6, xs: 2, xxs: 1 };
+const DASHBOARD_GRID_MARGIN: [number, number] = [16, 16];
+const DASHBOARD_ROW_HEIGHT = 30;
+
 const DASHBOARD_CARDS: DashboardCardConfig[] = [
-  { id: 'indicadores', title: 'Indicadores Estratégicos', defaultSize: 'large' },
-  { id: 'visao-mes', title: 'Visão do Mês', defaultSize: 'medium' },
-  { id: 'orcamento', title: 'Orçamento', defaultSize: 'medium' },
-  { id: 'alertas', title: 'Alertas', defaultSize: 'medium' },
-  { id: 'faturas', title: 'Faturas dos Cartões', defaultSize: 'small' },
-  { id: 'metas', title: 'Metas', defaultSize: 'medium' },
-  { id: 'contas', title: 'Contas e Carteiras', defaultSize: 'medium' },
-  { id: 'categorias', title: 'Gastos por Categoria', defaultSize: 'medium' },
-  { id: 'acoes', title: 'Ações Rápidas', defaultSize: 'small' },
-  { id: 'transacoes', title: 'Últimas Transações', defaultSize: 'large' }
+  { id: 'saldo-total', title: 'Saldo Total' },
+  { id: 'receitas', title: 'Receitas' },
+  { id: 'despesas', title: 'Despesas' },
+  { id: 'faturas-kpi', title: 'Faturas' },
+  { id: 'indicadores', title: 'Indicadores Estratégicos' },
+  { id: 'visao-mes', title: 'Visão do Mês' },
+  { id: 'orcamento', title: 'Orçamento' },
+  { id: 'alertas', title: 'Alertas' },
+  { id: 'faturas', title: 'Faturas dos Cartões' },
+  { id: 'metas', title: 'Metas' },
+  { id: 'contas', title: 'Contas e Carteiras' },
+  { id: 'categorias', title: 'Gastos por Categoria' },
+  { id: 'acoes', title: 'Ações Rápidas' },
+  { id: 'transacoes', title: 'Últimas Transações' }
 ];
 
 const DASHBOARD_CARD_IDS = DASHBOARD_CARDS.map((card) => card.id);
-const DASHBOARD_CARD_SIZES: DashboardCardSize[] = ['small', 'medium', 'large'];
-const DASHBOARD_LAYOUT_STORAGE_KEY = 'financasa-modern-dashboard-cards';
 
-interface DashboardCardLayout {
-  hidden: DashboardCardId[];
-  order: DashboardCardId[];
-  sizes: Partial<Record<DashboardCardId, DashboardCardSize>>;
+const DEFAULT_LG_LAYOUT: LayoutItem[] = [
+  { i: 'saldo-total', x: 0, y: 0, w: 3, h: 4, minW: 2, minH: 3 },
+  { i: 'receitas', x: 3, y: 0, w: 3, h: 4, minW: 2, minH: 3 },
+  { i: 'despesas', x: 6, y: 0, w: 3, h: 4, minW: 2, minH: 3 },
+  { i: 'faturas-kpi', x: 9, y: 0, w: 3, h: 4, minW: 2, minH: 3 },
+  { i: 'indicadores', x: 0, y: 4, w: 6, h: 6, minW: 3, minH: 4 },
+  { i: 'visao-mes', x: 6, y: 4, w: 3, h: 6, minW: 2, minH: 4 },
+  { i: 'faturas', x: 9, y: 4, w: 3, h: 5, minW: 2, minH: 3 },
+  { i: 'orcamento', x: 0, y: 10, w: 4, h: 8, minW: 3, minH: 5 },
+  { i: 'categorias', x: 4, y: 10, w: 4, h: 6, minW: 3, minH: 4 },
+  { i: 'alertas', x: 8, y: 9, w: 4, h: 7, minW: 3, minH: 4 },
+  { i: 'metas', x: 0, y: 18, w: 4, h: 6, minW: 2, minH: 4 },
+  { i: 'contas', x: 4, y: 16, w: 4, h: 6, minW: 2, minH: 4 },
+  { i: 'acoes', x: 8, y: 16, w: 4, h: 5, minW: 2, minH: 4 },
+  { i: 'transacoes', x: 0, y: 24, w: 8, h: 8, minW: 3, minH: 5 }
+];
+
+function cloneLayout(layout: Layout): LayoutItem[] {
+  return layout.map((item) => ({ ...item }));
 }
 
-function normalizeCardLayout(layout?: Partial<DashboardCardLayout> | null): DashboardCardLayout {
-  const order = Array.isArray(layout?.order)
-    ? layout.order.filter((id): id is DashboardCardId => DASHBOARD_CARD_IDS.includes(id as DashboardCardId))
-    : [];
-  const hidden = Array.isArray(layout?.hidden)
-    ? layout.hidden.filter((id): id is DashboardCardId => DASHBOARD_CARD_IDS.includes(id as DashboardCardId))
-    : [];
-  const sizes = Object.fromEntries(
-    DASHBOARD_CARDS.map((card) => {
-      const size = layout?.sizes?.[card.id];
-      return [card.id, size === 'small' || size === 'medium' || size === 'large' ? size : card.defaultSize];
-    })
-  ) as Partial<Record<DashboardCardId, DashboardCardSize>>;
-
+function fitItemToCols(item: LayoutItem, cols: number, index: number): LayoutItem {
+  const width = Math.max(1, Math.min(cols, item.w));
   return {
-    hidden: Array.from(new Set(hidden)),
-    order: [...order, ...DASHBOARD_CARD_IDS.filter((id) => !order.includes(id))],
-    sizes
+    ...item,
+    minW: Math.min(cols, item.minW || 1),
+    w: width,
+    x: Math.max(0, Math.min(cols - width, item.x)),
+    y: Number.isFinite(item.y) ? item.y : index * 4
   };
 }
 
-function loadCardLayout(): DashboardCardLayout {
+function oneColumnLayout(layout: Layout, cols: number): LayoutItem[] {
+  let y = 0;
+  return layout.map((item) => {
+    const height = Math.max(item.minH || 3, Math.min(item.h, item.i === 'transacoes' ? 8 : 7));
+    const next = { ...item, x: 0, y, w: cols, h: height, minW: 1 };
+    y += height + 1;
+    return next;
+  });
+}
+
+function defaultLayouts(): Layouts {
+  const lg = cloneLayout(DEFAULT_LG_LAYOUT);
+  return {
+    lg,
+    md: lg.map((item, index) => fitItemToCols({ ...item, x: Math.round((item.x / 12) * 10), w: Math.max(2, Math.round((item.w / 12) * 10)) }, 10, index)),
+    sm: lg.map((item, index) => fitItemToCols({ ...item, x: Math.round((item.x / 12) * 6), w: Math.max(2, Math.round((item.w / 12) * 6)) }, 6, index)),
+    xs: oneColumnLayout(lg, 2),
+    xxs: oneColumnLayout(lg, 1)
+  };
+}
+
+function isDashboardCardId(value: string): value is DashboardCardId {
+  return DASHBOARD_CARD_IDS.includes(value as DashboardCardId);
+}
+
+function normalizeLayoutItems(items: unknown, fallback: Layout, cols: number): LayoutItem[] {
+  const byId = new Map<string, LayoutItem>();
+  const rawItems = Array.isArray(items) ? items : [];
+
+  rawItems.forEach((item, index) => {
+    if (!item || typeof item !== 'object') return;
+    const candidate = item as Partial<LayoutItem>;
+    if (!candidate.i || !isDashboardCardId(candidate.i)) return;
+    const fallbackItem = fallback.find((entry) => entry.i === candidate.i);
+    if (!fallbackItem) return;
+
+    byId.set(candidate.i, fitItemToCols({
+      ...fallbackItem,
+      x: Number.isFinite(candidate.x) ? Number(candidate.x) : fallbackItem.x,
+      y: Number.isFinite(candidate.y) ? Number(candidate.y) : fallbackItem.y + index,
+      w: Number.isFinite(candidate.w) ? Number(candidate.w) : fallbackItem.w,
+      h: Number.isFinite(candidate.h) ? Number(candidate.h) : fallbackItem.h
+    }, cols, index));
+  });
+
+  return fallback.map((fallbackItem, index) => byId.get(fallbackItem.i) || fitItemToCols(fallbackItem, cols, index));
+}
+
+function normalizeGridLayout(layout?: unknown): StoredDashboardGridLayout {
+  const defaults = defaultLayouts();
+  const source = layout && typeof layout === 'object' && 'layouts' in layout
+    ? ((layout as { layouts?: Partial<Layouts> }).layouts || {})
+    : {};
+
+  return {
+    version: 2,
+    layouts: {
+      lg: normalizeLayoutItems(source.lg, defaults.lg!, DASHBOARD_COLS.lg),
+      md: normalizeLayoutItems(source.md, defaults.md!, DASHBOARD_COLS.md),
+      sm: normalizeLayoutItems(source.sm, defaults.sm!, DASHBOARD_COLS.sm),
+      xs: normalizeLayoutItems(source.xs, defaults.xs!, DASHBOARD_COLS.xs),
+      xxs: normalizeLayoutItems(source.xxs, defaults.xxs!, DASHBOARD_COLS.xxs)
+    }
+  };
+}
+
+function loadGridLayout(): StoredDashboardGridLayout {
   try {
-    return normalizeCardLayout(JSON.parse(window.localStorage.getItem(DASHBOARD_LAYOUT_STORAGE_KEY) || 'null'));
+    return normalizeGridLayout(JSON.parse(window.localStorage.getItem(DASHBOARD_LAYOUT_STORAGE_KEY) || 'null'));
   } catch {
-    return normalizeCardLayout();
+    return normalizeGridLayout();
   }
 }
 
-function saveCardLayout(layout: DashboardCardLayout) {
-  window.localStorage.setItem(DASHBOARD_LAYOUT_STORAGE_KEY, JSON.stringify(normalizeCardLayout(layout)));
+function saveGridLayout(layout: StoredDashboardGridLayout) {
+  window.localStorage.setItem(DASHBOARD_LAYOUT_STORAGE_KEY, JSON.stringify(normalizeGridLayout(layout as unknown as Record<string, unknown>)));
 }
 
 function formatCurrency(value?: number | string) {
@@ -132,9 +229,9 @@ export function DashboardPage({
   onDashboardLayoutChange,
   onNavigate
 }: DashboardPageProps) {
-  const [cardLayout, setCardLayout] = useState<DashboardCardLayout>(() => normalizeCardLayout(dashboardLayout as Partial<DashboardCardLayout> || loadCardLayout()));
-  const [draggingCard, setDraggingCard] = useState<DashboardCardId | null>(null);
+  const [gridLayout, setGridLayout] = useState<StoredDashboardGridLayout>(() => normalizeGridLayout(dashboardLayout || loadGridLayout()));
   const [editingCards, setEditingCards] = useState(false);
+  const { containerRef, mounted, width } = useContainerWidth({ initialWidth: 1200 });
   const stateForDomain = {
     contas: financeState.contas,
     faturas_cartao: financeState.faturas_cartao,
@@ -155,8 +252,6 @@ export function DashboardPage({
   );
   const topBudgetItems = budget.items.slice().sort((a, b) => b.spent - a.spent).slice(0, 4);
   const topCategories = Object.entries(expenseCategories.catMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const visibleCards = cardLayout.order.filter((id) => !cardLayout.hidden.includes(id));
-  const hiddenCards = DASHBOARD_CARDS.filter((card) => cardLayout.hidden.includes(card.id));
   const alerts = [
     invoices.previsto > 0 ? `${formatCurrency(invoices.previsto)} em faturas abertas/fechadas previstas para ${monthLabel(month)}.` : '',
     budget.pct >= 80 ? `Orçamento já consumiu ${budget.pct}% do limite do mês.` : '',
@@ -165,140 +260,80 @@ export function DashboardPage({
   ].filter(Boolean);
 
   useEffect(() => {
-    saveCardLayout(cardLayout);
-    onDashboardLayoutChange?.(cardLayout as unknown as Record<string, unknown>);
-  }, [cardLayout]);
+    saveGridLayout(gridLayout);
+    onDashboardLayoutChange?.(gridLayout as unknown as Record<string, unknown>);
+  }, [gridLayout]);
 
   useEffect(() => {
-    const nextLayout = normalizeCardLayout(dashboardLayout as Partial<DashboardCardLayout> || loadCardLayout());
-    setCardLayout((current) => (
+    const nextLayout = normalizeGridLayout(dashboardLayout || loadGridLayout());
+    setGridLayout((current) => (
       JSON.stringify(current) === JSON.stringify(nextLayout) ? current : nextLayout
     ));
   }, [dashboardLayout]);
 
-  function updateCardLayout(updater: (current: DashboardCardLayout) => DashboardCardLayout) {
-    if (!canEdit) return;
-    setCardLayout((current) => normalizeCardLayout(updater(current)));
-  }
-
-  function showCard(id: DashboardCardId) {
-    updateCardLayout((current) => ({
-      ...current,
-      hidden: current.hidden.filter((cardId) => cardId !== id)
-    }));
-  }
-
   function resetCards() {
-    updateCardLayout(() => normalizeCardLayout());
+    if (!canEdit) return;
+    setGridLayout(normalizeGridLayout());
   }
 
-  function setCardSize(id: DashboardCardId, size: DashboardCardSize) {
-    updateCardLayout((current) => ({
-      ...current,
-      sizes: { ...current.sizes, [id]: size }
-    }));
-  }
-
-  function sizeFromDelta(startSize: DashboardCardSize, deltaX: number) {
-    const startIndex = DASHBOARD_CARD_SIZES.indexOf(startSize);
-    const steps = Math.max(-2, Math.min(2, Math.round(deltaX / 150)));
-    return DASHBOARD_CARD_SIZES[Math.max(0, Math.min(DASHBOARD_CARD_SIZES.length - 1, startIndex + steps))];
-  }
-
-  function startCardResize(card: DashboardCardConfig, event: PointerEvent<HTMLSpanElement>) {
+  function handleGridLayoutChange(_currentLayout: Layout, allLayouts: Layouts) {
     if (!editingCards || !canEdit) return;
-    event.preventDefault();
-    event.stopPropagation();
-
-    const startX = event.clientX;
-    const startSize = cardLayout.sizes[card.id] || card.defaultSize;
-    let currentSize = startSize;
-
-    function handleMove(moveEvent: globalThis.PointerEvent) {
-      const nextSize = sizeFromDelta(startSize, moveEvent.clientX - startX);
-      if (nextSize === currentSize) return;
-      currentSize = nextSize;
-      setCardSize(card.id, nextSize);
-    }
-
-    function handleUp() {
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-    }
-
-    window.addEventListener('pointermove', handleMove);
-    window.addEventListener('pointerup', handleUp);
+    setGridLayout(normalizeGridLayout({ version: 2, layouts: allLayouts } as unknown as Record<string, unknown>));
   }
 
-  function dropCard(targetId: DashboardCardId) {
-    if (!draggingCard || draggingCard === targetId) return;
-    updateCardLayout((current) => {
-      const order = current.order.filter((id) => id !== draggingCard);
-      const targetIndex = order.indexOf(targetId);
-      order.splice(targetIndex < 0 ? order.length : targetIndex, 0, draggingCard);
-      return { ...current, order };
-    });
-    setDraggingCard(null);
-  }
-
-  function cardClass(card: DashboardCardConfig) {
-    return [
-      'modern-dashboard-card',
-      `modern-dashboard-card--${cardLayout.sizes[card.id] || card.defaultSize}`,
-      editingCards ? 'is-editing' : ''
-    ].filter(Boolean).join(' ');
-  }
-
-  function cardDragProps(card: DashboardCardConfig) {
-    if (!editingCards || !canEdit) return {};
-    return {
-      draggable: true,
-      onDragEnd: () => setDraggingCard(null),
-      onDragOver: (event: DragEvent<HTMLElement>) => event.preventDefault(),
-      onDragStart: (event: DragEvent<HTMLElement>) => {
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', card.id);
-        setDraggingCard(card.id);
-      },
-      onDrop: (event: DragEvent<HTMLElement>) => {
-        event.preventDefault();
-        dropCard(card.id);
-      }
-    };
-  }
-
-  function cardEditorOverlay(card: DashboardCardConfig) {
-    if (!editingCards || !canEdit) return null;
-    return (
-      <span
-        aria-label={`Redimensionar ${card.title}`}
-        className="modern-card-resize-handle"
-        draggable={false}
-        onPointerDown={(event) => startCardResize(card, event)}
-        role="separator"
-        title="Arraste o canto para redimensionar"
-      />
-    );
+  function cardClass() {
+    return ['modern-dashboard-card', editingCards ? 'is-editing' : ''].filter(Boolean).join(' ');
   }
 
   function renderDashboardCard(card: DashboardCardConfig) {
+    if (card.id === 'saldo-total') {
+      return (
+        <Card className={cardClass()} subtitle="Todas as contas" title="Saldo Total">
+          <div className={totalBalance >= 0 ? 'modern-kpi-value modern-value-income' : 'modern-kpi-value modern-value-expense'}>{formatCurrency(totalBalance)}</div>
+        </Card>
+      );
+    }
+
+    if (card.id === 'receitas') {
+      return (
+        <Card className={cardClass()} subtitle={monthLabel(month)} title="Receitas" tone="income">
+          <div className="modern-kpi-value modern-value-income">{formatCurrency(summary.rec)}</div>
+        </Card>
+      );
+    }
+
+    if (card.id === 'despesas') {
+      return (
+        <Card className={cardClass()} subtitle="Confirmadas no mês" title="Despesas" tone="expense">
+          <div className="modern-kpi-value modern-value-expense">{formatCurrency(summary.depTotal)}</div>
+        </Card>
+      );
+    }
+
+    if (card.id === 'faturas-kpi') {
+      return (
+        <Card className={cardClass()} subtitle="Previstas no mês" title="Faturas">
+          <div className="modern-kpi-value modern-value-transfer">{formatCurrency(invoices.previsto)}</div>
+        </Card>
+      );
+    }
+
     if (card.id === 'indicadores') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Cálculos consolidados do mês" title="Indicadores Estratégicos">
+        <Card className={cardClass()} subtitle="Cálculos consolidados do mês" title="Indicadores Estratégicos">
           <div className="modern-metric-grid">
             <div><span>Patrimônio Líquido</span><strong className={metrics.netWorth >= 0 ? 'modern-value-income' : 'modern-value-expense'}>{formatCurrency(metrics.netWorth)}</strong></div>
             <div><span>Taxa de poupança</span><strong>{metrics.savingsRate}%</strong></div>
             <div><span>Comprometimento</span><strong>{metrics.commitment}%</strong></div>
             <div><span>Maior categoria</span><strong>{metrics.topCategory.categoria}</strong></div>
           </div>
-          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'visao-mes') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${summary.txs.length} lançamentos confirmados`} title="Visão do Mês">
+        <Card className={cardClass()} subtitle={`${summary.txs.length} lançamentos confirmados`} title="Visão do Mês">
           <div className="modern-month-balance">
             <span>Receitas vs despesas</span>
             <strong className={summary.saldo >= 0 ? 'modern-value-income' : 'modern-value-expense'}>{formatCurrency(summary.saldo)}</strong>
@@ -307,14 +342,13 @@ export function DashboardPage({
             <div><span>Receitas</span><i style={{ width: `${summary.rec ? 100 : 0}%` }} /></div>
             <div><span>Despesas</span><i className="is-expense" style={{ width: `${summary.rec ? Math.min(100, (summary.depTotal / summary.rec) * 100) : 0}%` }} /></div>
           </div>
-          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'orcamento') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${budget.pct}% utilizado`} title="Orçamento">
+        <Card className={cardClass()} subtitle={`${budget.pct}% utilizado`} title="Orçamento">
           <div className="modern-budget-total">
             <strong>{formatCurrency(budget.totalSpent)}</strong>
             <span>de {formatCurrency(budget.totalLimit)}</span>
@@ -329,26 +363,24 @@ export function DashboardPage({
             ))}
             {!topBudgetItems.length && <EmptyState title="Sem orçamento" text="Cadastre limites para acompanhar o mês." />}
           </div>
-          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'alertas') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Pontos que pedem atenção" title="Alertas">
+        <Card className={cardClass()} subtitle="Pontos que pedem atenção" title="Alertas">
           <div className="modern-list">
             {alerts.map((alert) => <div className="modern-alert-row" key={alert}>{alert}</div>)}
             {!alerts.length && <EmptyState title="Sem alertas críticos" text="Nenhum indicador ultrapassou limites de atenção." />}
           </div>
-          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'faturas') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${invoices.invoices.length} fatura(s) no mês`} title="Faturas dos Cartões">
+        <Card className={cardClass()} subtitle={`${invoices.invoices.length} fatura(s) no mês`} title="Faturas dos Cartões">
           <div className="modern-list">
             {invoices.invoices.map((invoice) => (
               <div className="modern-compact-row" key={String(invoice.id)}>
@@ -358,14 +390,13 @@ export function DashboardPage({
             ))}
             {!invoices.invoices.length && <EmptyState title="Sem faturas no mês" text="Faturas abertas ou fechadas aparecerão aqui." />}
           </div>
-          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'metas') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${financeState.metas.length} meta(s)`} title="Metas">
+        <Card className={cardClass()} subtitle={`${financeState.metas.length} meta(s)`} title="Metas">
           <div className="modern-list">
             {financeState.metas.slice(0, 3).map((goal) => {
               const progress = getGoalProgress(goal);
@@ -378,14 +409,13 @@ export function DashboardPage({
             })}
             {!financeState.metas.length && <EmptyState title="Sem metas" text="Crie metas para acompanhar seus objetivos." />}
           </div>
-          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'contas') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Saldos atuais" title="Contas e Carteiras">
+        <Card className={cardClass()} subtitle="Saldos atuais" title="Contas e Carteiras">
           <div className="modern-list">
             {financeState.contas.map((account) => {
               const balance = calculateAccountBalance(account, financeState.transacoes);
@@ -397,14 +427,13 @@ export function DashboardPage({
               );
             })}
           </div>
-          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'categorias') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Despesas confirmadas" title="Gastos por Categoria">
+        <Card className={cardClass()} subtitle="Despesas confirmadas" title="Gastos por Categoria">
           <div className="modern-list">
             {topCategories.map(([category, value]) => (
               <div className="modern-category-row" key={category}>
@@ -414,27 +443,25 @@ export function DashboardPage({
             ))}
             {!topCategories.length && <EmptyState title="Sem gastos confirmados" text="As categorias aparecerão quando houver despesas confirmadas." />}
           </div>
-          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'acoes') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Atalhos principais" title="Ações Rápidas">
+        <Card className={cardClass()} subtitle="Atalhos principais" title="Ações Rápidas">
           <div className="modern-action-grid">
             <Button onClick={() => onNavigate('lancamentos')} variant="primary">Novo lançamento</Button>
             <Button onClick={() => onNavigate('transacoes')}>Transações</Button>
             <Button onClick={() => onNavigate('cartoes')}>Cartões</Button>
             <Button onClick={() => onNavigate('metas')}>Metas</Button>
           </div>
-          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     return (
-      <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Mais recentes primeiro" title="Últimas Transações">
+      <Card className={cardClass()} subtitle="Mais recentes primeiro" title="Últimas Transações">
         <div className="modern-list">
           {latestTransactions.map((tx) => (
             <div className="modern-list-row modern-dashboard-transaction" key={String(tx.id)}>
@@ -451,7 +478,6 @@ export function DashboardPage({
           ))}
           {!latestTransactions.length && <EmptyState title="Sem transações" text="Os últimos lançamentos aparecerão aqui." />}
         </div>
-        {cardEditorOverlay(card)}
       </Card>
     );
   }
@@ -461,7 +487,7 @@ export function DashboardPage({
       <div className="modern-dashboard-toolbar">
         <div>
           <strong>Dashboard</strong>
-          <span>{editingCards ? 'Organizando cards' : monthLabel(month)}</span>
+          <span>{editingCards ? 'Arraste ou redimensione os cards livremente' : monthLabel(month)}</span>
         </div>
         <div className="modern-row-actions">
           {editingCards && <Button onClick={resetCards} type="button" variant="ghost">Restaurar padrão</Button>}
@@ -471,32 +497,37 @@ export function DashboardPage({
         </div>
       </div>
 
-      {editingCards && hiddenCards.length > 0 && (
-        <div className="modern-hidden-card-tray">
-          <span>Cards ocultos</span>
-          {hiddenCards.map((card) => (
-            <Button key={card.id} onClick={() => showCard(card.id)} type="button" variant="ghost">Mostrar {card.title}</Button>
-          ))}
-        </div>
-      )}
-
-      <div className="modern-dashboard-kpis">
-        <Card title="Saldo Total" subtitle="Todas as contas">
-          <div className={totalBalance >= 0 ? 'modern-kpi-value modern-value-income' : 'modern-kpi-value modern-value-expense'}>{formatCurrency(totalBalance)}</div>
-        </Card>
-        <Card title="Receitas" subtitle={monthLabel(month)} tone="income">
-          <div className="modern-kpi-value modern-value-income">{formatCurrency(summary.rec)}</div>
-        </Card>
-        <Card title="Despesas" subtitle="Confirmadas no mês" tone="expense">
-          <div className="modern-kpi-value modern-value-expense">{formatCurrency(summary.depTotal)}</div>
-        </Card>
-        <Card title="Faturas" subtitle="Previstas no mês">
-          <div className="modern-kpi-value modern-value-transfer">{formatCurrency(invoices.previsto)}</div>
-        </Card>
-      </div>
-
-      <div className="modern-dashboard-grid">
-        {visibleCards.map((id) => renderDashboardCard(DASHBOARD_CARDS.find((card) => card.id === id)!))}
+      <div className="modern-dashboard-layout-shell" ref={containerRef}>
+        {mounted && (
+          <ResponsiveGridLayout
+            breakpoints={DASHBOARD_BREAKPOINTS}
+            className={['modern-dashboard-layout-grid', editingCards ? 'is-editing' : ''].filter(Boolean).join(' ')}
+            cols={DASHBOARD_COLS}
+            compactor={noCompactor}
+            containerPadding={[0, 0]}
+            dragConfig={{
+              bounded: false,
+              cancel: 'button, input, select, textarea, a, .fc-button',
+              enabled: editingCards && canEdit,
+              threshold: 2
+            }}
+            layouts={gridLayout.layouts}
+            margin={DASHBOARD_GRID_MARGIN}
+            onLayoutChange={handleGridLayoutChange}
+            resizeConfig={{
+              enabled: editingCards && canEdit,
+              handles: ['se', 'e', 's']
+            }}
+            rowHeight={DASHBOARD_ROW_HEIGHT}
+            width={width}
+          >
+            {DASHBOARD_CARDS.map((card) => (
+              <div className="modern-dashboard-layout-item" key={card.id}>
+                {renderDashboardCard(card)}
+              </div>
+            ))}
+          </ResponsiveGridLayout>
+        )}
       </div>
     </div>
   );

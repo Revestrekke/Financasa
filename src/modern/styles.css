@@ -440,29 +440,11 @@
   font-weight: 900;
 }
 
-.modern-dashboard-toolbar span,
-.modern-hidden-card-tray > span {
+.modern-dashboard-toolbar span {
   color: var(--fc-color-muted);
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
-}
-
-.modern-hidden-card-tray {
-  align-items: center;
-  background: #f8fbff;
-  border: 1px dashed #bfdbfe;
-  border-radius: var(--fc-radius);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 12px;
-}
-
-.modern-dashboard-kpis {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(4, minmax(180px, 1fr));
 }
 
 .modern-kpi-value {
@@ -470,55 +452,90 @@
   font-weight: 900;
 }
 
-.modern-dashboard-grid {
-  align-items: start;
-  display: grid;
-  gap: 16px;
-  grid-auto-flow: dense;
-  grid-template-columns: repeat(4, minmax(210px, 1fr));
+.modern-dashboard-layout-grid {
+  min-height: 420px;
+}
+
+.modern-dashboard-layout-grid .react-grid-item {
+  transition: transform 180ms ease, width 180ms ease, height 180ms ease, box-shadow 160ms ease;
+}
+
+.modern-dashboard-layout-grid.is-editing .react-grid-item {
+  touch-action: none;
+}
+
+.modern-dashboard-layout-grid.is-editing .react-grid-item.react-draggable-dragging,
+.modern-dashboard-layout-grid.is-editing .react-grid-item.resizing {
+  z-index: 8;
+}
+
+.modern-dashboard-layout-item {
+  height: 100%;
+  min-height: 0;
 }
 
 .modern-dashboard-card {
-  min-height: 100%;
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   position: relative;
 }
 
-.modern-dashboard-card--small {
-  grid-column: span 1;
+.modern-dashboard-card > :not(.fc-card__header) {
+  min-height: 0;
 }
 
-.modern-dashboard-card--medium {
-  grid-column: span 2;
-}
-
-.modern-dashboard-card--large {
-  grid-column: span 4;
+.modern-dashboard-card .modern-list {
+  align-content: start;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 .modern-dashboard-card.is-editing {
   cursor: move;
-  outline: 2px dashed rgba(37, 99, 235, 0.28);
+  outline: 2px dashed rgba(37, 99, 235, 0.32);
   outline-offset: 3px;
+  user-select: none;
 }
 
 .modern-dashboard-card.is-editing:active {
   cursor: grabbing;
 }
 
-.modern-card-resize-handle {
-  border-bottom: 3px solid rgba(37, 99, 235, 0.34);
-  border-right: 3px solid rgba(37, 99, 235, 0.34);
-  bottom: 8px;
-  cursor: ew-resize;
-  height: 18px;
-  position: absolute;
-  right: 8px;
-  width: 18px;
-  z-index: 2;
+.modern-dashboard-layout-grid .react-resizable-handle {
+  opacity: 0;
+  transition: opacity 120ms ease;
 }
 
-.modern-card-resize-handle:hover {
-  border-color: var(--fc-color-primary);
+.modern-dashboard-layout-grid.is-editing .react-resizable-handle {
+  opacity: 1;
+}
+
+.modern-dashboard-layout-grid.is-editing .react-resizable-handle::after {
+  border-color: rgba(37, 99, 235, 0.72);
+}
+
+.modern-dashboard-layout-grid.is-editing .react-resizable-handle-e {
+  cursor: ew-resize;
+  height: 44px;
+  margin-top: -22px;
+  right: 0;
+  top: 50%;
+  width: 16px;
+}
+
+.modern-dashboard-layout-grid.is-editing .react-resizable-handle-s {
+  bottom: 0;
+  cursor: ns-resize;
+  height: 16px;
+  left: 50%;
+  margin-left: -22px;
+  width: 44px;
 }
 
 .modern-metric-grid {
@@ -733,6 +750,91 @@
 
 .modern-dashboard-transaction {
   grid-template-columns: minmax(220px, 1fr) minmax(360px, auto);
+}
+
+.modern-dashboard-card .fc-card__header {
+  flex-shrink: 0;
+}
+
+.modern-dashboard-card .fc-card__title,
+.modern-dashboard-card .modern-row-title,
+.modern-dashboard-card .modern-compact-row strong,
+.modern-dashboard-card .modern-goal-row strong,
+.modern-dashboard-card .modern-category-row strong {
+  overflow-wrap: anywhere;
+}
+
+.modern-dashboard-card .modern-budget-total,
+.modern-dashboard-card .modern-month-balance {
+  flex-shrink: 0;
+}
+
+@container (max-width: 360px) {
+  .modern-dashboard-card {
+    gap: 9px;
+    padding: 12px;
+  }
+
+  .modern-dashboard-card .fc-card__title {
+    font-size: 15px;
+  }
+
+  .modern-dashboard-card .fc-card__subtitle {
+    font-size: 11.5px;
+  }
+
+  .modern-dashboard-card .modern-kpi-value {
+    font-size: 22px;
+  }
+
+  .modern-dashboard-card .modern-metric-grid,
+  .modern-dashboard-card .modern-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modern-dashboard-card .modern-compact-row,
+  .modern-dashboard-card .modern-goal-row,
+  .modern-dashboard-card .modern-category-row div:first-child,
+  .modern-dashboard-card .modern-dashboard-transaction {
+    align-items: start;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .modern-dashboard-card .modern-row-actions {
+    justify-content: flex-start;
+  }
+}
+
+@container (max-height: 220px) {
+  .modern-dashboard-card {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .modern-dashboard-card .fc-card__subtitle {
+    display: none;
+  }
+
+  .modern-dashboard-card .modern-kpi-value {
+    font-size: 22px;
+  }
+
+  .modern-dashboard-card .modern-metric-grid div,
+  .modern-dashboard-card .modern-compact-row,
+  .modern-dashboard-card .modern-alert-row,
+  .modern-dashboard-card .modern-goal-row,
+  .modern-dashboard-card .modern-category-row {
+    padding: 9px;
+  }
+}
+
+@container (max-height: 170px) {
+  .modern-dashboard-card .modern-progress-stack,
+  .modern-dashboard-card .modern-progress-line,
+  .modern-dashboard-card .modern-list {
+    max-height: 72px;
+  }
 }
 
 .modern-report-page {
