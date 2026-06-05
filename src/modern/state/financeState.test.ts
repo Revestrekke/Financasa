@@ -32,4 +32,15 @@ describe('estado moderno inicial', () => {
     expect(state.cartoes).toEqual([]);
     expect(state.transacoes).toEqual([]);
   });
+
+  it('preserva o layout salvo do dashboard moderno', () => {
+    const dashboardLayout = {
+      hidden: ['alertas'],
+      order: ['orcamento', 'metas'],
+      sizes: { orcamento: 'large' }
+    };
+    const state = hydrateModernFinanceState({ dashboard_layout: dashboardLayout });
+
+    expect(state.dashboard_layout).toEqual(dashboardLayout);
+  });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type DragEvent } from 'react';
 import { Badge, Button, Card, EmptyState } from '../components';
 import {
   compareTransactionsDesc,
@@ -16,10 +16,14 @@ import type { ModernFinanceState } from '../state/financeState';
 
 interface DashboardPageProps {
   canEdit?: boolean;
+  dashboardLayout?: Record<string, unknown>;
   financeState: ModernFinanceState;
   month?: string;
+  onDashboardLayoutChange?: (layout: Record<string, unknown>) => void;
   onNavigate: (page: PageId) => void;
 }
+
+type DashboardCardSize = 'small' | 'medium' | 'large';
 
 type DashboardCardId =
   | 'indicadores'
@@ -34,22 +38,22 @@ type DashboardCardId =
   | 'transacoes';
 
 interface DashboardCardConfig {
+  defaultSize: DashboardCardSize;
   id: DashboardCardId;
   title: string;
-  wide?: boolean;
 }
 
 const DASHBOARD_CARDS: DashboardCardConfig[] = [
-  { id: 'indicadores', title: 'Indicadores Estratégicos', wide: true },
-  { id: 'visao-mes', title: 'Visão do Mês' },
-  { id: 'orcamento', title: 'Orçamento' },
-  { id: 'alertas', title: 'Alertas' },
-  { id: 'faturas', title: 'Faturas dos Cartões' },
-  { id: 'metas', title: 'Metas' },
-  { id: 'contas', title: 'Contas e Carteiras' },
-  { id: 'categorias', title: 'Gastos por Categoria' },
-  { id: 'acoes', title: 'Ações Rápidas' },
-  { id: 'transacoes', title: 'Últimas Transações', wide: true }
+  { id: 'indicadores', title: 'Indicadores Estratégicos', defaultSize: 'large' },
+  { id: 'visao-mes', title: 'Visão do Mês', defaultSize: 'medium' },
+  { id: 'orcamento', title: 'Orçamento', defaultSize: 'medium' },
+  { id: 'alertas', title: 'Alertas', defaultSize: 'medium' },
+  { id: 'faturas', title: 'Faturas dos Cartões', defaultSize: 'small' },
+  { id: 'metas', title: 'Metas', defaultSize: 'medium' },
+  { id: 'contas', title: 'Contas e Carteiras', defaultSize: 'medium' },
+  { id: 'categorias', title: 'Gastos por Categoria', defaultSize: 'medium' },
+  { id: 'acoes', title: 'Ações Rápidas', defaultSize: 'small' },
+  { id: 'transacoes', title: 'Últimas Transações', defaultSize: 'large' }
 ];
 
 const DASHBOARD_CARD_IDS = DASHBOARD_CARDS.map((card) => card.id);
@@ -58,6 +62,7 @@ const DASHBOARD_LAYOUT_STORAGE_KEY = 'financasa-modern-dashboard-cards';
 interface DashboardCardLayout {
   hidden: DashboardCardId[];
   order: DashboardCardId[];
+  sizes: Partial<Record<DashboardCardId, DashboardCardSize>>;
 }
 
 function normalizeCardLayout(layout?: Partial<DashboardCardLayout> | null): DashboardCardLayout {
@@ -67,10 +72,17 @@ function normalizeCardLayout(layout?: Partial<DashboardCardLayout> | null): Dash
   const hidden = Array.isArray(layout?.hidden)
     ? layout.hidden.filter((id): id is DashboardCardId => DASHBOARD_CARD_IDS.includes(id as DashboardCardId))
     : [];
+  const sizes = Object.fromEntries(
+    DASHBOARD_CARDS.map((card) => {
+      const size = layout?.sizes?.[card.id];
+      return [card.id, size === 'small' || size === 'medium' || size === 'large' ? size : card.defaultSize];
+    })
+  ) as Partial<Record<DashboardCardId, DashboardCardSize>>;
 
   return {
     hidden: Array.from(new Set(hidden)),
-    order: [...order, ...DASHBOARD_CARD_IDS.filter((id) => !order.includes(id))]
+    order: [...order, ...DASHBOARD_CARD_IDS.filter((id) => !order.includes(id))],
+    sizes
   };
 }
 
@@ -111,8 +123,16 @@ function transactionTone(tipo?: string) {
   return tipo === 'receita' ? 'income' : 'expense';
 }
 
-export function DashboardPage({ canEdit = true, financeState, month = new Date().toISOString().slice(0, 7), onNavigate }: DashboardPageProps) {
-  const [cardLayout, setCardLayout] = useState<DashboardCardLayout>(() => loadCardLayout());
+export function DashboardPage({
+  canEdit = true,
+  dashboardLayout,
+  financeState,
+  month = new Date().toISOString().slice(0, 7),
+  onDashboardLayoutChange,
+  onNavigate
+}: DashboardPageProps) {
+  const [cardLayout, setCardLayout] = useState<DashboardCardLayout>(() => normalizeCardLayout(dashboardLayout as Partial<DashboardCardLayout> || loadCardLayout()));
+  const [draggingCard, setDraggingCard] = useState<DashboardCardId | null>(null);
   const [editingCards, setEditingCards] = useState(false);
   const stateForDomain = {
     contas: financeState.contas,
@@ -145,10 +165,23 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
 
   useEffect(() => {
     saveCardLayout(cardLayout);
+    onDashboardLayoutChange?.(cardLayout as unknown as Record<string, unknown>);
   }, [cardLayout]);
 
+  useEffect(() => {
+    const nextLayout = normalizeCardLayout(dashboardLayout as Partial<DashboardCardLayout> || loadCardLayout());
+    setCardLayout((current) => (
+      JSON.stringify(current) === JSON.stringify(nextLayout) ? current : nextLayout
+    ));
+  }, [dashboardLayout]);
+
+  function updateCardLayout(updater: (current: DashboardCardLayout) => DashboardCardLayout) {
+    if (!canEdit) return;
+    setCardLayout((current) => normalizeCardLayout(updater(current)));
+  }
+
   function moveCard(id: DashboardCardId, direction: -1 | 1) {
-    setCardLayout((current) => {
+    updateCardLayout((current) => {
       const order = current.order.slice();
       const currentIndex = order.indexOf(id);
       const nextIndex = currentIndex + direction;
@@ -159,21 +192,39 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
   }
 
   function hideCard(id: DashboardCardId) {
-    setCardLayout((current) => ({
+    updateCardLayout((current) => ({
       ...current,
       hidden: current.hidden.includes(id) ? current.hidden : [...current.hidden, id]
     }));
   }
 
   function showCard(id: DashboardCardId) {
-    setCardLayout((current) => ({
+    updateCardLayout((current) => ({
       ...current,
       hidden: current.hidden.filter((cardId) => cardId !== id)
     }));
   }
 
   function resetCards() {
-    setCardLayout(normalizeCardLayout());
+    updateCardLayout(() => normalizeCardLayout());
+  }
+
+  function setCardSize(id: DashboardCardId, size: DashboardCardSize) {
+    updateCardLayout((current) => ({
+      ...current,
+      sizes: { ...current.sizes, [id]: size }
+    }));
+  }
+
+  function dropCard(targetId: DashboardCardId) {
+    if (!draggingCard || draggingCard === targetId) return;
+    updateCardLayout((current) => {
+      const order = current.order.filter((id) => id !== draggingCard);
+      const targetIndex = order.indexOf(targetId);
+      order.splice(targetIndex < 0 ? order.length : targetIndex, 0, draggingCard);
+      return { ...current, order };
+    });
+    setDraggingCard(null);
   }
 
   function cardToolbar(card: DashboardCardConfig) {
@@ -181,8 +232,21 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
     const visibleIndex = visibleCards.indexOf(card.id);
     return (
       <div className="modern-card-edit-actions">
+        <span className="modern-drag-handle" title="Arraste para reordenar">↕</span>
         <Button aria-label={`Mover ${card.title} para cima`} disabled={visibleIndex <= 0} onClick={() => moveCard(card.id, -1)} type="button">↑</Button>
         <Button aria-label={`Mover ${card.title} para baixo`} disabled={visibleIndex === visibleCards.length - 1} onClick={() => moveCard(card.id, 1)} type="button">↓</Button>
+        <div className="modern-card-size-control" aria-label={`Tamanho de ${card.title}`}>
+          {(['small', 'medium', 'large'] as const).map((size) => (
+            <button
+              className={cardLayout.sizes[card.id] === size ? 'is-active' : ''}
+              key={size}
+              onClick={() => setCardSize(card.id, size)}
+              type="button"
+            >
+              {size === 'small' ? 'P' : size === 'medium' ? 'M' : 'G'}
+            </button>
+          ))}
+        </div>
         <Button aria-label={`Ocultar ${card.title}`} onClick={() => hideCard(card.id)} type="button" variant="ghost">Ocultar</Button>
       </div>
     );
@@ -191,15 +255,33 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
   function cardClass(card: DashboardCardConfig) {
     return [
       'modern-dashboard-card',
-      card.wide ? 'modern-dashboard-card--wide' : '',
+      `modern-dashboard-card--${cardLayout.sizes[card.id] || card.defaultSize}`,
       editingCards ? 'is-editing' : ''
     ].filter(Boolean).join(' ');
+  }
+
+  function cardDragProps(card: DashboardCardConfig) {
+    if (!editingCards || !canEdit) return {};
+    return {
+      draggable: true,
+      onDragEnd: () => setDraggingCard(null),
+      onDragOver: (event: DragEvent<HTMLElement>) => event.preventDefault(),
+      onDragStart: (event: DragEvent<HTMLElement>) => {
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', card.id);
+        setDraggingCard(card.id);
+      },
+      onDrop: (event: DragEvent<HTMLElement>) => {
+        event.preventDefault();
+        dropCard(card.id);
+      }
+    };
   }
 
   function renderDashboardCard(card: DashboardCardConfig) {
     if (card.id === 'indicadores') {
       return (
-        <Card className={cardClass(card)} key={card.id} subtitle="Cálculos consolidados do mês" title="Indicadores Estratégicos" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Cálculos consolidados do mês" title="Indicadores Estratégicos" toolbar={cardToolbar(card)}>
           <div className="modern-metric-grid">
             <div><span>Patrimônio Líquido</span><strong className={metrics.netWorth >= 0 ? 'modern-value-income' : 'modern-value-expense'}>{formatCurrency(metrics.netWorth)}</strong></div>
             <div><span>Taxa de poupança</span><strong>{metrics.savingsRate}%</strong></div>
@@ -212,7 +294,7 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
 
     if (card.id === 'visao-mes') {
       return (
-        <Card className={cardClass(card)} key={card.id} subtitle={`${summary.txs.length} lançamentos confirmados`} title="Visão do Mês" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${summary.txs.length} lançamentos confirmados`} title="Visão do Mês" toolbar={cardToolbar(card)}>
           <div className="modern-month-balance">
             <span>Receitas vs despesas</span>
             <strong className={summary.saldo >= 0 ? 'modern-value-income' : 'modern-value-expense'}>{formatCurrency(summary.saldo)}</strong>
@@ -227,7 +309,7 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
 
     if (card.id === 'orcamento') {
       return (
-        <Card className={cardClass(card)} key={card.id} subtitle={`${budget.pct}% utilizado`} title="Orçamento" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${budget.pct}% utilizado`} title="Orçamento" toolbar={cardToolbar(card)}>
           <div className="modern-budget-total">
             <strong>{formatCurrency(budget.totalSpent)}</strong>
             <span>de {formatCurrency(budget.totalLimit)}</span>
@@ -248,7 +330,7 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
 
     if (card.id === 'alertas') {
       return (
-        <Card className={cardClass(card)} key={card.id} subtitle="Pontos que pedem atenção" title="Alertas" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Pontos que pedem atenção" title="Alertas" toolbar={cardToolbar(card)}>
           <div className="modern-list">
             {alerts.map((alert) => <div className="modern-alert-row" key={alert}>{alert}</div>)}
             {!alerts.length && <EmptyState title="Sem alertas críticos" text="Nenhum indicador ultrapassou limites de atenção." />}
@@ -259,7 +341,7 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
 
     if (card.id === 'faturas') {
       return (
-        <Card className={cardClass(card)} key={card.id} subtitle={`${invoices.invoices.length} fatura(s) no mês`} title="Faturas dos Cartões" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${invoices.invoices.length} fatura(s) no mês`} title="Faturas dos Cartões" toolbar={cardToolbar(card)}>
           <div className="modern-list">
             {invoices.invoices.map((invoice) => (
               <div className="modern-compact-row" key={String(invoice.id)}>
@@ -275,7 +357,7 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
 
     if (card.id === 'metas') {
       return (
-        <Card className={cardClass(card)} key={card.id} subtitle={`${financeState.metas.length} meta(s)`} title="Metas" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${financeState.metas.length} meta(s)`} title="Metas" toolbar={cardToolbar(card)}>
           <div className="modern-list">
             {financeState.metas.slice(0, 3).map((goal) => {
               const progress = getGoalProgress(goal);
@@ -294,7 +376,7 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
 
     if (card.id === 'contas') {
       return (
-        <Card className={cardClass(card)} key={card.id} subtitle="Saldos atuais" title="Contas e Carteiras" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Saldos atuais" title="Contas e Carteiras" toolbar={cardToolbar(card)}>
           <div className="modern-list">
             {financeState.contas.map((account) => {
               const balance = calculateAccountBalance(account, financeState.transacoes);
@@ -312,7 +394,7 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
 
     if (card.id === 'categorias') {
       return (
-        <Card className={cardClass(card)} key={card.id} subtitle="Despesas confirmadas" title="Gastos por Categoria" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Despesas confirmadas" title="Gastos por Categoria" toolbar={cardToolbar(card)}>
           <div className="modern-list">
             {topCategories.map(([category, value]) => (
               <div className="modern-category-row" key={category}>
@@ -328,7 +410,7 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
 
     if (card.id === 'acoes') {
       return (
-        <Card className={cardClass(card)} key={card.id} subtitle="Atalhos principais" title="Ações Rápidas" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Atalhos principais" title="Ações Rápidas" toolbar={cardToolbar(card)}>
           <div className="modern-action-grid">
             <Button onClick={() => onNavigate('lancamentos')} variant="primary">Novo lançamento</Button>
             <Button onClick={() => onNavigate('transacoes')}>Transações</Button>
@@ -340,7 +422,7 @@ export function DashboardPage({ canEdit = true, financeState, month = new Date()
     }
 
     return (
-      <Card className={cardClass(card)} key={card.id} subtitle="Mais recentes primeiro" title="Últimas Transações" toolbar={cardToolbar(card)}>
+      <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Mais recentes primeiro" title="Últimas Transações" toolbar={cardToolbar(card)}>
         <div className="modern-list">
           {latestTransactions.map((tx) => (
             <div className="modern-list-row modern-dashboard-transaction" key={String(tx.id)}>

@@ -50,6 +50,7 @@ export interface ModernFinanceState {
   categorias: CategoryState;
   contas: Account[];
   cartoes: CreditCardState[];
+  dashboard_layout?: Record<string, unknown>;
   dashboardMes?: string;
   faturas_cartao: CreditCardInvoice[];
   filtroTx?: string;
@@ -71,6 +72,7 @@ export function createModernInitialState(): ModernFinanceState {
     },
     contas: [],
     cartoes: [],
+    dashboard_layout: {},
     dashboardMes: new Date().toISOString().slice(0, 7),
     faturas_cartao: [],
     filtroTx: 'todas',
@@ -102,6 +104,7 @@ export function hydrateModernFinanceState(raw?: Partial<ModernFinanceState> | nu
     },
     contas: Array.isArray(raw.contas) ? raw.contas : initial.contas,
     cartoes: Array.isArray(raw.cartoes) ? raw.cartoes : initial.cartoes,
+    dashboard_layout: raw.dashboard_layout && typeof raw.dashboard_layout === 'object' ? raw.dashboard_layout : initial.dashboard_layout,
     faturas_cartao: Array.isArray(raw.faturas_cartao) ? raw.faturas_cartao : initial.faturas_cartao,
     investimentos: Array.isArray(raw.investimentos) ? raw.investimentos : initial.investimentos,
     metas: Array.isArray(raw.metas) ? raw.metas : initial.metas,

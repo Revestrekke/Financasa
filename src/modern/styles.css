@@ -474,16 +474,34 @@
   align-items: start;
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  grid-auto-flow: dense;
+  grid-template-columns: repeat(4, minmax(210px, 1fr));
 }
 
-.modern-dashboard-card--wide {
+.modern-dashboard-card {
+  min-height: 100%;
+}
+
+.modern-dashboard-card--small {
+  grid-column: span 1;
+}
+
+.modern-dashboard-card--medium {
   grid-column: span 2;
 }
 
+.modern-dashboard-card--large {
+  grid-column: span 4;
+}
+
 .modern-dashboard-card.is-editing {
+  cursor: grab;
   outline: 2px dashed rgba(37, 99, 235, 0.28);
   outline-offset: 3px;
+}
+
+.modern-dashboard-card.is-editing:active {
+  cursor: grabbing;
 }
 
 .modern-card-edit-actions {
@@ -497,6 +515,50 @@
 .modern-card-edit-actions .fc-button {
   min-height: 32px;
   padding: 6px 9px;
+}
+
+.modern-drag-handle {
+  align-items: center;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 7px;
+  color: var(--fc-color-primary);
+  cursor: grab;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 900;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.modern-card-size-control {
+  background: #edf3f9;
+  border: 1px solid #d4deea;
+  border-radius: 7px;
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+}
+
+.modern-card-size-control button {
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  color: #516176;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  height: 26px;
+  min-width: 26px;
+  padding: 0 7px;
+}
+
+.modern-card-size-control button.is-active {
+  background: #ffffff;
+  box-shadow: 0 1px 6px rgba(16, 24, 40, 0.1);
+  color: var(--fc-color-primary);
 }
 
 .modern-metric-grid {
@@ -1412,7 +1474,9 @@
     grid-template-columns: 1fr;
   }
 
-  .modern-dashboard-card--wide {
+  .modern-dashboard-card--small,
+  .modern-dashboard-card--medium,
+  .modern-dashboard-card--large {
     grid-column: auto;
   }
 
