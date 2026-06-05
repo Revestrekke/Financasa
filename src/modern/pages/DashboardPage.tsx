@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type DragEvent } from 'react';
+import { useEffect, useMemo, useState, type DragEvent, type PointerEvent } from 'react';
 import { Badge, Button, Card, EmptyState } from '../components';
 import {
   compareTransactionsDesc,
@@ -57,6 +57,7 @@ const DASHBOARD_CARDS: DashboardCardConfig[] = [
 ];
 
 const DASHBOARD_CARD_IDS = DASHBOARD_CARDS.map((card) => card.id);
+const DASHBOARD_CARD_SIZES: DashboardCardSize[] = ['small', 'medium', 'large'];
 const DASHBOARD_LAYOUT_STORAGE_KEY = 'financasa-modern-dashboard-cards';
 
 interface DashboardCardLayout {
@@ -180,24 +181,6 @@ export function DashboardPage({
     setCardLayout((current) => normalizeCardLayout(updater(current)));
   }
 
-  function moveCard(id: DashboardCardId, direction: -1 | 1) {
-    updateCardLayout((current) => {
-      const order = current.order.slice();
-      const currentIndex = order.indexOf(id);
-      const nextIndex = currentIndex + direction;
-      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= order.length) return current;
-      [order[currentIndex], order[nextIndex]] = [order[nextIndex], order[currentIndex]];
-      return { ...current, order };
-    });
-  }
-
-  function hideCard(id: DashboardCardId) {
-    updateCardLayout((current) => ({
-      ...current,
-      hidden: current.hidden.includes(id) ? current.hidden : [...current.hidden, id]
-    }));
-  }
-
   function showCard(id: DashboardCardId) {
     updateCardLayout((current) => ({
       ...current,
@@ -216,6 +199,37 @@ export function DashboardPage({
     }));
   }
 
+  function sizeFromDelta(startSize: DashboardCardSize, deltaX: number) {
+    const startIndex = DASHBOARD_CARD_SIZES.indexOf(startSize);
+    const steps = Math.max(-2, Math.min(2, Math.round(deltaX / 150)));
+    return DASHBOARD_CARD_SIZES[Math.max(0, Math.min(DASHBOARD_CARD_SIZES.length - 1, startIndex + steps))];
+  }
+
+  function startCardResize(card: DashboardCardConfig, event: PointerEvent<HTMLSpanElement>) {
+    if (!editingCards || !canEdit) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const startX = event.clientX;
+    const startSize = cardLayout.sizes[card.id] || card.defaultSize;
+    let currentSize = startSize;
+
+    function handleMove(moveEvent: globalThis.PointerEvent) {
+      const nextSize = sizeFromDelta(startSize, moveEvent.clientX - startX);
+      if (nextSize === currentSize) return;
+      currentSize = nextSize;
+      setCardSize(card.id, nextSize);
+    }
+
+    function handleUp() {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    }
+
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
+  }
+
   function dropCard(targetId: DashboardCardId) {
     if (!draggingCard || draggingCard === targetId) return;
     updateCardLayout((current) => {
@@ -225,31 +239,6 @@ export function DashboardPage({
       return { ...current, order };
     });
     setDraggingCard(null);
-  }
-
-  function cardToolbar(card: DashboardCardConfig) {
-    if (!editingCards) return undefined;
-    const visibleIndex = visibleCards.indexOf(card.id);
-    return (
-      <div className="modern-card-edit-actions">
-        <span className="modern-drag-handle" title="Arraste para reordenar">↕</span>
-        <Button aria-label={`Mover ${card.title} para cima`} disabled={visibleIndex <= 0} onClick={() => moveCard(card.id, -1)} type="button">↑</Button>
-        <Button aria-label={`Mover ${card.title} para baixo`} disabled={visibleIndex === visibleCards.length - 1} onClick={() => moveCard(card.id, 1)} type="button">↓</Button>
-        <div className="modern-card-size-control" aria-label={`Tamanho de ${card.title}`}>
-          {(['small', 'medium', 'large'] as const).map((size) => (
-            <button
-              className={cardLayout.sizes[card.id] === size ? 'is-active' : ''}
-              key={size}
-              onClick={() => setCardSize(card.id, size)}
-              type="button"
-            >
-              {size === 'small' ? 'P' : size === 'medium' ? 'M' : 'G'}
-            </button>
-          ))}
-        </div>
-        <Button aria-label={`Ocultar ${card.title}`} onClick={() => hideCard(card.id)} type="button" variant="ghost">Ocultar</Button>
-      </div>
-    );
   }
 
   function cardClass(card: DashboardCardConfig) {
@@ -278,23 +267,38 @@ export function DashboardPage({
     };
   }
 
+  function cardEditorOverlay(card: DashboardCardConfig) {
+    if (!editingCards || !canEdit) return null;
+    return (
+      <span
+        aria-label={`Redimensionar ${card.title}`}
+        className="modern-card-resize-handle"
+        draggable={false}
+        onPointerDown={(event) => startCardResize(card, event)}
+        role="separator"
+        title="Arraste o canto para redimensionar"
+      />
+    );
+  }
+
   function renderDashboardCard(card: DashboardCardConfig) {
     if (card.id === 'indicadores') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Cálculos consolidados do mês" title="Indicadores Estratégicos" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Cálculos consolidados do mês" title="Indicadores Estratégicos">
           <div className="modern-metric-grid">
             <div><span>Patrimônio Líquido</span><strong className={metrics.netWorth >= 0 ? 'modern-value-income' : 'modern-value-expense'}>{formatCurrency(metrics.netWorth)}</strong></div>
             <div><span>Taxa de poupança</span><strong>{metrics.savingsRate}%</strong></div>
             <div><span>Comprometimento</span><strong>{metrics.commitment}%</strong></div>
             <div><span>Maior categoria</span><strong>{metrics.topCategory.categoria}</strong></div>
           </div>
+          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'visao-mes') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${summary.txs.length} lançamentos confirmados`} title="Visão do Mês" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${summary.txs.length} lançamentos confirmados`} title="Visão do Mês">
           <div className="modern-month-balance">
             <span>Receitas vs despesas</span>
             <strong className={summary.saldo >= 0 ? 'modern-value-income' : 'modern-value-expense'}>{formatCurrency(summary.saldo)}</strong>
@@ -303,13 +307,14 @@ export function DashboardPage({
             <div><span>Receitas</span><i style={{ width: `${summary.rec ? 100 : 0}%` }} /></div>
             <div><span>Despesas</span><i className="is-expense" style={{ width: `${summary.rec ? Math.min(100, (summary.depTotal / summary.rec) * 100) : 0}%` }} /></div>
           </div>
+          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'orcamento') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${budget.pct}% utilizado`} title="Orçamento" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${budget.pct}% utilizado`} title="Orçamento">
           <div className="modern-budget-total">
             <strong>{formatCurrency(budget.totalSpent)}</strong>
             <span>de {formatCurrency(budget.totalLimit)}</span>
@@ -324,24 +329,26 @@ export function DashboardPage({
             ))}
             {!topBudgetItems.length && <EmptyState title="Sem orçamento" text="Cadastre limites para acompanhar o mês." />}
           </div>
+          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'alertas') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Pontos que pedem atenção" title="Alertas" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Pontos que pedem atenção" title="Alertas">
           <div className="modern-list">
             {alerts.map((alert) => <div className="modern-alert-row" key={alert}>{alert}</div>)}
             {!alerts.length && <EmptyState title="Sem alertas críticos" text="Nenhum indicador ultrapassou limites de atenção." />}
           </div>
+          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'faturas') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${invoices.invoices.length} fatura(s) no mês`} title="Faturas dos Cartões" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${invoices.invoices.length} fatura(s) no mês`} title="Faturas dos Cartões">
           <div className="modern-list">
             {invoices.invoices.map((invoice) => (
               <div className="modern-compact-row" key={String(invoice.id)}>
@@ -351,13 +358,14 @@ export function DashboardPage({
             ))}
             {!invoices.invoices.length && <EmptyState title="Sem faturas no mês" text="Faturas abertas ou fechadas aparecerão aqui." />}
           </div>
+          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'metas') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${financeState.metas.length} meta(s)`} title="Metas" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle={`${financeState.metas.length} meta(s)`} title="Metas">
           <div className="modern-list">
             {financeState.metas.slice(0, 3).map((goal) => {
               const progress = getGoalProgress(goal);
@@ -370,13 +378,14 @@ export function DashboardPage({
             })}
             {!financeState.metas.length && <EmptyState title="Sem metas" text="Crie metas para acompanhar seus objetivos." />}
           </div>
+          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'contas') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Saldos atuais" title="Contas e Carteiras" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Saldos atuais" title="Contas e Carteiras">
           <div className="modern-list">
             {financeState.contas.map((account) => {
               const balance = calculateAccountBalance(account, financeState.transacoes);
@@ -388,13 +397,14 @@ export function DashboardPage({
               );
             })}
           </div>
+          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'categorias') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Despesas confirmadas" title="Gastos por Categoria" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Despesas confirmadas" title="Gastos por Categoria">
           <div className="modern-list">
             {topCategories.map(([category, value]) => (
               <div className="modern-category-row" key={category}>
@@ -404,25 +414,27 @@ export function DashboardPage({
             ))}
             {!topCategories.length && <EmptyState title="Sem gastos confirmados" text="As categorias aparecerão quando houver despesas confirmadas." />}
           </div>
+          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     if (card.id === 'acoes') {
       return (
-        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Atalhos principais" title="Ações Rápidas" toolbar={cardToolbar(card)}>
+        <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Atalhos principais" title="Ações Rápidas">
           <div className="modern-action-grid">
             <Button onClick={() => onNavigate('lancamentos')} variant="primary">Novo lançamento</Button>
             <Button onClick={() => onNavigate('transacoes')}>Transações</Button>
             <Button onClick={() => onNavigate('cartoes')}>Cartões</Button>
             <Button onClick={() => onNavigate('metas')}>Metas</Button>
           </div>
+          {cardEditorOverlay(card)}
         </Card>
       );
     }
 
     return (
-      <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Mais recentes primeiro" title="Últimas Transações" toolbar={cardToolbar(card)}>
+      <Card {...cardDragProps(card)} className={cardClass(card)} key={card.id} subtitle="Mais recentes primeiro" title="Últimas Transações">
         <div className="modern-list">
           {latestTransactions.map((tx) => (
             <div className="modern-list-row modern-dashboard-transaction" key={String(tx.id)}>
@@ -439,6 +451,7 @@ export function DashboardPage({
           ))}
           {!latestTransactions.length && <EmptyState title="Sem transações" text="Os últimos lançamentos aparecerão aqui." />}
         </div>
+        {cardEditorOverlay(card)}
       </Card>
     );
   }
