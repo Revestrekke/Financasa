@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import {
   ResponsiveGridLayout,
   useContainerWidth,
@@ -321,6 +321,10 @@ export function DashboardPage({
   const invoices = getCreditCardInvoiceSummary(financeState.faturas_cartao, month);
   const expenseCategories = getExpenseCategoryMap(financeState.transacoes, month);
   const totalBalance = getSaldoTotal(financeState.contas, financeState.transacoes);
+  const monthFlowTotal = summary.rec + summary.depTotal;
+  const monthIncomeShare = monthFlowTotal ? Math.round((summary.rec / monthFlowTotal) * 100) : 0;
+  const monthExpenseShare = monthFlowTotal ? 100 - monthIncomeShare : 0;
+  const monthPieStyle = { '--month-income-share': `${monthIncomeShare}%` } as CSSProperties;
 
   const latestTransactions = useMemo(
     () => financeState.transacoes.slice().sort(compareTransactionsDesc).slice(0, 6),
@@ -520,13 +524,34 @@ export function DashboardPage({
     if (cardId === 'visao-mes') {
       return (
         <Card className={cardClass()} subtitle={`${summary.txs.length} lançamentos confirmados`} title="Visão do Mês">
-          <div className="modern-month-balance">
-            <span>Receitas vs despesas</span>
-            <strong className={summary.saldo >= 0 ? 'modern-value-income' : 'modern-value-expense'}>{formatCurrency(summary.saldo)}</strong>
-          </div>
-          <div className="modern-progress-stack">
-            <div><span>Receitas</span><i style={{ width: `${summary.rec ? 100 : 0}%` }} /></div>
-            <div><span>Despesas</span><i className="is-expense" style={{ width: `${summary.rec ? Math.min(100, (summary.depTotal / summary.rec) * 100) : 0}%` }} /></div>
+          <div className="modern-month-pie">
+            <div
+              aria-label={`Receitas ${monthIncomeShare}%, despesas ${monthExpenseShare}%`}
+              className={`modern-month-donut ${monthFlowTotal ? '' : 'is-empty'}`}
+              role="img"
+              style={monthPieStyle}
+            >
+              <span>{monthFlowTotal ? `${monthIncomeShare}% receitas` : 'Sem dados'}</span>
+            </div>
+            <div className="modern-month-pie-info">
+              <span>Receitas vs despesas</span>
+              <div className="modern-month-pie-row">
+                <i className="is-balance" />
+                <span>Saldo</span>
+                <strong className={summary.saldo >= 0 ? 'modern-value-income' : 'modern-value-expense'}>{formatCurrency(summary.saldo)}</strong>
+              </div>
+              <div className="modern-month-pie-row">
+                <i className="is-income" />
+                <span>Receitas</span>
+                <strong>{formatCurrency(summary.rec)}</strong>
+              </div>
+              <div className="modern-month-pie-row">
+                <i className="is-expense" />
+                <span>Despesas</span>
+                <strong>{formatCurrency(summary.depTotal)}</strong>
+              </div>
+              {!monthFlowTotal && <small>Sem valores confirmados neste mês.</small>}
+            </div>
           </div>
         </Card>
       );
