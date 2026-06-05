@@ -326,7 +326,7 @@ export function DashboardPage({
     () => financeState.transacoes.slice().sort(compareTransactionsDesc).slice(0, 6),
     [financeState.transacoes]
   );
-  const topBudgetItems = budget.items.slice().sort((a, b) => b.spent - a.spent).slice(0, 4);
+  const budgetItems = budget.items.slice().sort((a, b) => b.spent - a.spent);
   const topCategories = Object.entries(expenseCategories.catMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const alerts = [
     invoices.previsto > 0 ? `${formatCurrency(invoices.previsto)} em faturas abertas/fechadas previstas para ${monthLabel(month)}.` : '',
@@ -541,13 +541,13 @@ export function DashboardPage({
           </div>
           <div className="modern-progress-line"><i style={{ width: `${budget.pct}%` }} /></div>
           <div className="modern-list">
-            {topBudgetItems.map((item) => (
+            {budgetItems.map((item) => (
               <div className="modern-compact-row" key={item.category}>
                 <span>{item.category}</span>
                 <strong>{formatCurrency(item.spent)} / {formatCurrency(item.limit)}</strong>
               </div>
             ))}
-            {!topBudgetItems.length && <EmptyState title="Sem orçamento" text="Cadastre limites para acompanhar o mês." />}
+            {!budgetItems.length && <EmptyState title="Sem orçamento" text="Cadastre limites para acompanhar o mês." />}
           </div>
         </Card>
       );
@@ -657,7 +657,7 @@ export function DashboardPage({
               </div>
               <div className="modern-row-actions">
                 <Badge tone={transactionTone(tx.tipo)}>{transactionLabel(tx.tipo)}</Badge>
-                <Badge tone={tx.status === 'confirmado' ? 'success' : 'warning'}>{tx.status === 'confirmado' ? 'Confirmado' : 'Pendente'}</Badge>
+                <Badge tone={tx.status === 'confirmado' ? 'success' : 'danger'}>{tx.status === 'confirmado' ? 'Confirmado' : 'Pendente'}</Badge>
                 <strong className={tx.tipo === 'receita' || tx.tipo === 'transferencia_entrada' ? 'modern-value-income' : tx.tipo === 'transferencia_saida' ? 'modern-value-transfer' : 'modern-value-expense'}>{formatCurrency(tx.valor)}</strong>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Badge, Button, Card, EmptyState } from '../components';
+import { Button, Card, EmptyState } from '../components';
 import { NAV_ITEMS, SECTION_LABELS, type NavItem, type PageId } from '../navigation';
 
 interface AppShellProps {
@@ -17,20 +17,12 @@ function groupedItems(section: NavItem['section']) {
   return NAV_ITEMS.filter((item) => item.section === section);
 }
 
-function syncTone(status?: string) {
-  const normalized = String(status || '').toLowerCase();
-  if (normalized.includes('erro') || normalized.includes('ausente')) return 'danger';
-  if (normalized.includes('salvo') || normalized.includes('carregado')) return 'success';
-  return 'warning';
-}
-
 export function AppShell({
   activePage,
   canEdit = true,
   children,
   onNavigate,
   onSignOut,
-  syncStatus = 'online',
   userInitials = 'FC',
   userName = 'FinanCasa'
 }: AppShellProps) {
@@ -74,8 +66,6 @@ export function AppShell({
             <span>{activeItem.summary}</span>
           </div>
           <div className="modern-topbar-actions">
-            <Badge tone={syncTone(syncStatus)}>{syncStatus}</Badge>
-            <Badge tone={canEdit ? 'success' : 'warning'}>{canEdit ? 'Edição liberada' : 'Somente leitura'}</Badge>
             {onSignOut && <Button onClick={onSignOut}>Sair</Button>}
           </div>
         </header>

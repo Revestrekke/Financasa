@@ -237,7 +237,7 @@ export function TransactionsPage({ accounts, categories, onChange, transactions 
               </div>
               <div className="modern-row-actions">
                 <Badge tone={transactionTone(row.primary)}>{transactionTypeLabel(row.primary)}</Badge>
-                <Badge tone={row.primary.status === 'confirmado' ? 'success' : 'warning'}>
+                <Badge tone={row.primary.status === 'confirmado' ? 'success' : 'danger'}>
                   {row.primary.status === 'confirmado' ? '👍 Confirmado' : '👎 Pendente'}
                 </Badge>
                 <strong className={rowValueClass(row)}>

@@ -75,7 +75,7 @@ function statusLabel(status?: string) {
 }
 
 export function CreditCardsPage({ accounts, cards, categories, invoices, onChange, transactions }: CreditCardsPageProps) {
-  const [selectedCardId, setSelectedCardId] = useState(cards[0]?.id || '');
+  const [selectedCardId, setSelectedCardId] = useState('');
   const [draft, setDraft] = useState<PurchaseDraft>(emptyPurchase);
   const [error, setError] = useState('');
   const selectedCard = cards.find((card) => card.id === selectedCardId);
@@ -157,8 +157,8 @@ export function CreditCardsPage({ accounts, cards, categories, invoices, onChang
               <div className="modern-credit-card-slot" key={card.id}>
                 <button
                   className={['modern-credit-card', isSelected ? 'is-selected' : ''].filter(Boolean).join(' ')}
-                  onClick={() => setSelectedCardId(card.id)}
-                  style={{ borderColor: card.cor, ['--card-color' as string]: card.cor }}
+                  onClick={() => setSelectedCardId((current) => current === card.id ? '' : card.id)}
+                  style={{ ['--card-color' as string]: card.cor }}
                   type="button"
                 >
                   <div>

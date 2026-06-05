@@ -28,6 +28,12 @@
   --fc-sidebar-active-text: #08213d;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .modern-app-shell {
   background: #f6f9fc;
   color: var(--fc-color-text);
@@ -85,6 +91,21 @@
   display: grid;
   gap: 16px;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr);
+}
+
+.modern-page-grid > *,
+.modern-preview-grid > *,
+.modern-credit-card-grid > *,
+.modern-form-grid > *,
+.modern-transactions-filters > *,
+.modern-invoice-summary > *,
+.modern-list-row > *,
+.modern-budget-edit-row > *,
+.modern-report-row > *,
+.modern-flow-row > *,
+.modern-member-row > *,
+.modern-invoice-history-row > * {
+  min-width: 0;
 }
 
 .modern-form-grid {
@@ -160,6 +181,26 @@
   color: var(--fc-color-text);
 }
 
+.modern-thumb-button--confirmed {
+  color: #15803d;
+}
+
+.modern-thumb-button--pending {
+  color: #be123c;
+}
+
+.modern-thumb-button--confirmed.is-active {
+  background: #ecfdf3;
+  border: 1px solid #86efac;
+  color: #15803d;
+}
+
+.modern-thumb-button--pending.is-active {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+}
+
 .modern-form-error {
   background: #ffffff;
   border: 1px solid var(--fc-color-danger-border);
@@ -181,8 +222,13 @@
 }
 
 .modern-launch-submit--receita {
-  background: var(--fc-color-primary);
-  border-color: var(--fc-color-primary);
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.modern-launch-submit--receita:hover {
+  background: #15803d;
+  border-color: #15803d;
 }
 
 .modern-dialog-success {
@@ -305,8 +351,8 @@
 
 .modern-credit-card {
   background: #ffffff;
-  border: 2px solid var(--card-color);
-  border-left-width: 7px;
+  border: 2px solid #000000;
+  border-left: 7px solid var(--card-color);
   border-radius: var(--fc-radius);
   color: var(--fc-color-text);
   cursor: pointer;
@@ -322,6 +368,8 @@
 }
 
 .modern-credit-card.is-selected {
+  outline: 2px solid #000000;
+  outline-offset: 2px;
   box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14);
 }
 
@@ -1552,6 +1600,7 @@
 .fc-field {
   display: grid;
   gap: 7px;
+  min-width: 0;
 }
 
 .fc-field__label {
@@ -1567,6 +1616,7 @@
   color: #000000;
   font: inherit;
   min-height: 44px;
+  max-width: 100%;
   outline: 0;
   padding: 10px 12px;
   width: 100%;
@@ -1646,6 +1696,18 @@
   box-shadow: 0 2px 8px rgba(16, 24, 40, 0.08);
   color: var(--fc-color-primary);
   font-weight: 900;
+}
+
+.fc-segmented__item--receita.is-active,
+.fc-segmented__item--receitas.is-active {
+  background: #ecfdf3;
+  color: #15803d;
+}
+
+.fc-segmented__item--despesa.is-active,
+.fc-segmented__item--despesas.is-active {
+  background: #fff1f2;
+  color: #be123c;
 }
 
 .fc-table-wrap {

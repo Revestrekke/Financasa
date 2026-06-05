@@ -162,7 +162,7 @@ export function EntryPage({ accounts, categories, onChange, transactions }: Entr
 
             <div className="modern-thumb-toggle" role="group" aria-label="Status do lançamento">
               <button
-                className={['modern-thumb-button', draft.status === 'confirmado' ? 'is-active' : ''].filter(Boolean).join(' ')}
+                className={['modern-thumb-button', 'modern-thumb-button--confirmed', draft.status === 'confirmado' ? 'is-active' : ''].filter(Boolean).join(' ')}
                 onClick={() => updateDraft({ status: 'confirmado' })}
                 type="button"
               >
@@ -170,7 +170,7 @@ export function EntryPage({ accounts, categories, onChange, transactions }: Entr
                 Confirmado
               </button>
               <button
-                className={['modern-thumb-button', draft.status === 'previsto' ? 'is-active' : ''].filter(Boolean).join(' ')}
+                className={['modern-thumb-button', 'modern-thumb-button--pending', draft.status === 'previsto' ? 'is-active' : ''].filter(Boolean).join(' ')}
                 onClick={() => updateDraft({ status: 'previsto' })}
                 type="button"
               >
@@ -206,7 +206,7 @@ export function EntryPage({ accounts, categories, onChange, transactions }: Entr
                 </div>
                 <div className="modern-row-actions">
                   <Badge tone={transaction.tipo === 'receita' ? 'income' : 'expense'}>{formatCurrency(transaction.valor)}</Badge>
-                  <Badge tone={transaction.status === 'confirmado' ? 'success' : 'warning'}>
+                  <Badge tone={transaction.status === 'confirmado' ? 'success' : 'danger'}>
                     {transaction.status === 'confirmado' ? '👍 Confirmado' : '👎 Pendente'}
                   </Badge>
                 </div>

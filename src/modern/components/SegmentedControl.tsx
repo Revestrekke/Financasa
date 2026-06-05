@@ -14,7 +14,11 @@ export function SegmentedControl({ onChange, options, value }: SegmentedControlP
     <div className="fc-segmented" role="tablist">
       {options.map((option) => (
         <button
-          className={['fc-segmented__item', option.value === value ? 'is-active' : ''].filter(Boolean).join(' ')}
+          className={[
+            'fc-segmented__item',
+            `fc-segmented__item--${option.value}`,
+            option.value === value ? 'is-active' : ''
+          ].filter(Boolean).join(' ')}
           key={option.value}
           onClick={() => onChange?.(option.value)}
           role="tab"
